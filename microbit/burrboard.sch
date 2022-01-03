@@ -50,8 +50,8 @@ U 1 1 61C07230
 P 5050 2300
 F 0 "Q1" H 5240 2346 50  0000 L CNN
 F 1 "Q_Photo_NPN" H 5240 2255 50  0000 L CNN
-F 2 "OptoDevice:Osram_LPT80A" H 5250 2400 50  0001 C CNN
-F 3 "~" H 5050 2300 50  0001 C CNN
+F 2 "burrboard:WP3DP3BT" H 5250 2400 50  0001 C CNN
+F 3 "https://www.kingbrightusa.com/images/catalog/SPEC/WP3DP3BT.pdf" H 5050 2300 50  0001 C CNN
 	1    5050 2300
 	1    0    0    -1  
 $EndComp
@@ -62,7 +62,7 @@ L Device:R R1
 U 1 1 61C212D9
 P 5150 2750
 F 0 "R1" H 5220 2796 50  0000 L CNN
-F 1 "2k" H 5220 2705 50  0000 L CNN
+F 1 "25K" H 5220 2705 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical" V 5080 2750 50  0001 C CNN
 F 3 "~" H 5150 2750 50  0001 C CNN
 	1    5150 2750
@@ -120,17 +120,6 @@ Wire Wire Line
 Wire Wire Line
 	6500 5400 6550 5400
 $Comp
-L power:GND #PWR0102
-U 1 1 61C58E75
-P 3950 6450
-F 0 "#PWR0102" H 3950 6200 50  0001 C CNN
-F 1 "GND" H 3955 6277 50  0000 C CNN
-F 2 "" H 3950 6450 50  0001 C CNN
-F 3 "" H 3950 6450 50  0001 C CNN
-	1    3950 6450
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0105
 U 1 1 61C5B0A7
 P 4550 4650
@@ -152,8 +141,6 @@ F 3 "" H 5150 3100 50  0001 C CNN
 	1    5150 3100
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3950 5600 3950 5850
 $Comp
 L power:GND #PWR0115
 U 1 1 61CBAE2E
@@ -165,60 +152,6 @@ F 3 "" H 4500 6450 50  0001 C CNN
 	1    4500 6450
 	1    0    0    -1  
 $EndComp
-$Comp
-L power:GND #PWR0116
-U 1 1 61CBB00F
-P 5100 6450
-F 0 "#PWR0116" H 5100 6200 50  0001 C CNN
-F 1 "GND" H 5105 6277 50  0000 C CNN
-F 2 "" H 5100 6450 50  0001 C CNN
-F 3 "" H 5100 6450 50  0001 C CNN
-	1    5100 6450
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:Battery_Cell BT1
-U 1 1 61CCA329
-P 3950 6050
-F 0 "BT1" H 4068 6146 50  0000 L CNN
-F 1 "CR2032" H 4068 6055 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_1060_1x2032" V 3950 6110 50  0001 C CNN
-F 3 "~" V 3950 6110 50  0001 C CNN
-	1    3950 6050
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:Battery_Cell BT2
-U 1 1 61CCB807
-P 4500 6050
-F 0 "BT2" H 4618 6146 50  0000 L CNN
-F 1 "CR2032" H 4618 6055 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_1060_1x2032" V 4500 6110 50  0001 C CNN
-F 3 "~" V 4500 6110 50  0001 C CNN
-	1    4500 6050
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:Battery_Cell BT3
-U 1 1 61CCC1BE
-P 5100 6050
-F 0 "BT3" H 5218 6146 50  0000 L CNN
-F 1 "CR2032" H 5218 6055 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_1060_1x2032" V 5100 6110 50  0001 C CNN
-F 3 "~" V 5100 6110 50  0001 C CNN
-	1    5100 6050
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5100 5600 5100 5850
-Wire Wire Line
-	4500 5600 4500 5850
-Wire Wire Line
-	3950 6150 3950 6450
-Wire Wire Line
-	4500 6150 4500 6450
-Wire Wire Line
-	5100 6150 5100 6450
 $Comp
 L Device:CP1 C1
 U 1 1 61D2FCBB
@@ -242,17 +175,6 @@ Wire Wire Line
 Wire Wire Line
 	4550 3700 4550 3350
 $Comp
-L power:VDD #PWR0112
-U 1 1 61C95E4E
-P 3950 5600
-F 0 "#PWR0112" H 3950 5450 50  0001 C CNN
-F 1 "VDD" H 3965 5773 50  0000 C CNN
-F 2 "" H 3950 5600 50  0001 C CNN
-F 3 "" H 3950 5600 50  0001 C CNN
-	1    3950 5600
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:VDD #PWR0113
 U 1 1 61C961C8
 P 4500 5600
@@ -261,17 +183,6 @@ F 1 "VDD" H 4515 5773 50  0000 C CNN
 F 2 "" H 4500 5600 50  0001 C CNN
 F 3 "" H 4500 5600 50  0001 C CNN
 	1    4500 5600
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:VDD #PWR0114
-U 1 1 61C9662D
-P 5100 5600
-F 0 "#PWR0114" H 5100 5450 50  0001 C CNN
-F 1 "VDD" H 5115 5773 50  0000 C CNN
-F 2 "" H 5100 5600 50  0001 C CNN
-F 3 "" H 5100 5600 50  0001 C CNN
-	1    5100 5600
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -475,4 +386,19 @@ Wire Wire Line
 	5700 4550 5700 4450
 Wire Wire Line
 	6000 4800 6550 4800
+$Comp
+L Device:Battery BT1
+U 1 1 61D45279
+P 4500 6000
+F 0 "BT1" H 4608 6046 50  0000 L CNN
+F 1 "Battery" H 4608 5955 50  0000 L CNN
+F 2 "Battery:BatteryHolder_Keystone_2468_2xAAA" V 4500 6060 50  0001 C CNN
+F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 4500 6060 50  0001 C CNN
+	1    4500 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 5600 4500 5800
+Wire Wire Line
+	4500 6200 4500 6450
 $EndSCHEMATC
