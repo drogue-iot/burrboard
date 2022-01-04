@@ -1,0 +1,15 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TMP36GT9Z
+D SENSOR ANALOG -40C-125C TO92-3
+K TMP36GT9Z-ND
+F https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf
+$ENDCMP
+#
+$CMP microbit_edge_connector
+D micro:bit vertial edge connector
+K microbit edge connector vertical
+F https://www.microbit.co.uk/device/pins
+$ENDCMP
+#
+#End Doc Library
