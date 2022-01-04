@@ -38,7 +38,7 @@ L Device:R R1
 U 1 1 61C212D9
 P 6050 2100
 F 0 "R1" H 6120 2146 50  0000 L CNN
-F 1 "25K" H 6120 2055 50  0000 L CNN
+F 1 "10K" H 6120 2055 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical" V 5980 2100 50  0001 C CNN
 F 3 "~" H 6050 2100 50  0001 C CNN
 	1    6050 2100
@@ -667,31 +667,24 @@ Wire Wire Line
 	6050 1850 6050 1950
 Wire Wire Line
 	6050 2250 6050 2350
-$Comp
-L dk_Optical-Sensors-Phototransistors:TEMT6000X01 Q1
-U 1 1 61ECF6DC
-P 5850 1550
-F 0 "Q1" H 6037 1610 60  0000 L CNN
-F 1 "TEMT6000X01" H 6037 1504 60  0000 L CNN
-F 2 "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01" H 6050 1750 60  0001 L CNN
-F 3 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 1850 60  0001 L CNN
-F 4 "751-1055-1-ND" H 6050 1950 60  0001 L CNN "Digi-Key_PN"
-F 5 "TEMT6000X01" H 6050 2050 60  0001 L CNN "MPN"
-F 6 "Sensors, Transducers" H 6050 2150 60  0001 L CNN "Category"
-F 7 "Optical Sensors - Phototransistors" H 6050 2250 60  0001 L CNN "Family"
-F 8 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 2350 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/vishay-semiconductor-opto-division/TEMT6000X01/751-1055-1-ND/1681410" H 6050 2450 60  0001 L CNN "DK_Detail_Page"
-F 10 "SENSOR PHOTO 570NM TOP VIEW 1206" H 6050 2550 60  0001 L CNN "Description"
-F 11 "Vishay Semiconductor Opto Division" H 6050 2650 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6050 2750 60  0001 L CNN "Status"
-	1    5850 1550
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6050 1350 5950 1350
 Wire Wire Line
 	5950 1750 5950 1850
 Wire Wire Line
 	5950 1850 6050 1850
 Connection ~ 6050 1850
+$Comp
+L Device:Q_Photo_NPN Q1
+U 1 1 61D495AC
+P 5750 1550
+F 0 "Q1" H 5940 1596 50  0000 L CNN
+F 1 "Q_Photo_NPN" H 5940 1505 50  0000 L CNN
+F 2 "burrboard:WP3DP3BT" H 5950 1650 50  0001 C CNN
+F 3 "~" H 5750 1550 50  0001 C CNN
+	1    5750 1550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5850 1350 6050 1350
+Wire Wire Line
+	5850 1750 5950 1750
 $EndSCHEMATC
