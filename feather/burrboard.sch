@@ -34,17 +34,6 @@ F 12 "Active" H 2400 3350 60  0001 L CNN "Status"
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R R1
-U 1 1 61C212D9
-P 6050 2100
-F 0 "R1" H 6120 2146 50  0000 L CNN
-F 1 "10K" H 6120 2055 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical" V 5980 2100 50  0001 C CNN
-F 3 "~" H 6050 2100 50  0001 C CNN
-	1    6050 2100
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0105
 U 1 1 61C5B0A7
 P 2200 2800
@@ -83,8 +72,9 @@ U 1 1 61D2FCBB
 P 1100 2150
 F 0 "C1" H 1215 2196 50  0000 L CNN
 F 1 "100nF" H 1215 2105 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D7.0mm_W2.5mm_P5.00mm" H 1100 2150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 1100 2150 50  0001 C CNN
 F 3 "~" H 1100 2150 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1100 2150 50  0001 C CNN "Url"
 	1    1100 2150
 	1    0    0    -1  
 $EndComp
@@ -150,7 +140,7 @@ U 1 1 61D45279
 P 9250 4050
 F 0 "BT1" H 9358 4096 50  0000 L CNN
 F 1 "Battery" H 9358 4005 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_2468_2xAAA" V 9250 4110 50  0001 C CNN
+F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 9250 4110 50  0001 C CNN
 F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 9250 4110 50  0001 C CNN
 	1    9250 4050
 	1    0    0    -1  
@@ -231,8 +221,9 @@ U 1 1 61D5EC83
 P 1650 5000
 F 0 "C3" H 1765 5046 50  0000 L CNN
 F 1 "100nF" H 1765 4955 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D7.0mm_W2.5mm_P5.00mm" H 1650 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 1650 5000 50  0001 C CNN
 F 3 "~" H 1650 5000 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1650 5000 50  0001 C CNN "Url"
 	1    1650 5000
 	1    0    0    -1  
 $EndComp
@@ -242,8 +233,9 @@ U 1 1 61D5FD39
 P 2200 5000
 F 0 "C4" H 2315 5046 50  0000 L CNN
 F 1 "100nF" H 2315 4955 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D7.0mm_W2.5mm_P5.00mm" H 2200 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 2200 5000 50  0001 C CNN
 F 3 "~" H 2200 5000 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 2200 5000 50  0001 C CNN "Url"
 	1    2200 5000
 	1    0    0    -1  
 $EndComp
@@ -253,8 +245,9 @@ U 1 1 61D6E064
 P 1200 5000
 F 0 "C2" H 1315 5046 50  0000 L CNN
 F 1 "10uF" H 1315 4955 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D7.0mm_W2.5mm_P5.00mm" H 1200 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 1200 5000 50  0001 C CNN
 F 3 "~" H 1200 5000 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05A106MP8NUB8/5961314" H 1200 5000 50  0001 C CNN "Url"
 	1    1200 5000
 	1    0    0    -1  
 $EndComp
@@ -673,18 +666,37 @@ Wire Wire Line
 	5950 1850 6050 1850
 Connection ~ 6050 1850
 $Comp
-L Device:Q_Photo_NPN Q1
-U 1 1 61D495AC
-P 5750 1550
-F 0 "Q1" H 5940 1596 50  0000 L CNN
-F 1 "Q_Photo_NPN" H 5940 1505 50  0000 L CNN
-F 2 "burrboard:WP3DP3BT" H 5950 1650 50  0001 C CNN
-F 3 "~" H 5750 1550 50  0001 C CNN
-	1    5750 1550
+L Device:R R1
+U 1 1 61C212D9
+P 6050 2100
+F 0 "R1" H 6120 2146 50  0000 L CNN
+F 1 "10K" H 6120 2055 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5980 2100 50  0001 C CNN
+F 3 "~" H 6050 2100 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 6050 2100 50  0001 C CNN "Digikey"
+	1    6050 2100
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5850 1350 6050 1350
-Wire Wire Line
-	5850 1750 5950 1750
+	6050 1350 5950 1350
+$Comp
+L dk_Optical-Sensors-Phototransistors:TEMT6000X01 Q1
+U 1 1 61ECF6DC
+P 5850 1550
+F 0 "Q1" H 6037 1610 60  0000 L CNN
+F 1 "TEMT6000X01" H 6037 1504 60  0000 L CNN
+F 2 "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01" H 6050 1750 60  0001 L CNN
+F 3 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 1850 60  0001 L CNN
+F 4 "751-1055-1-ND" H 6050 1950 60  0001 L CNN "Digi-Key_PN"
+F 5 "TEMT6000X01" H 6050 2050 60  0001 L CNN "MPN"
+F 6 "Sensors, Transducers" H 6050 2150 60  0001 L CNN "Category"
+F 7 "Optical Sensors - Phototransistors" H 6050 2250 60  0001 L CNN "Family"
+F 8 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 2350 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/vishay-semiconductor-opto-division/TEMT6000X01/751-1055-1-ND/1681410" H 6050 2450 60  0001 L CNN "DK_Detail_Page"
+F 10 "SENSOR PHOTO 570NM TOP VIEW 1206" H 6050 2550 60  0001 L CNN "Description"
+F 11 "Vishay Semiconductor Opto Division" H 6050 2650 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 6050 2750 60  0001 L CNN "Status"
+	1    5850 1550
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
