@@ -1,73 +1,6 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
-# Connector_Generic_Conn_01x02
-#
-DEF Connector_Generic_Conn_01x02 J 0 40 Y N 1 F N
-F0 "J" 0 100 50 H V C CNN
-F1 "Connector_Generic_Conn_01x02" 0 -200 50 H V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-$FPLIST
- Connector*:*_1x??_*
-$ENDFPLIST
-DRAW
-S -50 -95 0 -105 1 1 6 N
-S -50 5 0 -5 1 1 6 N
-S -50 50 50 -150 1 1 10 f
-X Pin_1 1 -200 0 150 R 50 50 1 1 P
-X Pin_2 2 -200 -100 150 R 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# Connector_Generic_Conn_01x03
-#
-DEF Connector_Generic_Conn_01x03 J 0 40 Y N 1 F N
-F0 "J" 0 200 50 H V C CNN
-F1 "Connector_Generic_Conn_01x03" 0 -200 50 H V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-$FPLIST
- Connector*:*_1x??_*
-$ENDFPLIST
-DRAW
-S -50 -95 0 -105 1 1 6 N
-S -50 5 0 -5 1 1 6 N
-S -50 105 0 95 1 1 6 N
-S -50 150 50 -150 1 1 10 f
-X Pin_1 1 -200 100 150 R 50 50 1 1 P
-X Pin_2 2 -200 0 150 R 50 50 1 1 P
-X Pin_3 3 -200 -100 150 R 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# Connector_Generic_Conn_01x06
-#
-DEF Connector_Generic_Conn_01x06 J 0 40 Y N 1 F N
-F0 "J" 0 300 50 H V C CNN
-F1 "Connector_Generic_Conn_01x06" 0 -400 50 H V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-$FPLIST
- Connector*:*_1x??_*
-$ENDFPLIST
-DRAW
-S -50 -295 0 -305 1 1 6 N
-S -50 -195 0 -205 1 1 6 N
-S -50 -95 0 -105 1 1 6 N
-S -50 5 0 -5 1 1 6 N
-S -50 105 0 95 1 1 6 N
-S -50 205 0 195 1 1 6 N
-S -50 250 50 -350 1 1 10 f
-X Pin_1 1 -200 200 150 R 50 50 1 1 P
-X Pin_2 2 -200 100 150 R 50 50 1 1 P
-X Pin_3 3 -200 0 150 R 50 50 1 1 P
-X Pin_4 4 -200 -100 150 R 50 50 1 1 P
-X Pin_5 5 -200 -200 150 R 50 50 1 1 P
-X Pin_6 6 -200 -300 150 R 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
 # Connector_Generic_Conn_01x12
 #
 DEF Connector_Generic_Conn_01x12 J 0 40 Y N 1 F N
@@ -199,29 +132,6 @@ X ~ 2 0 -150 130 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Device_Q_Photo_NPN
-#
-DEF Device_Q_Photo_NPN Q 0 0 Y N 1 F N
-F0 "Q" 200 50 50 H V L CNN
-F1 "Device_Q_Photo_NPN" 200 -50 50 H V L CNN
-F2 "" 200 100 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-ALIAS Q_Photo_NPN_CE
-DRAW
-C 50 0 111 0 1 10 N
-P 2 0 1 0 -75 50 -100 50 N
-P 2 0 1 0 -50 100 -75 100 N
-P 2 0 1 0 25 25 100 100 N
-P 3 0 1 0 -150 125 -75 50 -75 75 N
-P 3 0 1 0 -125 175 -50 100 -50 125 N
-P 3 0 1 0 25 -25 100 -100 100 -100 N
-P 3 0 1 20 25 75 25 -75 25 -75 N
-P 5 0 1 0 50 -70 70 -50 90 -90 50 -70 50 -70 F
-X C 1 100 200 100 D 50 50 1 1 P
-X E 2 100 -200 100 U 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
 # Device_R
 #
 DEF Device_R R 0 0 N Y 1 F N
@@ -278,6 +188,132 @@ S 300 200 -100 -200 0 1 0 f
 X VDD 1 0 300 100 D 50 50 1 1 W
 X VOUT 2 400 0 100 L 50 50 1 1 O
 X GND 3 0 -300 100 U 50 50 1 1 W
+ENDDRAW
+ENDDEF
+#
+# dk_Motion-Sensors-Accelerometers_ADXL345BCCZ
+#
+DEF dk_Motion-Sensors-Accelerometers_ADXL345BCCZ U 0 40 Y Y 1 F N
+F0 "U" -300 450 60 H V C CNN
+F1 "dk_Motion-Sensors-Accelerometers_ADXL345BCCZ" 800 -800 60 H V C CNN
+F2 "digikey-footprints:LGA-14_3x5mm_RevA" 200 200 60 H I L CNN
+F3 "https://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf" 200 300 60 H I L CNN
+F4 "ADXL345BCCZ-ND" 200 400 60 H I L CNN "Digi-Key_PN"
+F5 "ADXL345BCCZ" 200 500 60 H I L CNN "MPN"
+F6 "Sensors, Transducers" 200 600 60 H I L CNN "Category"
+F7 "Motion Sensors - Accelerometers" 200 700 60 H I L CNN "Family"
+F8 "https://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf" 200 800 60 H I L CNN "DK_Datasheet_Link"
+F9 "/product-detail/en/analog-devices-inc/ADXL345BCCZ/ADXL345BCCZ-ND/2034829" 200 900 60 H I L CNN "DK_Detail_Page"
+F10 "ACCEL 2-16G I2C/SPI 14LGA" 200 1000 60 H I L CNN "Description"
+F11 "Analog Devices Inc." 200 1100 60 H I L CNN "Manufacturer"
+F12 "Active" 200 1200 60 H I L CNN "Status"
+DRAW
+S -400 400 500 -500 0 1 0 f
+X VDD_I/O 1 200 600 200 D 50 50 1 1 W
+X NC 10 -600 -300 200 R 50 50 1 1 N
+X RES 11 0 -700 200 U 50 50 1 1 W
+X SDO/ALT_ADD 12 -600 100 200 R 50 50 1 1 B
+X SDA/SDI/SDIO 13 -600 0 200 R 50 50 1 1 B
+X SCL/SCLK 14 -600 -100 200 R 50 50 1 1 B
+X GND 2 100 -700 200 U 50 50 1 1 W
+X RES 3 0 600 200 D 50 50 1 1 W
+X GND 4 200 -700 200 U 50 50 1 1 W
+X GND 5 300 -700 200 U 50 50 1 1 W
+X VS 6 300 600 200 D 50 50 1 1 W
+X ~CS 7 -600 200 200 R 50 50 1 1 I
+X INT1 8 700 100 200 L 50 50 1 1 O
+X INT2 9 700 0 200 L 50 50 1 1 O
+ENDDRAW
+ENDDEF
+#
+# dk_Optical-Sensors-Phototransistors_TEMT6000X01
+#
+DEF dk_Optical-Sensors-Phototransistors_TEMT6000X01 Q 0 0 Y N 1 F N
+F0 "Q" -50 200 60 H V C CNN
+F1 "dk_Optical-Sensors-Phototransistors_TEMT6000X01" 250 0 60 V V C CNN
+F2 "digikey-footprints:Phototransistor_SMD_4x2mm_TEMT6000X01" 200 200 60 H I L CNN
+F3 "http://www.vishay.com/docs/81579/temt6000.pdf" 200 300 60 H I L CNN
+F4 "751-1055-1-ND" 200 400 60 H I L CNN "Digi-Key_PN"
+F5 "TEMT6000X01" 200 500 60 H I L CNN "MPN"
+F6 "Sensors, Transducers" 200 600 60 H I L CNN "Category"
+F7 "Optical Sensors - Phototransistors" 200 700 60 H I L CNN "Family"
+F8 "http://www.vishay.com/docs/81579/temt6000.pdf" 200 800 60 H I L CNN "DK_Datasheet_Link"
+F9 "/product-detail/en/vishay-semiconductor-opto-division/TEMT6000X01/751-1055-1-ND/1681410" 200 900 60 H I L CNN "DK_Detail_Page"
+F10 "SENSOR PHOTO 570NM TOP VIEW 1206" 200 1000 60 H I L CNN "Description"
+F11 "Vishay Semiconductor Opto Division" 200 1100 60 H I L CNN "Manufacturer"
+F12 "Active" 200 1200 60 H I L CNN "Status"
+DRAW
+C 0 0 125 0 1 0 f
+P 2 0 1 0 -285 130 -195 40 N
+P 2 0 1 0 -285 230 -195 140 N
+P 2 0 1 0 -100 -100 -75 -100 N
+P 2 0 1 10 -50 -75 -50 75 N
+P 2 0 1 0 -50 -30 100 -100 N
+P 2 0 1 0 -50 30 100 100 N
+P 4 0 1 0 -165 10 -210 30 -185 55 -165 10 F
+P 4 0 1 0 -165 110 -210 130 -185 155 -165 110 F
+P 4 0 1 0 60 -80 12 -80 26 -46 60 -80 F
+X C 1 100 200 100 D 50 50 1 1 P
+X E 2 100 -200 100 U 50 50 1 1 P
+X NC 3 -200 -100 100 R 50 50 1 1 N
+ENDDRAW
+ENDDEF
+#
+# dk_Rectangular-Connectors-Headers-Male-Pins_22-23-2021
+#
+DEF dk_Rectangular-Connectors-Headers-Male-Pins_22-23-2021 J 0 40 Y Y 1 F N
+F0 "J" -100 50 50 H V R CNN
+F1 "dk_Rectangular-Connectors-Headers-Male-Pins_22-23-2021" 50 -150 50 H V C CNN
+F2 "digikey-footprints:PinHeader_1x2_P2.54mm_Drill1.02mm" 200 200 60 H I L CNN
+F3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" 200 300 60 H I L CNN
+F4 "WM4200-ND" 200 400 60 H I L CNN "Digi-Key_PN"
+F5 "22-23-2021" 200 500 60 H I L CNN "MPN"
+F6 "Connectors, Interconnects" 200 600 60 H I L CNN "Category"
+F7 "Rectangular Connectors - Headers, Male Pins" 200 700 60 H I L CNN "Family"
+F8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" 200 800 60 H I L CNN "DK_Datasheet_Link"
+F9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" 200 900 60 H I L CNN "DK_Detail_Page"
+F10 "CONN HEADER VERT 2POS 2.54MM" 200 1000 60 H I L CNN "Description"
+F11 "Molex" 200 1100 60 H I L CNN "Manufacturer"
+F12 "Active" 200 1200 60 H I L CNN "Status"
+DRAW
+S -50 0 150 -100 1 1 0 f
+S -10 -45 10 -65 1 1 0 F
+S 90 -45 110 -65 1 1 0 F
+X ~ 1 0 100 100 D 50 50 1 1 P
+X ~ 2 100 100 100 D 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# dk_Tactile-Switches_PTS645SM43SMTR92_LFS
+#
+DEF dk_Tactile-Switches_PTS645SM43SMTR92_LFS S 0 40 Y Y 1 F N
+F0 "S" 0 200 60 H V C CNN
+F1 "dk_Tactile-Switches_PTS645SM43SMTR92_LFS" 0 -210 60 H V C CNN
+F2 "digikey-footprints:Switch_Tactile_SMD_6x6mm_PTS645" 200 200 60 H I L CNN
+F3 "https://www.ckswitches.com/media/1471/pts645.pdf" 200 300 60 H I L CNN
+F4 "CKN9112CT-ND" 200 400 60 H I L CNN "Digi-Key_PN"
+F5 "PTS645SM43SMTR92 LFS" 200 500 60 H I L CNN "MPN"
+F6 "Switches" 200 600 60 H I L CNN "Category"
+F7 "Tactile Switches" 200 700 60 H I L CNN "Family"
+F8 "https://www.ckswitches.com/media/1471/pts645.pdf" 200 800 60 H I L CNN "DK_Datasheet_Link"
+F9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" 200 900 60 H I L CNN "DK_Detail_Page"
+F10 "SWITCH TACTILE SPST-NO 0.05A 12V" 200 1000 60 H I L CNN "Description"
+F11 "C&K" 200 1100 60 H I L CNN "Manufacturer"
+F12 "Active" 200 1200 60 H I L CNN "Status"
+DRAW
+C -60 0 10 0 1 0 N
+C 60 0 10 0 1 0 N
+P 2 0 1 0 -100 100 -100 -100 N
+P 2 0 1 0 -70 0 -100 0 N
+P 2 0 1 0 -70 50 70 50 N
+P 2 0 1 0 100 -100 100 100 N
+P 2 0 1 0 100 0 70 0 N
+P 2 1 1 0 -40 110 35 110 N
+P 2 1 1 0 0 110 0 50 N
+X ~ 1 -200 100 100 R 50 50 1 1 P
+X ~ 2 -200 -100 100 R 50 50 1 1 P
+X ~ 3 200 100 100 L 50 50 1 1 P
+X ~ 4 200 -100 100 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
