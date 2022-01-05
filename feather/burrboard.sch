@@ -344,52 +344,6 @@ Wire Wire Line
 	6750 1850 6050 1850
 Text Label 6050 750  0    50   ~ 0
 3V3
-$Comp
-L dk_Rectangular-Connectors-Headers-Male-Pins:22-23-2021 J5
-U 1 1 61DF7B81
-P 5950 1000
-F 0 "J5" V 5725 1008 50  0000 C CNN
-F 1 "LIGHT_ENABLE" V 5816 1008 50  0000 C CNN
-F 2 "burrboard:PinHeader_1x2_P2.54mm" H 6150 1200 60  0001 L CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 6150 1300 60  0001 L CNN
-F 4 "WM4200-ND" H 6150 1400 60  0001 L CNN "Digi-Key_PN"
-F 5 "22-23-2021" H 6150 1500 60  0001 L CNN "MPN"
-F 6 "Connectors, Interconnects" H 6150 1600 60  0001 L CNN "Category"
-F 7 "Rectangular Connectors - Headers, Male Pins" H 6150 1700 60  0001 L CNN "Family"
-F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 6150 1800 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 6150 1900 60  0001 L CNN "DK_Detail_Page"
-F 10 "CONN HEADER VERT 2POS 2.54MM" H 6150 2000 60  0001 L CNN "Description"
-F 11 "Molex" H 6150 2100 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6150 2200 60  0001 L CNN "Status"
-	1    5950 1000
-	0    1    1    0   
-$EndComp
-Wire Wire Line
-	6050 750  6050 1000
-Wire Wire Line
-	6050 1100 6050 1250
-$Comp
-L dk_Rectangular-Connectors-Headers-Male-Pins:22-23-2021 J4
-U 1 1 61E09619
-P 3150 4600
-F 0 "J4" V 3241 4472 50  0000 R CNN
-F 1 "ACCEL_ENABLE" V 3150 4472 50  0000 R CNN
-F 2 "burrboard:PinHeader_1x2_P2.54mm" H 3350 4800 60  0001 L CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 3350 4900 60  0001 L CNN
-F 4 "WM4200-ND" H 3350 5000 60  0001 L CNN "Digi-Key_PN"
-F 5 "22-23-2021" H 3350 5100 60  0001 L CNN "MPN"
-F 6 "Connectors, Interconnects" H 3350 5200 60  0001 L CNN "Category"
-F 7 "Rectangular Connectors - Headers, Male Pins" H 3350 5300 60  0001 L CNN "Family"
-F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 3350 5400 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 3350 5500 60  0001 L CNN "DK_Detail_Page"
-F 10 "CONN HEADER VERT 2POS 2.54MM" H 3350 5600 60  0001 L CNN "Description"
-F 11 "Molex" H 3350 5700 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 3350 5800 60  0001 L CNN "Status"
-	1    3150 4600
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	3050 4600 3050 4650
 Connection ~ 3050 5400
 Wire Wire Line
 	2200 4750 3050 4750
@@ -398,34 +352,8 @@ Wire Wire Line
 	3050 4750 3050 5400
 Text Label 3050 4100 0    50   ~ 0
 3V3
-Wire Wire Line
-	3050 4100 3050 4500
-$Comp
-L dk_Rectangular-Connectors-Headers-Male-Pins:22-23-2021 J3
-U 1 1 61E0FE18
-P 2300 1200
-F 0 "J3" V 2391 1072 50  0000 R CNN
-F 1 "TEMP_ENABLE" V 2300 1072 50  0000 R CNN
-F 2 "burrboard:PinHeader_1x2_P2.54mm" H 2500 1400 60  0001 L CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 2500 1500 60  0001 L CNN
-F 4 "WM4200-ND" H 2500 1600 60  0001 L CNN "Digi-Key_PN"
-F 5 "22-23-2021" H 2500 1700 60  0001 L CNN "MPN"
-F 6 "Connectors, Interconnects" H 2500 1800 60  0001 L CNN "Category"
-F 7 "Rectangular Connectors - Headers, Male Pins" H 2500 1900 60  0001 L CNN "Family"
-F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 2500 2000 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 2500 2100 60  0001 L CNN "DK_Detail_Page"
-F 10 "CONN HEADER VERT 2POS 2.54MM" H 2500 2200 60  0001 L CNN "Description"
-F 11 "Molex" H 2500 2300 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 2500 2400 60  0001 L CNN "Status"
-	1    2300 1200
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	2200 1200 2200 1400
 Text Label 2200 700  0    50   ~ 0
 3V3
-Wire Wire Line
-	2200 700  2200 1100
 Wire Wire Line
 	8400 5550 8600 5550
 Wire Notes Line
@@ -464,50 +392,8 @@ NoConn ~ 9050 1800
 NoConn ~ 9050 1700
 NoConn ~ 9050 1300
 NoConn ~ 9050 1100
-$Comp
-L power:PWR_FLAG #FLG0101
-U 1 1 61E727C6
-P 6050 1250
-F 0 "#FLG0101" H 6050 1325 50  0001 C CNN
-F 1 "PWR_FLAG" V 6050 1378 50  0000 L CNN
-F 2 "" H 6050 1250 50  0001 C CNN
-F 3 "~" H 6050 1250 50  0001 C CNN
-	1    6050 1250
-	0    1    1    0   
-$EndComp
-Connection ~ 6050 1250
 Wire Wire Line
-	6050 1250 6050 1350
-Wire Wire Line
-	8650 1200 9050 1200
-$Comp
-L power:PWR_FLAG #FLG0102
-U 1 1 61E72DEA
-P 2200 1400
-F 0 "#FLG0102" H 2200 1475 50  0001 C CNN
-F 1 "PWR_FLAG" V 2200 1528 50  0000 L CNN
-F 2 "" H 2200 1400 50  0001 C CNN
-F 3 "~" H 2200 1400 50  0001 C CNN
-	1    2200 1400
-	0    1    1    0   
-$EndComp
-Connection ~ 2200 1400
-Wire Wire Line
-	2200 1400 2200 1500
-$Comp
-L power:PWR_FLAG #FLG0103
-U 1 1 61E731D6
-P 3050 4650
-F 0 "#FLG0103" H 3050 4725 50  0001 C CNN
-F 1 "PWR_FLAG" V 3050 4777 50  0000 L CNN
-F 2 "" H 3050 4650 50  0001 C CNN
-F 3 "~" H 3050 4650 50  0001 C CNN
-	1    3050 4650
-	0    -1   -1   0   
-$EndComp
-Connection ~ 3050 4650
-Wire Wire Line
-	3050 4650 3050 4750
+	8650 1200 8900 1200
 $Comp
 L power:PWR_FLAG #FLG0104
 U 1 1 61E73CB0
@@ -1649,4 +1535,24 @@ Wire Notes Line
 	3800 3000 11150 3000
 Text Notes 4000 1900 0    50   ~ 0
 Drogue IoT BurrBoard v1.0
+Wire Wire Line
+	3050 4100 3050 4750
+Wire Wire Line
+	2200 700  2200 1500
+Wire Wire Line
+	6050 750  6050 1350
+$Comp
+L power:PWR_FLAG #FLG01
+U 1 1 61DDC45D
+P 8900 1200
+F 0 "#FLG01" H 8900 1275 50  0001 C CNN
+F 1 "PWR_FLAG" H 8900 1373 50  0000 C CNN
+F 2 "" H 8900 1200 50  0001 C CNN
+F 3 "~" H 8900 1200 50  0001 C CNN
+	1    8900 1200
+	1    0    0    -1  
+$EndComp
+Connection ~ 8900 1200
+Wire Wire Line
+	8900 1200 9050 1200
 $EndSCHEMATC
