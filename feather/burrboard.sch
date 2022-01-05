@@ -127,7 +127,7 @@ U 1 1 5D375CC4
 P 9650 2100
 F 0 "J2" H 9570 1275 50  0000 C CNN
 F 1 "feather short" H 9570 1366 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x12_P2.54mm_Vertical" H 9650 2100 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x12_P2.54mm_Vertical" H 9650 2100 50  0001 C CNN
 F 3 "~" H 9650 2100 50  0001 C CNN
 	1    9650 2100
 	-1   0    0    1   
@@ -370,7 +370,7 @@ U 1 1 5D375C76
 P 9250 1900
 F 0 "J1" H 9169 875 50  0000 C CNN
 F 1 "feather long" H 9169 966 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x16_P2.54mm_Vertical" H 9250 1900 50  0001 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x16_P2.54mm_Vertical" H 9250 1900 50  0001 C CNN
 F 3 "~" H 9250 1900 50  0001 C CNN
 	1    9250 1900
 	1    0    0    1   
