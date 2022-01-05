@@ -149,6 +149,25 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
+# Sensor_Temperature_TMP36xS
+#
+DEF Sensor_Temperature_TMP36xS U 0 20 Y Y 1 F N
+F0 "U" -350 350 50 H V C CNN
+F1 "Sensor_Temperature_TMP36xS" 250 -350 50 H V C CNN
+F2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" 0 -450 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ SOIC?8*3.9x4.9mm*P1.27mm*
+$ENDFPLIST
+DRAW
+S -400 300 400 -300 0 1 10 f
+X Vout 1 500 0 100 L 50 50 1 1 O
+X GND 4 0 -400 100 U 50 50 1 1 W
+X ~SHUTDOWN 5 -500 0 100 R 50 50 1 1 I
+X +Vs 8 0 400 100 D 50 50 1 1 W
+ENDDRAW
+ENDDEF
+#
 # Switch_SW_SPDT
 #
 DEF Switch_SW_SPDT SW 0 0 Y N 1 F N
@@ -164,30 +183,6 @@ P 2 0 1 0 -60 10 65 90 N
 X A 1 200 100 100 L 50 50 1 1 P
 X B 2 -200 0 100 R 50 50 1 1 P
 X C 3 200 -100 100 L 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# burrboard_TMP36GT9Z
-#
-DEF burrboard_TMP36GT9Z U 0 40 Y Y 1 F N
-F0 "U" -200 300 60 H V C CNN
-F1 "burrboard_TMP36GT9Z" 200 -300 60 H V L CNN
-F2 "digikey-footprints:TO-92-3" 200 200 60 H I L CNN
-F3 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" 200 300 60 H I L CNN
-F4 "TMP36GT9Z-ND" 200 400 60 H I L CNN "Digi-Key_PN"
-F5 "TMP36GT9Z" 200 500 60 H I L CNN "MPN"
-F6 "Sensors, Transducers" 200 600 60 H I L CNN "Category"
-F7 "Temperature Sensors - Analog and Digital Output" 200 700 60 H I L CNN "Family"
-F8 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" 200 800 60 H I L CNN "DK_Datasheet_Link"
-F9 "/product-detail/en/analog-devices-inc/TMP36GT9Z/TMP36GT9Z-ND/820404" 200 900 60 H I L CNN "DK_Detail_Page"
-F10 "SENSOR ANALOG -40C-125C TO92-3" 200 1000 60 H I L CNN "Description"
-F11 "Analog Devices Inc." 200 1100 60 H I L CNN "Manufacturer"
-F12 "Active" 200 1200 60 H I L CNN "Status"
-DRAW
-S 300 200 -100 -200 0 1 0 f
-X VDD 1 0 300 100 D 50 50 1 1 W
-X VOUT 2 400 0 100 L 50 50 1 1 O
-X GND 3 0 -300 100 U 50 50 1 1 W
 ENDDRAW
 ENDDEF
 #

@@ -14,26 +14,6 @@ Comment3 "License: Apache 2.0"
 Comment4 "Author: Ulf Lilleengen"
 $EndDescr
 $Comp
-L burrboard:TMP36GT9Z U1
-U 1 1 61BFDC6C
-P 2200 2150
-F 0 "U1" H 2073 2203 60  0000 R CNN
-F 1 "TMP36GT9Z" H 2073 2097 60  0000 R CNN
-F 2 "burrboard:TO-92-3" H 2400 2350 60  0001 L CNN
-F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" H 2400 2450 60  0001 L CNN
-F 4 "TMP36GT9Z-ND" H 2400 2550 60  0001 L CNN "Digi-Key_PN"
-F 5 "TMP36GT9Z" H 2400 2650 60  0001 L CNN "MPN"
-F 6 "Sensors, Transducers" H 2400 2750 60  0001 L CNN "Category"
-F 7 "Temperature Sensors - Analog and Digital Output" H 2400 2850 60  0001 L CNN "Family"
-F 8 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" H 2400 2950 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/analog-devices-inc/TMP36GT9Z/TMP36GT9Z-ND/820404" H 2400 3050 60  0001 L CNN "DK_Detail_Page"
-F 10 "SENSOR ANALOG -40C-125C TO92-3" H 2400 3150 60  0001 L CNN "Description"
-F 11 "Analog Devices Inc." H 2400 3250 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 2400 3350 60  0001 L CNN "Status"
-	1    2200 2150
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0105
 U 1 1 61C5B0A7
 P 2200 2800
@@ -81,9 +61,7 @@ $EndComp
 Wire Wire Line
 	1100 1500 1100 2000
 Wire Wire Line
-	1100 1500 2200 1500
-Wire Wire Line
-	2200 1850 2200 1500
+	1100 1500 1700 1500
 $Comp
 L power:VDD #PWR0113
 U 1 1 61C961C8
@@ -111,11 +89,7 @@ Wire Wire Line
 Wire Wire Line
 	1100 2600 2200 2600
 Wire Wire Line
-	2200 2450 2200 2600
-Wire Wire Line
 	2200 2600 2200 2800
-Connection ~ 2200 2600
-Connection ~ 2200 1500
 $Comp
 L Switch:SW_SPDT SW1
 U 1 1 61D46698
@@ -132,8 +106,6 @@ Wire Wire Line
 Wire Wire Line
 	8400 5550 8400 5400
 NoConn ~ 9000 5650
-Wire Wire Line
-	2600 2150 3300 2150
 $Comp
 L Device:Battery BT1
 U 1 1 61D45279
@@ -213,7 +185,7 @@ Text Label 8650 1200 0    50   ~ 0
 3V3
 Text Label 6750 1850 0    50   ~ 0
 A0
-Text Label 3300 2150 0    50   ~ 0
+Text Label 3250 2050 0    50   ~ 0
 A1
 $Comp
 L Device:CP1 C3
@@ -699,4 +671,28 @@ F 12 "Active" H 6050 2750 60  0001 L CNN "Status"
 	1    5850 1550
 	1    0    0    -1  
 $EndComp
+$Comp
+L Sensor_Temperature:TMP36xS U1
+U 1 1 61D58EE1
+P 2200 2050
+F 0 "U1" H 2744 2096 50  0000 L CNN
+F 1 "TMP36xS" H 2744 2005 50  0000 L CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 2200 1600 50  0001 C CNN
+F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" H 2200 2050 50  0001 C CNN
+	1    2200 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 1650 2200 1500
+Connection ~ 2200 1500
+Wire Wire Line
+	2200 2450 2200 2600
+Connection ~ 2200 2600
+Wire Wire Line
+	2700 2050 3250 2050
+Wire Wire Line
+	1700 2050 1700 1500
+Connection ~ 1700 1500
+Wire Wire Line
+	1700 1500 2200 1500
 $EndSCHEMATC
