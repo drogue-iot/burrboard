@@ -606,9 +606,9 @@ F 12 "Active" H 6500 6300 60  0001 L CNN "Status"
 	1    6300 5100
 	1    0    0    -1  
 $EndComp
-Text Label 5400 3900 0    50   ~ 0
-F3
 Text Label 5400 5000 0    50   ~ 0
+F3
+Text Label 5400 3900 0    50   ~ 0
 F4
 $Comp
 L power:GND #PWR05
