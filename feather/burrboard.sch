@@ -90,17 +90,6 @@ Wire Wire Line
 	1100 2600 2200 2600
 Wire Wire Line
 	2200 2600 2200 2800
-$Comp
-L Switch:SW_SPDT SW1
-U 1 1 61D46698
-P 8800 5550
-F 0 "SW1" H 8800 5835 50  0000 C CNN
-F 1 "EG1218" H 8900 5750 50  0000 C CNN
-F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 8800 5550 50  0001 C CNN
-F 3 "~" H 8800 5550 50  0001 C CNN
-	1    8800 5550
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	9000 5450 10050 5450
 Wire Wire Line
@@ -422,26 +411,6 @@ $EndComp
 Connection ~ 8400 5400
 Wire Wire Line
 	8400 5400 8400 5100
-$Comp
-L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S1
-U 1 1 61E8333F
-P 6300 4000
-F 0 "S1" H 6300 4347 60  0000 C CNN
-F 1 "PTS645SH43SMTR92LFS" H 6300 4241 60  0000 C CNN
-F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 6500 4200 60  0001 L CNN
-F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4300 60  0001 L CNN
-F 4 "CKN9112CT-ND" H 6500 4400 60  0001 L CNN "Digi-Key_PN"
-F 5 "PTS645SM43SMTR92 LFS" H 6500 4500 60  0001 L CNN "MPN"
-F 6 "Switches" H 6500 4600 60  0001 L CNN "Category"
-F 7 "Tactile Switches" H 6500 4700 60  0001 L CNN "Family"
-F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4800 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 6500 4900 60  0001 L CNN "DK_Detail_Page"
-F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 6500 5000 60  0001 L CNN "Description"
-F 11 "C&K" H 6500 5100 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6500 5200 60  0001 L CNN "Status"
-	1    6300 4000
-	1    0    0    -1  
-$EndComp
 $Comp
 L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S2
 U 1 1 61E83BBE
@@ -1555,4 +1524,35 @@ $EndComp
 Connection ~ 8900 1200
 Wire Wire Line
 	8900 1200 9050 1200
+$Comp
+L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S1
+U 1 1 61E8333F
+P 6300 4000
+F 0 "S1" H 6300 4347 60  0000 C CNN
+F 1 "PTS645SH43SMTR92LFS" H 6300 4241 60  0000 C CNN
+F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 6500 4200 60  0001 L CNN
+F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4300 60  0001 L CNN
+F 4 "CKN9112CT-ND" H 6500 4400 60  0001 L CNN "Digi-Key_PN"
+F 5 "PTS645SM43SMTR92 LFS" H 6500 4500 60  0001 L CNN "MPN"
+F 6 "Switches" H 6500 4600 60  0001 L CNN "Category"
+F 7 "Tactile Switches" H 6500 4700 60  0001 L CNN "Family"
+F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4800 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 6500 4900 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 6500 5000 60  0001 L CNN "Description"
+F 11 "C&K" H 6500 5100 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 6500 5200 60  0001 L CNN "Status"
+	1    6300 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPDT SW1
+U 1 1 61D46698
+P 8800 5550
+F 0 "SW1" H 8800 5835 50  0000 C CNN
+F 1 "EG1218" H 8900 5750 50  0000 C CNN
+F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 8800 5550 50  0001 C CNN
+F 3 "~" H 8800 5550 50  0001 C CNN
+	1    8800 5550
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
