@@ -52,7 +52,7 @@ U 1 1 61D2FCBB
 P 1100 2150
 F 0 "C1" H 1215 2196 50  0000 L CNN
 F 1 "100nF" H 1215 2105 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder" H 1100 2150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1100 2150 50  0001 C CNN
 F 3 "~" H 1100 2150 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1100 2150 50  0001 C CNN "Url"
 	1    1100 2150
@@ -184,7 +184,7 @@ U 1 1 61D5EC83
 P 1650 5000
 F 0 "C3" H 1765 5046 50  0000 L CNN
 F 1 "100nF" H 1765 4955 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder" H 1650 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1650 5000 50  0001 C CNN
 F 3 "~" H 1650 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1650 5000 50  0001 C CNN "Url"
 	1    1650 5000
@@ -196,7 +196,7 @@ U 1 1 61D5FD39
 P 2200 5000
 F 0 "C4" H 2315 5046 50  0000 L CNN
 F 1 "100nF" H 2315 4955 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder" H 2200 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 2200 5000 50  0001 C CNN
 F 3 "~" H 2200 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 2200 5000 50  0001 C CNN "Url"
 	1    2200 5000
@@ -208,7 +208,7 @@ U 1 1 61D6E064
 P 1200 5000
 F 0 "C2" H 1315 5046 50  0000 L CNN
 F 1 "10uF" H 1315 4955 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder" H 1200 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1200 5000 50  0001 C CNN
 F 3 "~" H 1200 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05A106MP8NUB8/5961314" H 1200 5000 50  0001 C CNN "Url"
 	1    1200 5000
@@ -499,7 +499,7 @@ U 1 1 61C212D9
 P 6050 2100
 F 0 "R1" H 6120 2146 50  0000 L CNN
 F 1 "10K" H 6120 2055 50  0000 L CNN
-F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 5980 2100 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 5980 2100 50  0001 C CNN
 F 3 "~" H 6050 2100 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 6050 2100 50  0001 C CNN "Digikey"
 	1    6050 2100
