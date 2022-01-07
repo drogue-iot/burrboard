@@ -90,11 +90,6 @@ Wire Wire Line
 	1100 2600 2200 2600
 Wire Wire Line
 	2200 2600 2200 2800
-Wire Wire Line
-	9000 5450 10050 5450
-Wire Wire Line
-	8400 5550 8400 5400
-NoConn ~ 9000 5650
 $Comp
 L Device:Battery BT1
 U 1 1 61D45279
@@ -345,8 +340,6 @@ Text Label 3050 4100 0    50   ~ 0
 3V3
 Text Label 2200 700  0    50   ~ 0
 3V3
-Wire Wire Line
-	8400 5550 8600 5550
 Wire Notes Line
 	7950 3000 7950 500 
 Wire Notes Line
@@ -370,7 +363,6 @@ $EndComp
 Text Label 10100 2400 2    50   ~ 0
 F0
 NoConn ~ 9850 1500
-NoConn ~ 9850 1600
 NoConn ~ 9850 1800
 NoConn ~ 9850 1900
 NoConn ~ 9850 2500
@@ -411,7 +403,6 @@ F 3 "~" H 8400 5400 50  0001 C CNN
 	1    8400 5400
 	0    -1   -1   0   
 $EndComp
-Connection ~ 8400 5400
 Wire Wire Line
 	8400 5400 8400 5100
 $Comp
@@ -597,15 +588,55 @@ F 12 "Active" H 6500 5200 60  0001 L CNN "Status"
 	1    0    0    -1  
 $EndComp
 $Comp
-L Switch:SW_SPDT SW1
-U 1 1 61D46698
-P 8800 5550
-F 0 "SW1" H 8800 5835 50  0000 C CNN
-F 1 "EG1218" H 8900 5750 50  0000 C CNN
-F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 8800 5550 50  0001 C CNN
-F 3 "~" H 8800 5550 50  0001 C CNN
-F 4 "E-Switch" H 8800 5550 50  0001 C CNN "Manufacturer"
-	1    8800 5550
+L burrboard:JS202011SCQN S3
+U 1 1 61DFA23A
+P 9600 5750
+F 0 "S3" H 9600 6233 50  0000 C CNN
+F 1 "JS202011SCQN" H 9600 6142 50  0000 C CNN
+F 2 "burrboard:SW_DPDT_CK_JS202011JCQN" H 9800 5950 50  0001 L CNN
+F 3 "https://www.ckswitches.com/media/1422/js.pdf" H 9800 6050 60  0001 L CNN
+F 4 "401-2002-1-ND" H 9800 6150 60  0001 L CNN "Digi-Key_PN"
+F 5 "JS202011SCQN" H 9800 6250 60  0001 L CNN "MPN"
+F 6 "Switches" H 9800 6350 60  0001 L CNN "Category"
+F 7 "Slide Switches" H 9800 6450 60  0001 L CNN "Family"
+F 8 "https://www.ckswitches.com/media/1422/js.pdf" H 9800 6550 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/c-k/JS202011SCQN/401-2002-1-ND/1640098" H 9800 6650 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH SLIDE DPDT 300MA 6V" H 9800 6750 60  0001 L CNN "Description"
+F 11 "C&K" H 9800 6850 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 9800 6950 60  0001 L CNN "Status"
+	1    9600 5750
 	1    0    0    -1  
 $EndComp
+Text Label 8800 5950 0    50   ~ 0
+EN
+$Comp
+L adafruit_feather:GND #PWR0101
+U 1 1 61E042A9
+P 9850 6200
+F 0 "#PWR0101" H 9850 5950 50  0001 C CNN
+F 1 "GND" H 9855 6027 50  0000 C CNN
+F 2 "" H 9850 6200 50  0001 C CNN
+F 3 "" H 9850 6200 50  0001 C CNN
+	1    9850 6200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8400 5400 8400 5550
+Wire Wire Line
+	8400 5550 9400 5550
+Connection ~ 8400 5400
+Wire Wire Line
+	9800 5450 10050 5450
+Wire Wire Line
+	8800 5950 9400 5950
+Wire Wire Line
+	9800 6050 9850 6050
+Wire Wire Line
+	9850 6050 9850 6200
+NoConn ~ 9800 5850
+NoConn ~ 9800 5650
+Text Label 10000 1600 0    50   ~ 0
+EN
+Wire Wire Line
+	10000 1600 9850 1600
 $EndSCHEMATC
