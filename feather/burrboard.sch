@@ -36,17 +36,6 @@ F 3 "" H 6050 2350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR0115
-U 1 1 61CBAE2E
-P 9250 4500
-F 0 "#PWR0115" H 9250 4250 50  0001 C CNN
-F 1 "GND" H 9255 4327 50  0000 C CNN
-F 2 "" H 9250 4500 50  0001 C CNN
-F 3 "" H 9250 4500 50  0001 C CNN
-	1    9250 4500
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:CP1 C1
 U 1 1 61D2FCBB
 P 1100 2150
@@ -62,50 +51,12 @@ Wire Wire Line
 	1100 1500 1100 2000
 Wire Wire Line
 	1100 1500 1700 1500
-$Comp
-L power:VDD #PWR0113
-U 1 1 61C961C8
-P 9250 3650
-F 0 "#PWR0113" H 9250 3500 50  0001 C CNN
-F 1 "VDD" H 9265 3823 50  0000 C CNN
-F 2 "" H 9250 3650 50  0001 C CNN
-F 3 "" H 9250 3650 50  0001 C CNN
-	1    9250 3650
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:VDD #PWR0109
-U 1 1 61C5C5FA
-P 8400 5100
-F 0 "#PWR0109" H 8400 4950 50  0001 C CNN
-F 1 "VDD" H 8415 5273 50  0000 C CNN
-F 2 "" H 8400 5100 50  0001 C CNN
-F 3 "" H 8400 5100 50  0001 C CNN
-	1    8400 5100
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1100 2300 1100 2600
 Wire Wire Line
 	1100 2600 2200 2600
 Wire Wire Line
 	2200 2600 2200 2800
-$Comp
-L Device:Battery BT1
-U 1 1 61D45279
-P 9250 4050
-F 0 "BT1" H 9358 4096 50  0000 L CNN
-F 1 "2479" H 9358 4005 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 9250 4110 50  0001 C CNN
-F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 9250 4110 50  0001 C CNN
-F 4 "Keystone" H 9250 4050 50  0001 C CNN "Manufacturer"
-	1    9250 4050
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9250 3650 9250 3850
-Wire Wire Line
-	9250 4250 9250 4500
 $Comp
 L Connector_Generic:Conn_01x12 J2
 U 1 1 5D375CC4
@@ -128,8 +79,6 @@ Text Label 8850 2200 0    50   ~ 0
 MOSI
 Text Label 8850 2300 0    50   ~ 0
 MISO
-Text Label 10100 1700 2    50   ~ 0
-VUSB
 Text Label 10100 2200 2    50   ~ 0
 F2
 Text Label 10100 2300 2    50   ~ 0
@@ -144,8 +93,6 @@ Wire Wire Line
 	8850 2200 9050 2200
 Wire Wire Line
 	8850 2300 9050 2300
-Wire Wire Line
-	9850 1700 10100 1700
 Wire Wire Line
 	9850 2200 10100 2200
 Wire Wire Line
@@ -324,8 +271,6 @@ Wire Wire Line
 	3450 6050 3750 6050
 NoConn ~ 2750 6850
 NoConn ~ 2750 5550
-Text Label 10050 5450 0    50   ~ 0
-VUSB
 Wire Wire Line
 	6750 1850 6050 1850
 Text Label 6050 750  0    50   ~ 0
@@ -392,19 +337,6 @@ $EndComp
 Connection ~ 3050 7100
 Wire Wire Line
 	3050 7100 3050 7200
-$Comp
-L power:PWR_FLAG #FLG0105
-U 1 1 61E7491B
-P 8400 5400
-F 0 "#FLG0105" H 8400 5475 50  0001 C CNN
-F 1 "PWR_FLAG" V 8400 5527 50  0000 L CNN
-F 2 "" H 8400 5400 50  0001 C CNN
-F 3 "~" H 8400 5400 50  0001 C CNN
-	1    8400 5400
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	8400 5400 8400 5100
 $Comp
 L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S2
 U 1 1 61E83BBE
@@ -587,28 +519,16 @@ F 12 "Active" H 6500 5200 60  0001 L CNN "Status"
 	1    6300 4000
 	1    0    0    -1  
 $EndComp
-$Comp
-L burrboard:JS202011SCQN S3
-U 1 1 61DFA23A
-P 9600 5750
-F 0 "S3" H 9600 6233 50  0000 C CNN
-F 1 "JS202011SCQN" H 9600 6142 50  0000 C CNN
-F 2 "burrboard:SW_DPDT_CK_JS202011JCQN" H 9800 5950 50  0001 L CNN
-F 3 "https://www.ckswitches.com/media/1422/js.pdf" H 9800 6050 60  0001 L CNN
-F 4 "401-2002-1-ND" H 9800 6150 60  0001 L CNN "Digi-Key_PN"
-F 5 "JS202011SCQN" H 9800 6250 60  0001 L CNN "MPN"
-F 6 "Switches" H 9800 6350 60  0001 L CNN "Category"
-F 7 "Slide Switches" H 9800 6450 60  0001 L CNN "Family"
-F 8 "https://www.ckswitches.com/media/1422/js.pdf" H 9800 6550 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/c-k/JS202011SCQN/401-2002-1-ND/1640098" H 9800 6650 60  0001 L CNN "DK_Detail_Page"
-F 10 "SWITCH SLIDE DPDT 300MA 6V" H 9800 6750 60  0001 L CNN "Description"
-F 11 "C&K" H 9800 6850 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 9800 6950 60  0001 L CNN "Status"
-	1    9600 5750
-	1    0    0    -1  
-$EndComp
-Text Label 8800 5950 0    50   ~ 0
+Text Label 10000 1600 0    50   ~ 0
 EN
+Wire Wire Line
+	10000 1600 9850 1600
+Wire Wire Line
+	9850 1700 10100 1700
+Text Label 10100 1700 2    50   ~ 0
+VUSB
+Wire Wire Line
+	9850 6050 9850 6200
 $Comp
 L adafruit_feather:GND #PWR0101
 U 1 1 61E042A9
@@ -621,22 +541,121 @@ F 3 "" H 9850 6200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8400 5400 8400 5550
+	9250 4250 9250 4500
 Wire Wire Line
-	8400 5550 9400 5550
-Connection ~ 8400 5400
-Wire Wire Line
-	9800 5450 10050 5450
-Wire Wire Line
-	8800 5950 9400 5950
-Wire Wire Line
-	9800 6050 9850 6050
-Wire Wire Line
-	9850 6050 9850 6200
-NoConn ~ 9800 5850
-NoConn ~ 9800 5650
-Text Label 10000 1600 0    50   ~ 0
+	9250 3650 9250 3850
+$Comp
+L Device:Battery BT1
+U 1 1 61D45279
+P 9250 4050
+F 0 "BT1" H 9358 4096 50  0000 L CNN
+F 1 "2479" H 9358 4005 50  0000 L CNN
+F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 9250 4110 50  0001 C CNN
+F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 9250 4110 50  0001 C CNN
+F 4 "Keystone" H 9250 4050 50  0001 C CNN "Manufacturer"
+	1    9250 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VDD #PWR0113
+U 1 1 61C961C8
+P 9250 3650
+F 0 "#PWR0113" H 9250 3500 50  0001 C CNN
+F 1 "VDD" H 9265 3823 50  0000 C CNN
+F 2 "" H 9250 3650 50  0001 C CNN
+F 3 "" H 9250 3650 50  0001 C CNN
+	1    9250 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0115
+U 1 1 61CBAE2E
+P 9250 4500
+F 0 "#PWR0115" H 9250 4250 50  0001 C CNN
+F 1 "GND" H 9255 4327 50  0000 C CNN
+F 2 "" H 9250 4500 50  0001 C CNN
+F 3 "" H 9250 4500 50  0001 C CNN
+	1    9250 4500
+	1    0    0    -1  
+$EndComp
+Text Label 8800 5950 0    50   ~ 0
 EN
 Wire Wire Line
-	10000 1600 9850 1600
+	8800 5950 9400 5950
+$Comp
+L power:PWR_FLAG #FLG0105
+U 1 1 61E7491B
+P 8400 5400
+F 0 "#FLG0105" H 8400 5475 50  0001 C CNN
+F 1 "PWR_FLAG" V 8400 5527 50  0000 L CNN
+F 2 "" H 8400 5400 50  0001 C CNN
+F 3 "~" H 8400 5400 50  0001 C CNN
+	1    8400 5400
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:VDD #PWR0109
+U 1 1 61C5C5FA
+P 8400 5100
+F 0 "#PWR0109" H 8400 4950 50  0001 C CNN
+F 1 "VDD" H 8415 5273 50  0000 C CNN
+F 2 "" H 8400 5100 50  0001 C CNN
+F 3 "" H 8400 5100 50  0001 C CNN
+	1    8400 5100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8400 5400 8400 5100
+Text Label 10050 5450 0    50   ~ 0
+VUSB
+$Comp
+L dk_Rectangular-Connectors-Headers-Male-Pins:22-23-2021 J3
+U 1 1 61EBAA6A
+P 9150 5350
+F 0 "J3" H 9062 5312 50  0000 R CNN
+F 1 "22-23-2021" H 9062 5403 50  0000 R CNN
+F 2 "burrboard:PinHeader_1x2_P2.54mm" H 9350 5550 60  0001 L CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 9350 5650 60  0001 L CNN
+F 4 "WM4200-ND" H 9350 5750 60  0001 L CNN "Digi-Key_PN"
+F 5 "22-23-2021" H 9350 5850 60  0001 L CNN "MPN"
+F 6 "Connectors, Interconnects" H 9350 5950 60  0001 L CNN "Category"
+F 7 "Rectangular Connectors - Headers, Male Pins" H 9350 6050 60  0001 L CNN "Family"
+F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 9350 6150 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 9350 6250 60  0001 L CNN "DK_Detail_Page"
+F 10 "CONN HEADER VERT 2POS 2.54MM" H 9350 6350 60  0001 L CNN "Description"
+F 11 "Molex" H 9350 6450 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 9350 6550 60  0001 L CNN "Status"
+	1    9150 5350
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	8400 5400 8400 5450
+Wire Wire Line
+	8400 5450 9050 5450
+Connection ~ 8400 5400
+Wire Wire Line
+	9150 5450 10050 5450
+Wire Wire Line
+	9800 6050 9850 6050
+NoConn ~ 9800 5850
+$Comp
+L Switch:SW_SPDT S3
+U 1 1 61ECFCB1
+P 9600 5950
+F 0 "S3" H 9600 6235 50  0000 C CNN
+F 1 "EG1218" H 9600 6144 50  0000 C CNN
+F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 9800 6150 50  0001 L CNN
+F 3 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 9800 6250 60  0001 L CNN
+F 4 "EG1903-ND" H 9800 6350 60  0001 L CNN "Digi-Key_PN"
+F 5 "EG1218" H 9800 6450 60  0001 L CNN "MPN"
+F 6 "Switches" H 9800 6550 60  0001 L CNN "Category"
+F 7 "Slide Switches" H 9800 6650 60  0001 L CNN "Family"
+F 8 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 9800 6750 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/e-switch/EG1218/EG1903-ND/101726" H 9800 6850 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH SLIDE SPDT 200MA 30V" H 9800 6950 60  0001 L CNN "Description"
+F 11 "E-Switch" H 9800 7050 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 9800 7150 60  0001 L CNN "Status"
+	1    9600 5950
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
