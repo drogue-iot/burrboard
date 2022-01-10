@@ -3,6 +3,25 @@
 version = 3
 
 [[package]]
+name = "accelerometer"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a4586d95cb0695e748760c9a751141eebb68265b1b20392a0f14db608679f7a"
+dependencies = [
+ "micromath",
+]
+
+[[package]]
+name = "adxl343"
+version = "0.8.0"
+source = "git+https://github.com/lulf/ADXL343.rs.git?rev=1ce0ab973da7f5b2e5134ff0bd71a13aa7637866#1ce0ab973da7f5b2e5134ff0bd71a13aa7637866"
+dependencies = [
+ "accelerometer",
+ "bitflags",
+ "embedded-hal",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -70,6 +89,8 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 name = "burrboard-test"
 version = "0.1.0"
 dependencies = [
+ "accelerometer",
+ "adxl343",
  "bitflags",
  "cortex-m",
  "cortex-m-rt",
@@ -77,6 +98,7 @@ dependencies = [
  "defmt-rtt",
  "embassy",
  "embassy-nrf",
+ "embedded-hal",
  "futures",
  "panic-probe",
 ]
@@ -220,6 +242,7 @@ dependencies = [
 [[package]]
 name = "embassy"
 version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?rev=01af8095fdb3d68026c1748730fb125bcbb31410#01af8095fdb3d68026c1748730fb125bcbb31410"
 dependencies = [
  "atomic-polyfill",
  "cfg-if",
@@ -237,6 +260,7 @@ dependencies = [
 [[package]]
 name = "embassy-hal-common"
 version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?rev=01af8095fdb3d68026c1748730fb125bcbb31410#01af8095fdb3d68026c1748730fb125bcbb31410"
 dependencies = [
  "cortex-m",
  "embassy",
@@ -247,6 +271,7 @@ dependencies = [
 [[package]]
 name = "embassy-macros"
 version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?rev=01af8095fdb3d68026c1748730fb125bcbb31410#01af8095fdb3d68026c1748730fb125bcbb31410"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -257,6 +282,7 @@ dependencies = [
 [[package]]
 name = "embassy-nrf"
 version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?rev=01af8095fdb3d68026c1748730fb125bcbb31410#01af8095fdb3d68026c1748730fb125bcbb31410"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -279,6 +305,7 @@ dependencies = [
 [[package]]
 name = "embassy-traits"
 version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?rev=01af8095fdb3d68026c1748730fb125bcbb31410#01af8095fdb3d68026c1748730fb125bcbb31410"
 dependencies = [
  "embedded-hal",
  "nb 1.0.0",
@@ -389,6 +416,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "generic-array"
+version = "0.14.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd48d33ec7f05fbfa152300fdad764757cbded343c1aa1cff2fbaf4134851803"
+dependencies = [
+ "typenum",
+ "version_check",
+]
+
+[[package]]
 name = "half"
 version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,6 +478,15 @@ name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
+
+[[package]]
+name = "micromath"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
+dependencies = [
+ "generic-array",
+]
 
 [[package]]
 name = "nb"
