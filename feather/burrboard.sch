@@ -73,12 +73,6 @@ Text Label 8850 1500 0    50   ~ 0
 A0
 Text Label 8850 1600 0    50   ~ 0
 A1
-Text Label 8850 2100 0    50   ~ 0
-SCK
-Text Label 8850 2200 0    50   ~ 0
-MOSI
-Text Label 8850 2300 0    50   ~ 0
-MISO
 Text Label 10100 2200 2    50   ~ 0
 F2
 Text Label 10100 2300 2    50   ~ 0
@@ -87,12 +81,6 @@ Wire Wire Line
 	8850 1500 9050 1500
 Wire Wire Line
 	8850 1600 9050 1600
-Wire Wire Line
-	8850 2100 9050 2100
-Wire Wire Line
-	8850 2200 9050 2200
-Wire Wire Line
-	8850 2300 9050 2300
 Wire Wire Line
 	9850 2200 10100 2200
 Wire Wire Line
@@ -238,37 +226,11 @@ Wire Wire Line
 	2950 7000 3050 7000
 Connection ~ 3050 7000
 Wire Wire Line
-	3050 7000 3050 7100
-Wire Wire Line
 	2850 6850 2850 7000
 Wire Wire Line
 	2850 7000 2950 7000
 Connection ~ 2950 7000
 NoConn ~ 2150 6450
-Text Label 1750 5950 0    50   ~ 0
-F0
-Text Label 1750 6150 0    50   ~ 0
-MOSI
-Text Label 1750 6050 0    50   ~ 0
-MISO
-Text Label 1750 6250 0    50   ~ 0
-SCK
-Wire Wire Line
-	1750 6250 2150 6250
-Wire Wire Line
-	2150 6150 1750 6150
-Wire Wire Line
-	1750 6050 2150 6050
-Wire Wire Line
-	2150 5950 1750 5950
-Text Label 3750 6050 0    50   ~ 0
-F1
-Text Label 3750 6150 0    50   ~ 0
-F2
-Wire Wire Line
-	3750 6150 3450 6150
-Wire Wire Line
-	3450 6050 3750 6050
 NoConn ~ 2750 6850
 NoConn ~ 2750 5550
 Wire Wire Line
@@ -290,9 +252,9 @@ Wire Notes Line
 Wire Notes Line
 	5250 3000 5250 500 
 Wire Notes Line
-	4500 3000 4500 7750
+	4200 3050 4200 7800
 Wire Notes Line
-	7850 3000 7850 6500
+	7000 3000 7000 6500
 $Comp
 L Connector_Generic:Conn_01x16 J1
 U 1 1 5D375C76
@@ -308,10 +270,6 @@ $EndComp
 Text Label 10100 2400 2    50   ~ 0
 F0
 NoConn ~ 9850 1500
-NoConn ~ 9850 1800
-NoConn ~ 9850 1900
-NoConn ~ 9850 2500
-NoConn ~ 9850 2600
 NoConn ~ 9050 2600
 NoConn ~ 9050 2500
 NoConn ~ 9050 2400
@@ -324,81 +282,63 @@ NoConn ~ 9050 1100
 Wire Wire Line
 	8650 1200 8900 1200
 $Comp
-L power:PWR_FLAG #FLG0104
-U 1 1 61E73CB0
-P 3050 7100
-F 0 "#FLG0104" H 3050 7175 50  0001 C CNN
-F 1 "PWR_FLAG" V 3050 7228 50  0000 L CNN
-F 2 "" H 3050 7100 50  0001 C CNN
-F 3 "~" H 3050 7100 50  0001 C CNN
-	1    3050 7100
-	0    1    1    0   
-$EndComp
-Connection ~ 3050 7100
-Wire Wire Line
-	3050 7100 3050 7200
-$Comp
 L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S2
 U 1 1 61E83BBE
-P 6300 5100
-F 0 "S2" H 6300 5447 60  0000 C CNN
-F 1 "PTS645SH43SMTR92LFS" H 6300 5341 60  0000 C CNN
-F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 6500 5300 60  0001 L CNN
-F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 5400 60  0001 L CNN
-F 4 "CKN9112CT-ND" H 6500 5500 60  0001 L CNN "Digi-Key_PN"
-F 5 "PTS645SM43SMTR92 LFS" H 6500 5600 60  0001 L CNN "MPN"
-F 6 "Switches" H 6500 5700 60  0001 L CNN "Category"
-F 7 "Tactile Switches" H 6500 5800 60  0001 L CNN "Family"
-F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 5900 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 6500 6000 60  0001 L CNN "DK_Detail_Page"
-F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 6500 6100 60  0001 L CNN "Description"
-F 11 "C&K" H 6500 6200 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6500 6300 60  0001 L CNN "Status"
-	1    6300 5100
+P 5500 4750
+F 0 "S2" H 5500 5097 60  0000 C CNN
+F 1 "PTS645SH43SMTR92LFS" H 5500 4991 60  0000 C CNN
+F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 5700 4950 60  0001 L CNN
+F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 5050 60  0001 L CNN
+F 4 "CKN9112CT-ND" H 5700 5150 60  0001 L CNN "Digi-Key_PN"
+F 5 "PTS645SM43SMTR92 LFS" H 5700 5250 60  0001 L CNN "MPN"
+F 6 "Switches" H 5700 5350 60  0001 L CNN "Category"
+F 7 "Tactile Switches" H 5700 5450 60  0001 L CNN "Family"
+F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 5550 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 5700 5650 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 5700 5750 60  0001 L CNN "Description"
+F 11 "C&K" H 5700 5850 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 5700 5950 60  0001 L CNN "Status"
+	1    5500 4750
 	1    0    0    -1  
 $EndComp
-Text Label 5400 5000 0    50   ~ 0
+Text Label 4600 4650 0    50   ~ 0
+F2
+Text Label 4600 3550 0    50   ~ 0
 F3
-Text Label 5400 3900 0    50   ~ 0
-F4
 $Comp
 L power:GND #PWR05
 U 1 1 61E9BAEB
-P 6800 5450
-F 0 "#PWR05" H 6800 5200 50  0001 C CNN
-F 1 "GND" H 6805 5277 50  0000 C CNN
-F 2 "" H 6800 5450 50  0001 C CNN
-F 3 "" H 6800 5450 50  0001 C CNN
-	1    6800 5450
+P 6000 5100
+F 0 "#PWR05" H 6000 4850 50  0001 C CNN
+F 1 "GND" H 6005 4927 50  0000 C CNN
+F 2 "" H 6000 5100 50  0001 C CNN
+F 3 "" H 6000 5100 50  0001 C CNN
+	1    6000 5100
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR04
 U 1 1 61E9BF04
-P 6650 4250
-F 0 "#PWR04" H 6650 4000 50  0001 C CNN
-F 1 "GND" H 6655 4077 50  0000 C CNN
-F 2 "" H 6650 4250 50  0001 C CNN
-F 3 "" H 6650 4250 50  0001 C CNN
-	1    6650 4250
+P 5850 3900
+F 0 "#PWR04" H 5850 3650 50  0001 C CNN
+F 1 "GND" H 5855 3727 50  0000 C CNN
+F 2 "" H 5850 3900 50  0001 C CNN
+F 3 "" H 5850 3900 50  0001 C CNN
+	1    5850 3900
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5400 3900 6100 3900
+	5700 3750 5850 3750
 Wire Wire Line
-	6500 4100 6650 4100
+	5850 3750 5850 3900
 Wire Wire Line
-	6650 4100 6650 4250
+	5700 4850 6000 4850
 Wire Wire Line
-	5400 5000 6100 5000
-Wire Wire Line
-	6500 5200 6800 5200
-Wire Wire Line
-	6800 5200 6800 5450
-NoConn ~ 6100 5200
-NoConn ~ 6500 5000
-NoConn ~ 6500 3900
-NoConn ~ 6100 4100
+	6000 4850 6000 5100
+NoConn ~ 5300 4850
+NoConn ~ 5700 4650
+NoConn ~ 5700 3550
+NoConn ~ 5300 3750
 Text Label 10100 2100 2    50   ~ 0
 F3
 Text Label 10100 2000 2    50   ~ 0
@@ -421,7 +361,7 @@ L Device:R R1
 U 1 1 61C212D9
 P 6050 2100
 F 0 "R1" H 6120 2146 50  0000 L CNN
-F 1 "Resistor, 10.0kΩ, 0805 SMD" H 6120 2055 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 6120 2055 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 5980 2100 50  0001 C CNN
 F 3 "~" H 6050 2100 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 6050 2100 50  0001 C CNN "Digikey"
@@ -502,21 +442,21 @@ Wire Wire Line
 $Comp
 L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S1
 U 1 1 61E8333F
-P 6300 4000
-F 0 "S1" H 6300 4347 60  0000 C CNN
-F 1 "PTS645SH43SMTR92LFS" H 6300 4241 60  0000 C CNN
-F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 6500 4200 60  0001 L CNN
-F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4300 60  0001 L CNN
-F 4 "CKN9112CT-ND" H 6500 4400 60  0001 L CNN "Digi-Key_PN"
-F 5 "PTS645SM43SMTR92 LFS" H 6500 4500 60  0001 L CNN "MPN"
-F 6 "Switches" H 6500 4600 60  0001 L CNN "Category"
-F 7 "Tactile Switches" H 6500 4700 60  0001 L CNN "Family"
-F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 6500 4800 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 6500 4900 60  0001 L CNN "DK_Detail_Page"
-F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 6500 5000 60  0001 L CNN "Description"
-F 11 "C&K" H 6500 5100 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6500 5200 60  0001 L CNN "Status"
-	1    6300 4000
+P 5500 3650
+F 0 "S1" H 5500 3997 60  0000 C CNN
+F 1 "PTS645SH43SMTR92LFS" H 5500 3891 60  0000 C CNN
+F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 5700 3850 60  0001 L CNN
+F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 3950 60  0001 L CNN
+F 4 "CKN9112CT-ND" H 5700 4050 60  0001 L CNN "Digi-Key_PN"
+F 5 "PTS645SM43SMTR92 LFS" H 5700 4150 60  0001 L CNN "MPN"
+F 6 "Switches" H 5700 4250 60  0001 L CNN "Category"
+F 7 "Tactile Switches" H 5700 4350 60  0001 L CNN "Family"
+F 8 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 4450 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/c-k/PTS645SM43SMTR92-LFS/CKN9112CT-ND/1146934" H 5700 4550 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH TACTILE SPST-NO 0.05A 12V" H 5700 4650 60  0001 L CNN "Description"
+F 11 "C&K" H 5700 4750 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 5700 4850 60  0001 L CNN "Status"
+	1    5500 3650
 	1    0    0    -1  
 $EndComp
 Text Label 10000 1600 0    50   ~ 0
@@ -528,134 +468,468 @@ Wire Wire Line
 Text Label 10100 1700 2    50   ~ 0
 VUSB
 Wire Wire Line
-	9850 6050 9850 6200
-$Comp
-L adafruit_feather:GND #PWR0101
-U 1 1 61E042A9
-P 9850 6200
-F 0 "#PWR0101" H 9850 5950 50  0001 C CNN
-F 1 "GND" H 9855 6027 50  0000 C CNN
-F 2 "" H 9850 6200 50  0001 C CNN
-F 3 "" H 9850 6200 50  0001 C CNN
-	1    9850 6200
-	1    0    0    -1  
-$EndComp
+	4750 6950 4750 7200
 Wire Wire Line
-	9250 4250 9250 4500
-Wire Wire Line
-	9250 3650 9250 3850
+	4750 6350 4750 6550
 $Comp
 L Device:Battery BT1
 U 1 1 61D45279
-P 9250 4050
-F 0 "BT1" H 9358 4096 50  0000 L CNN
-F 1 "2479" H 9358 4005 50  0000 L CNN
-F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 9250 4110 50  0001 C CNN
-F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 9250 4110 50  0001 C CNN
-F 4 "Keystone" H 9250 4050 50  0001 C CNN "Manufacturer"
-	1    9250 4050
+P 4750 6750
+F 0 "BT1" H 4858 6796 50  0000 L CNN
+F 1 "2479" H 4858 6705 50  0000 L CNN
+F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 4750 6810 50  0001 C CNN
+F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 4750 6810 50  0001 C CNN
+F 4 "Keystone" H 4750 6750 50  0001 C CNN "Manufacturer"
+	1    4750 6750
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:VDD #PWR0113
 U 1 1 61C961C8
-P 9250 3650
-F 0 "#PWR0113" H 9250 3500 50  0001 C CNN
-F 1 "VDD" H 9265 3823 50  0000 C CNN
-F 2 "" H 9250 3650 50  0001 C CNN
-F 3 "" H 9250 3650 50  0001 C CNN
-	1    9250 3650
+P 4750 6350
+F 0 "#PWR0113" H 4750 6200 50  0001 C CNN
+F 1 "VDD" H 4765 6523 50  0000 C CNN
+F 2 "" H 4750 6350 50  0001 C CNN
+F 3 "" H 4750 6350 50  0001 C CNN
+	1    4750 6350
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR0115
 U 1 1 61CBAE2E
-P 9250 4500
-F 0 "#PWR0115" H 9250 4250 50  0001 C CNN
-F 1 "GND" H 9255 4327 50  0000 C CNN
-F 2 "" H 9250 4500 50  0001 C CNN
-F 3 "" H 9250 4500 50  0001 C CNN
-	1    9250 4500
+P 4750 7200
+F 0 "#PWR0115" H 4750 6950 50  0001 C CNN
+F 1 "GND" H 4755 7027 50  0000 C CNN
+F 2 "" H 4750 7200 50  0001 C CNN
+F 3 "" H 4750 7200 50  0001 C CNN
+	1    4750 7200
 	1    0    0    -1  
 $EndComp
-Text Label 8800 5950 0    50   ~ 0
+Text Label 5350 7250 0    50   ~ 0
 EN
 Wire Wire Line
-	8800 5950 9400 5950
+	5350 7250 5950 7250
 $Comp
 L power:PWR_FLAG #FLG0105
 U 1 1 61E7491B
-P 8400 5400
-F 0 "#FLG0105" H 8400 5475 50  0001 C CNN
-F 1 "PWR_FLAG" V 8400 5527 50  0000 L CNN
-F 2 "" H 8400 5400 50  0001 C CNN
-F 3 "~" H 8400 5400 50  0001 C CNN
-	1    8400 5400
-	0    -1   -1   0   
+P 5500 6750
+F 0 "#FLG0105" H 5500 6825 50  0001 C CNN
+F 1 "PWR_FLAG" V 5500 6877 50  0000 L CNN
+F 2 "" H 5500 6750 50  0001 C CNN
+F 3 "~" H 5500 6750 50  0001 C CNN
+	1    5500 6750
+	-1   0    0    1   
 $EndComp
 $Comp
 L power:VDD #PWR0109
 U 1 1 61C5C5FA
-P 8400 5100
-F 0 "#PWR0109" H 8400 4950 50  0001 C CNN
-F 1 "VDD" H 8415 5273 50  0000 C CNN
-F 2 "" H 8400 5100 50  0001 C CNN
-F 3 "" H 8400 5100 50  0001 C CNN
-	1    8400 5100
+P 5300 6300
+F 0 "#PWR0109" H 5300 6150 50  0001 C CNN
+F 1 "VDD" H 5315 6473 50  0000 C CNN
+F 2 "" H 5300 6300 50  0001 C CNN
+F 3 "" H 5300 6300 50  0001 C CNN
+	1    5300 6300
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8400 5400 8400 5100
-Text Label 10050 5450 0    50   ~ 0
+Text Label 6600 6750 0    50   ~ 0
 VUSB
 $Comp
 L dk_Rectangular-Connectors-Headers-Male-Pins:22-23-2021 J3
 U 1 1 61EBAA6A
-P 9150 5350
-F 0 "J3" H 9062 5312 50  0000 R CNN
-F 1 "22-23-2021" H 9062 5403 50  0000 R CNN
-F 2 "burrboard:PinHeader_1x2_P2.54mm" H 9350 5550 60  0001 L CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 9350 5650 60  0001 L CNN
-F 4 "WM4200-ND" H 9350 5750 60  0001 L CNN "Digi-Key_PN"
-F 5 "22-23-2021" H 9350 5850 60  0001 L CNN "MPN"
-F 6 "Connectors, Interconnects" H 9350 5950 60  0001 L CNN "Category"
-F 7 "Rectangular Connectors - Headers, Male Pins" H 9350 6050 60  0001 L CNN "Family"
-F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 9350 6150 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 9350 6250 60  0001 L CNN "DK_Detail_Page"
-F 10 "CONN HEADER VERT 2POS 2.54MM" H 9350 6350 60  0001 L CNN "Description"
-F 11 "Molex" H 9350 6450 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 9350 6550 60  0001 L CNN "Status"
-	1    9150 5350
+P 5700 6650
+F 0 "J3" H 5612 6612 50  0000 R CNN
+F 1 "22-23-2021" H 5612 6703 50  0000 R CNN
+F 2 "burrboard:PinHeader_1x2_P2.54mm" H 5900 6850 60  0001 L CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 5900 6950 60  0001 L CNN
+F 4 "WM4200-ND" H 5900 7050 60  0001 L CNN "Digi-Key_PN"
+F 5 "22-23-2021" H 5900 7150 60  0001 L CNN "MPN"
+F 6 "Connectors, Interconnects" H 5900 7250 60  0001 L CNN "Category"
+F 7 "Rectangular Connectors - Headers, Male Pins" H 5900 7350 60  0001 L CNN "Family"
+F 8 "https://media.digikey.com/pdf/Data%20Sheets/Molex%20PDFs/A-6373-N_Series_Dwg_2010-12-03.pdf" H 5900 7450 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/molex/22-23-2021/WM4200-ND/26667" H 5900 7550 60  0001 L CNN "DK_Detail_Page"
+F 10 "CONN HEADER VERT 2POS 2.54MM" H 5900 7650 60  0001 L CNN "Description"
+F 11 "Molex" H 5900 7750 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 5900 7850 60  0001 L CNN "Status"
+	1    5700 6650
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	8400 5400 8400 5450
-Wire Wire Line
-	8400 5450 9050 5450
-Connection ~ 8400 5400
-Wire Wire Line
-	9150 5450 10050 5450
-Wire Wire Line
-	9800 6050 9850 6050
-NoConn ~ 9800 5850
+	5700 6750 6600 6750
+NoConn ~ 6350 7150
 $Comp
 L Switch:SW_SPDT S3
 U 1 1 61ECFCB1
-P 9600 5950
-F 0 "S3" H 9600 6235 50  0000 C CNN
-F 1 "EG1218" H 9600 6144 50  0000 C CNN
-F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 9800 6150 50  0001 L CNN
-F 3 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 9800 6250 60  0001 L CNN
-F 4 "EG1903-ND" H 9800 6350 60  0001 L CNN "Digi-Key_PN"
-F 5 "EG1218" H 9800 6450 60  0001 L CNN "MPN"
-F 6 "Switches" H 9800 6550 60  0001 L CNN "Category"
-F 7 "Slide Switches" H 9800 6650 60  0001 L CNN "Family"
-F 8 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 9800 6750 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/e-switch/EG1218/EG1903-ND/101726" H 9800 6850 60  0001 L CNN "DK_Detail_Page"
-F 10 "SWITCH SLIDE SPDT 200MA 30V" H 9800 6950 60  0001 L CNN "Description"
-F 11 "E-Switch" H 9800 7050 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 9800 7150 60  0001 L CNN "Status"
-	1    9600 5950
+P 6150 7250
+F 0 "S3" H 6150 7535 50  0000 C CNN
+F 1 "EG1218" H 6150 7444 50  0000 C CNN
+F 2 "burrboard:Switch_Slide_11.6x4mm_EG1218" H 6350 7450 50  0001 L CNN
+F 3 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 6350 7550 60  0001 L CNN
+F 4 "EG1903-ND" H 6350 7650 60  0001 L CNN "Digi-Key_PN"
+F 5 "EG1218" H 6350 7750 60  0001 L CNN "MPN"
+F 6 "Switches" H 6350 7850 60  0001 L CNN "Category"
+F 7 "Slide Switches" H 6350 7950 60  0001 L CNN "Family"
+F 8 "http://spec_sheets.e-switch.com/specs/P040040.pdf" H 6350 8050 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/e-switch/EG1218/EG1903-ND/101726" H 6350 8150 60  0001 L CNN "DK_Detail_Page"
+F 10 "SWITCH SLIDE SPDT 200MA 30V" H 6350 8250 60  0001 L CNN "Description"
+F 11 "E-Switch" H 6350 8350 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 6350 8450 60  0001 L CNN "Status"
+	1    6150 7250
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	5500 6750 5600 6750
+Wire Wire Line
+	5500 6750 5300 6750
+Wire Wire Line
+	5300 6750 5300 6300
+Connection ~ 5500 6750
+$Comp
+L Device:LED D1
+U 1 1 61E1B40A
+P 8050 5050
+F 0 "D1" V 8089 4932 50  0000 R CNN
+F 1 "RED" V 7998 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 8050 5050 50  0001 C CNN
+F 3 "~" H 8050 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216EC/1747536?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAA4BmAdjAgF0CAHAFyhAGUWAnASwDsA5iAC%2BBGghDJI6bPiKkQlAJwBWAExhlIRiFbsufIaIKxt0Kaky4CxSGQAsABmUrKO5m0iceA4WJB1J3gLaVkbBXtA5QcHMAcPPS8fI38CAFp1SWkeAFd5OzJVHQD0iFCrOVtFalUE%2BhEArKiAGQBRABFEkNBeABN2MqcIT3YQAhYATyYcdjQsZEagA" V 8050 5050 50  0001 C CNN "Manufacturer"
+	1    8050 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D2
+U 1 1 61E38BD4
+P 9300 5050
+F 0 "D2" V 9339 4932 50  0000 R CNN
+F 1 "GREEN" V 9248 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 9300 5050 50  0001 C CNN
+F 3 "~" H 9300 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216SGC/1747540?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAA4BmAdjAgF0CAHAFyhAGUWAnASwDsA5iAC%2BBGghDJI6bPiKkQlAKx1l5EIxCt2XPkNEFYATknTZuAsUhkALAAZjlJ5uZtInHgOFiQAJnt4aClUTEsFGwpqP0oNLR0PPW9DEABaPzMoHgBXeWsyZU1fVIhg8zC8xWplWyLfDMiAGQBRABFXECDQXgATdhL7CDd2EAIWAE8mHHY0LGQRESA" V 9300 5050 50  0001 C CNN "Manufacturer"
+	1    9300 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D3
+U 1 1 61E38F69
+P 10750 5050
+F 0 "D3" V 10789 4932 50  0000 R CNN
+F 1 "BLUE" V 10698 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 10750 5050 50  0001 C CNN
+F 3 "~" H 10750 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216LVBC-D/5177444" V 10750 5050 50  0001 C CNN "Manufacturer"
+	1    10750 5050
+	0    -1   -1   0   
+$EndComp
+Text Label 8050 3400 0    50   ~ 0
+3V3
+$Comp
+L power:GND #PWR06
+U 1 1 61E73D79
+P 1000 6800
+F 0 "#PWR06" H 1000 6550 50  0001 C CNN
+F 1 "GND" H 1005 6627 50  0000 C CNN
+F 2 "" H 1000 6800 50  0001 C CNN
+F 3 "" H 1000 6800 50  0001 C CNN
+	1    1000 6800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2150 5950 2150 5400
+Wire Wire Line
+	2150 5400 2950 5400
+Connection ~ 2950 5400
+Wire Wire Line
+	1000 6050 1000 6800
+Wire Wire Line
+	1000 6050 2150 6050
+Text Label 1300 6150 0    50   ~ 0
+SDA
+Text Label 1300 6250 0    50   ~ 0
+SCL
+Wire Wire Line
+	1300 6250 1900 6250
+Wire Wire Line
+	1900 6250 1900 5900
+Connection ~ 1900 6250
+Wire Wire Line
+	1900 6250 2150 6250
+Wire Wire Line
+	1300 6150 1550 6150
+Wire Wire Line
+	1550 6150 1550 5900
+Connection ~ 1550 6150
+Wire Wire Line
+	1550 6150 2150 6150
+Wire Wire Line
+	1550 5600 1550 5400
+Wire Wire Line
+	1550 5400 1900 5400
+Connection ~ 2150 5400
+Wire Wire Line
+	1900 5600 1900 5400
+Connection ~ 1900 5400
+Wire Wire Line
+	1900 5400 2150 5400
+NoConn ~ 9050 2300
+NoConn ~ 9050 2200
+NoConn ~ 9050 2100
+Text Label 3750 6050 0    50   ~ 0
+F0
+Wire Wire Line
+	3450 6050 3750 6050
+Text Label 10000 2600 0    50   ~ 0
+SDA
+Text Label 10000 2500 0    50   ~ 0
+SCL
+Wire Wire Line
+	10000 2500 9850 2500
+Wire Wire Line
+	9850 2600 10000 2600
+Text Label 10000 1900 0    50   ~ 0
+F5
+Text Label 10000 1800 0    50   ~ 0
+F6
+Wire Wire Line
+	9850 1900 10000 1900
+Wire Wire Line
+	10000 1800 9850 1800
+Wire Wire Line
+	3750 6150 3450 6150
+Text Label 3750 6150 0    50   ~ 0
+F1
+Text Label 7200 3900 0    50   ~ 0
+F4
+Text Label 8500 3900 0    50   ~ 0
+F5
+Text Label 9800 3900 0    50   ~ 0
+F6
+$Comp
+L Transistor_BJT:BC817 Q2
+U 1 1 61EDAA0B
+P 7950 3900
+F 0 "Q2" H 8141 3946 50  0000 L CNN
+F 1 "BC817" H 8141 3855 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 8150 3825 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 7950 3900 50  0001 L CNN
+F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 7950 3900 50  0001 C CNN "Manufacturer"
+	1    7950 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR07
+U 1 1 61F06D8B
+P 10750 5750
+F 0 "#PWR07" H 10750 5500 50  0001 C CNN
+F 1 "GND" H 10755 5577 50  0000 C CNN
+F 2 "" H 10750 5750 50  0001 C CNN
+F 3 "" H 10750 5750 50  0001 C CNN
+	1    10750 5750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8050 3400 8050 3550
+Wire Wire Line
+	9300 3700 9300 3550
+Wire Wire Line
+	9300 3550 8050 3550
+Connection ~ 8050 3550
+Wire Wire Line
+	8050 3550 8050 3700
+Wire Wire Line
+	9300 3550 10750 3550
+Wire Wire Line
+	10750 3550 10750 3700
+Connection ~ 9300 3550
+Wire Wire Line
+	9300 4100 9300 4300
+Wire Wire Line
+	7650 3900 7750 3900
+Wire Wire Line
+	7350 3900 7200 3900
+Wire Wire Line
+	8050 4100 8050 4300
+Wire Wire Line
+	8050 4600 8050 4900
+Wire Wire Line
+	8050 5200 8050 5650
+Wire Wire Line
+	8050 5650 9300 5650
+Wire Wire Line
+	10750 5650 10750 5750
+Wire Wire Line
+	10750 5200 10750 5650
+Connection ~ 10750 5650
+Wire Wire Line
+	10750 4900 10750 4600
+Wire Wire Line
+	10750 4300 10750 4100
+Wire Wire Line
+	10450 3900 10300 3900
+Wire Wire Line
+	10000 3900 9800 3900
+Wire Wire Line
+	9300 4600 9300 4900
+Wire Wire Line
+	9300 5200 9300 5650
+Connection ~ 9300 5650
+Wire Wire Line
+	9300 5650 10750 5650
+Wire Wire Line
+	9000 3900 8900 3900
+Wire Wire Line
+	8600 3900 8500 3900
+$Comp
+L Device:R R2
+U 1 1 61F59D8E
+P 1550 5750
+F 0 "R2" H 1620 5796 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 1620 5705 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 1480 5750 50  0001 C CNN
+F 3 "~" H 1550 5750 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 1550 5750 50  0001 C CNN "Digikey"
+	1    1550 5750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 61F5E9E3
+P 1900 5750
+F 0 "R3" H 1970 5796 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 1970 5705 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 1830 5750 50  0001 C CNN
+F 3 "~" H 1900 5750 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 1900 5750 50  0001 C CNN "Digikey"
+	1    1900 5750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R6
+U 1 1 61F60A03
+P 7500 3900
+F 0 "R6" H 7570 3946 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 7570 3855 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7430 3900 50  0001 C CNN
+F 3 "~" H 7500 3900 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7500 3900 50  0001 C CNN "Digikey"
+	1    7500 3900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R8
+U 1 1 61F65DB0
+P 8750 3900
+F 0 "R8" H 8820 3946 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 8820 3855 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 8680 3900 50  0001 C CNN
+F 3 "~" H 8750 3900 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8750 3900 50  0001 C CNN "Digikey"
+	1    8750 3900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R10
+U 1 1 61F661A3
+P 10150 3900
+F 0 "R10" H 10220 3946 50  0000 L CNN
+F 1 "10.0kΩ, 0805 SMD" H 10220 3855 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10080 3900 50  0001 C CNN
+F 3 "~" H 10150 3900 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10150 3900 50  0001 C CNN "Digikey"
+	1    10150 3900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R11
+U 1 1 61F665AE
+P 10750 4450
+F 0 "R11" H 10820 4496 50  0000 L CNN
+F 1 "330Ω, 0805 SMD" H 10820 4405 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
+F 3 "~" H 10750 4450 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
+	1    10750 4450
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R9
+U 1 1 61F66B47
+P 9300 4450
+F 0 "R9" H 9370 4496 50  0000 L CNN
+F 1 "550Ω, 0805 SMD" H 9370 4405 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 9230 4450 50  0001 C CNN
+F 3 "~" H 9300 4450 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 9300 4450 50  0001 C CNN "Digikey"
+	1    9300 4450
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R7
+U 1 1 61F66FDE
+P 8050 4450
+F 0 "R7" H 8120 4496 50  0000 L CNN
+F 1 "650Ω, 0805 SMD" H 8120 4405 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7980 4450 50  0001 C CNN
+F 3 "~" H 8050 4450 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8050 4450 50  0001 C CNN "Digikey"
+	1    8050 4450
+	-1   0    0    1   
+$EndComp
+$Comp
+L Transistor_BJT:BC817 Q3
+U 1 1 61F681A4
+P 9200 3900
+F 0 "Q3" H 9391 3946 50  0000 L CNN
+F 1 "BC817" H 9391 3855 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 3825 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 9200 3900 50  0001 L CNN
+F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 9200 3900 50  0001 C CNN "Manufacturer"
+	1    9200 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Transistor_BJT:BC817 Q4
+U 1 1 61F687AD
+P 10650 3900
+F 0 "Q4" H 10841 3946 50  0000 L CNN
+F 1 "BC817" H 10841 3855 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 10850 3825 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 10650 3900 50  0001 L CNN
+F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 10650 3900 50  0001 C CNN "Manufacturer"
+	1    10650 3900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3050 7000 3050 7100
+$Comp
+L power:GND #PWR0101
+U 1 1 61F7506C
+P 6450 7500
+F 0 "#PWR0101" H 6450 7250 50  0001 C CNN
+F 1 "GND" H 6455 7327 50  0000 C CNN
+F 2 "" H 6450 7500 50  0001 C CNN
+F 3 "" H 6450 7500 50  0001 C CNN
+	1    6450 7500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6350 7350 6450 7350
+Wire Wire Line
+	6450 7350 6450 7500
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 61F7AF7A
+P 3050 7100
+F 0 "#FLG0101" H 3050 7175 50  0001 C CNN
+F 1 "PWR_FLAG" V 3050 7228 50  0000 L CNN
+F 2 "" H 3050 7100 50  0001 C CNN
+F 3 "~" H 3050 7100 50  0001 C CNN
+	1    3050 7100
+	0    1    1    0   
+$EndComp
+Connection ~ 3050 7100
+Wire Wire Line
+	3050 7100 3050 7200
+Wire Wire Line
+	4600 3550 5300 3550
+Wire Wire Line
+	4600 4650 5300 4650
 $EndSCHEMATC
