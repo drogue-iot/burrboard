@@ -273,10 +273,6 @@ NoConn ~ 9850 1500
 NoConn ~ 9050 2600
 NoConn ~ 9050 2500
 NoConn ~ 9050 2400
-NoConn ~ 9050 2000
-NoConn ~ 9050 1900
-NoConn ~ 9050 1800
-NoConn ~ 9050 1700
 NoConn ~ 9050 1300
 NoConn ~ 9050 1100
 Wire Wire Line
@@ -341,10 +337,6 @@ NoConn ~ 5700 3550
 NoConn ~ 5300 3750
 Text Label 10100 2100 2    50   ~ 0
 F3
-Text Label 10100 2000 2    50   ~ 0
-F4
-Wire Wire Line
-	10100 2000 9850 2000
 Wire Wire Line
 	9850 2100 10100 2100
 Wire Wire Line
@@ -586,41 +578,39 @@ Connection ~ 5500 6750
 $Comp
 L Device:LED D1
 U 1 1 61E1B40A
-P 8050 5050
-F 0 "D1" V 8089 4932 50  0000 R CNN
-F 1 "RED" V 7998 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 8050 5050 50  0001 C CNN
-F 3 "~" H 8050 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216EC/1747536?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAA4BmAdjAgF0CAHAFyhAGUWAnASwDsA5iAC%2BBGghDJI6bPiKkQlAJwBWAExhlIRiFbsufIaIKxt0Kaky4CxSGQAsABmUrKO5m0iceA4WJB1J3gLaVkbBXtA5QcHMAcPPS8fI38CAFp1SWkeAFd5OzJVHQD0iFCrOVtFalUE%2BhEArKiAGQBRABFEkNBeABN2MqcIT3YQAhYATyYcdjQsZEagA" V 8050 5050 50  0001 C CNN "Manufacturer"
-	1    8050 5050
+P 7400 5050
+F 0 "D1" V 7439 4932 50  0000 R CNN
+F 1 "RED" V 7348 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7400 5050 50  0001 C CNN
+F 3 "~" H 7400 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSECK-J3-PRV/5177436?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQqUArDTD0mINh279hYgrHrRZqTLgLFIZACwAGatUYt2kLr0Ejx4OhDmcgrWynbgsAAcsGqObroeXoa%2BBAC0NDJyvACuSrZkaox%2BqYFIloo2KpJq9kWiokA" V 7400 5050 50  0001 C CNN "Manufacturer"
+	1    7400 5050
 	0    -1   -1   0   
 $EndComp
 $Comp
 L Device:LED D2
 U 1 1 61E38BD4
-P 9300 5050
-F 0 "D2" V 9339 4932 50  0000 R CNN
-F 1 "GREEN" V 9248 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 9300 5050 50  0001 C CNN
-F 3 "~" H 9300 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216SGC/1747540?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAA4BmAdjAgF0CAHAFyhAGUWAnASwDsA5iAC%2BBGghDJI6bPiKkQlAKx1l5EIxCt2XPkNEFYATknTZuAsUhkALAAZjlJ5uZtInHgOFiQAJnt4aClUTEsFGwpqP0oNLR0PPW9DEABaPzMoHgBXeWsyZU1fVIhg8zC8xWplWyLfDMiAGQBRABFXECDQXgATdhL7CDd2EAIWAE8mHHY0LGQRESA" V 9300 5050 50  0001 C CNN "Manufacturer"
-	1    9300 5050
+P 8050 5050
+F 0 "D2" V 8089 4932 50  0000 R CNN
+F 1 "GREEN" V 7998 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 8050 5050 50  0001 C CNN
+F 3 "~" H 8050 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APTD3216LCGCK/7043079" V 8050 5050 50  0001 C CNN "Manufacturer"
+	1    8050 5050
 	0    -1   -1   0   
 $EndComp
 $Comp
 L Device:LED D3
 U 1 1 61E38F69
-P 10750 5050
-F 0 "D3" V 10789 4932 50  0000 R CNN
-F 1 "BLUE" V 10698 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 10750 5050 50  0001 C CNN
-F 3 "~" H 10750 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT3216LVBC-D/5177444" V 10750 5050 50  0001 C CNN "Manufacturer"
-	1    10750 5050
+P 9300 5050
+F 0 "D3" V 9339 4932 50  0000 R CNN
+F 1 "BLUE" V 9248 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 9300 5050 50  0001 C CNN
+F 3 "~" H 9300 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LVBC-D/5177439?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQo0ADABYNEJiDYdu-YWIKx60Waky4CxSGQ1rq1Ri3aQuvQSPHg6ECzkFG2V7cFgADlgAVjVXPXdPIx8CAFoaGTleAFclOzJoxl9UgKQrRVsVSWiNItFRIA" V 9300 5050 50  0001 C CNN "Manufacturer"
+	1    9300 5050
 	0    -1   -1   0   
 $EndComp
-Text Label 8050 3400 0    50   ~ 0
-3V3
 $Comp
 L power:GND #PWR06
 U 1 1 61E73D79
@@ -684,36 +674,10 @@ Wire Wire Line
 	10000 2500 9850 2500
 Wire Wire Line
 	9850 2600 10000 2600
-Text Label 10000 1900 0    50   ~ 0
-F5
-Text Label 10000 1800 0    50   ~ 0
-F6
-Wire Wire Line
-	9850 1900 10000 1900
-Wire Wire Line
-	10000 1800 9850 1800
 Wire Wire Line
 	3750 6150 3450 6150
 Text Label 3750 6150 0    50   ~ 0
 F1
-Text Label 7200 3900 0    50   ~ 0
-F4
-Text Label 8500 3900 0    50   ~ 0
-F5
-Text Label 9800 3900 0    50   ~ 0
-F6
-$Comp
-L Transistor_BJT:BC817 Q2
-U 1 1 61EDAA0B
-P 7950 3900
-F 0 "Q2" H 8141 3946 50  0000 L CNN
-F 1 "BC817" H 8141 3855 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 8150 3825 50  0001 L CIN
-F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 7950 3900 50  0001 L CNN
-F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 7950 3900 50  0001 C CNN "Manufacturer"
-	1    7950 3900
-	1    0    0    -1  
-$EndComp
 $Comp
 L power:GND #PWR07
 U 1 1 61F06D8B
@@ -725,28 +689,6 @@ F 3 "" H 10750 5750 50  0001 C CNN
 	1    10750 5750
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8050 3400 8050 3550
-Wire Wire Line
-	9300 3700 9300 3550
-Wire Wire Line
-	9300 3550 8050 3550
-Connection ~ 8050 3550
-Wire Wire Line
-	8050 3550 8050 3700
-Wire Wire Line
-	9300 3550 10750 3550
-Wire Wire Line
-	10750 3550 10750 3700
-Connection ~ 9300 3550
-Wire Wire Line
-	9300 4100 9300 4300
-Wire Wire Line
-	7650 3900 7750 3900
-Wire Wire Line
-	7350 3900 7200 3900
-Wire Wire Line
-	8050 4100 8050 4300
 Wire Wire Line
 	8050 4600 8050 4900
 Wire Wire Line
@@ -761,22 +703,12 @@ Connection ~ 10750 5650
 Wire Wire Line
 	10750 4900 10750 4600
 Wire Wire Line
-	10750 4300 10750 4100
-Wire Wire Line
-	10450 3900 10300 3900
-Wire Wire Line
-	10000 3900 9800 3900
-Wire Wire Line
 	9300 4600 9300 4900
 Wire Wire Line
 	9300 5200 9300 5650
 Connection ~ 9300 5650
 Wire Wire Line
 	9300 5650 10750 5650
-Wire Wire Line
-	9000 3900 8900 3900
-Wire Wire Line
-	8600 3900 8500 3900
 $Comp
 L Device:R R2
 U 1 1 61F59D8E
@@ -802,59 +734,11 @@ F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/E
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R R6
-U 1 1 61F60A03
-P 7500 3900
-F 0 "R6" H 7570 3946 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 7570 3855 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7430 3900 50  0001 C CNN
-F 3 "~" H 7500 3900 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7500 3900 50  0001 C CNN "Digikey"
-	1    7500 3900
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R8
-U 1 1 61F65DB0
-P 8750 3900
-F 0 "R8" H 8820 3946 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 8820 3855 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 8680 3900 50  0001 C CNN
-F 3 "~" H 8750 3900 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8750 3900 50  0001 C CNN "Digikey"
-	1    8750 3900
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R10
-U 1 1 61F661A3
-P 10150 3900
-F 0 "R10" H 10220 3946 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 10220 3855 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10080 3900 50  0001 C CNN
-F 3 "~" H 10150 3900 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10150 3900 50  0001 C CNN "Digikey"
-	1    10150 3900
-	0    1    1    0   
-$EndComp
-$Comp
-L Device:R R11
-U 1 1 61F665AE
-P 10750 4450
-F 0 "R11" H 10820 4496 50  0000 L CNN
-F 1 "330Ω, 0805 SMD" H 10820 4405 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
-F 3 "~" H 10750 4450 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
-	1    10750 4450
-	-1   0    0    1   
-$EndComp
-$Comp
 L Device:R R9
 U 1 1 61F66B47
 P 9300 4450
 F 0 "R9" H 9370 4496 50  0000 L CNN
-F 1 "550Ω, 0805 SMD" H 9370 4405 50  0000 L CNN
+F 1 "3.3kΩ, 0805 SMD" H 9370 4405 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 9230 4450 50  0001 C CNN
 F 3 "~" H 9300 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 9300 4450 50  0001 C CNN "Digikey"
@@ -866,36 +750,12 @@ L Device:R R7
 U 1 1 61F66FDE
 P 8050 4450
 F 0 "R7" H 8120 4496 50  0000 L CNN
-F 1 "650Ω, 0805 SMD" H 8120 4405 50  0000 L CNN
+F 1 "3.3kΩ, 0805 SMD" H 8120 4405 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7980 4450 50  0001 C CNN
 F 3 "~" H 8050 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8050 4450 50  0001 C CNN "Digikey"
 	1    8050 4450
 	-1   0    0    1   
-$EndComp
-$Comp
-L Transistor_BJT:BC817 Q3
-U 1 1 61F681A4
-P 9200 3900
-F 0 "Q3" H 9391 3946 50  0000 L CNN
-F 1 "BC817" H 9391 3855 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 9400 3825 50  0001 L CIN
-F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 9200 3900 50  0001 L CNN
-F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 9200 3900 50  0001 C CNN "Manufacturer"
-	1    9200 3900
-	1    0    0    -1  
-$EndComp
-$Comp
-L Transistor_BJT:BC817 Q4
-U 1 1 61F687AD
-P 10650 3900
-F 0 "Q4" H 10841 3946 50  0000 L CNN
-F 1 "BC817" H 10841 3855 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 10850 3825 50  0001 L CIN
-F 3 "https://www.onsemi.com/pub/Collateral/BC818-D.pdf" H 10650 3900 50  0001 L CNN
-F 4 "https://www.digikey.no/no/products/detail/nexperia-usa-inc/BC817-40-215/763235" H 10650 3900 50  0001 C CNN "Manufacturer"
-	1    10650 3900
-	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	3050 7000 3050 7100
@@ -932,4 +792,82 @@ Wire Wire Line
 	4600 3550 5300 3550
 Wire Wire Line
 	4600 4650 5300 4650
+Text Label 8850 1700 0    50   ~ 0
+A2
+Text Label 8850 1800 0    50   ~ 0
+A3
+Text Label 8850 1900 0    50   ~ 0
+A4
+Text Label 8850 2000 0    50   ~ 0
+A5
+Wire Wire Line
+	9050 1700 8850 1700
+Wire Wire Line
+	9050 1800 8850 1800
+Wire Wire Line
+	9050 1900 8850 1900
+Wire Wire Line
+	9050 2000 8850 2000
+NoConn ~ 9850 2000
+NoConn ~ 9850 1900
+NoConn ~ 9850 1800
+$Comp
+L Device:LED D?
+U 1 1 61E42159
+P 10750 5050
+F 0 "D?" V 10789 4932 50  0000 R CNN
+F 1 "YELLOW" V 10698 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 10750 5050 50  0001 C CNN
+F 3 "~" H 10750 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSYCK-J3-PRV/5177438?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqRAAWGrQAMqxi3aQuvQSPEhY9aLNSZcBYpDKrN1arpBsO3fsLEEwdCEs5BVtlB3BYAA5YAFZNNw8DL2NfEABaGhk5XgBXJXsyGMZTNMCka0U7FUkYnQZRBqA" V 10750 5050 50  0001 C CNN "Manufacturer"
+	1    10750 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 61EB1307
+P 7400 4450
+F 0 "R?" H 7470 4496 50  0000 L CNN
+F 1 "7.5kΩ, 0805 SMD" H 7470 4405 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7330 4450 50  0001 C CNN
+F 3 "~" H 7400 4450 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7400 4450 50  0001 C CNN "Digikey"
+	1    7400 4450
+	-1   0    0    1   
+$EndComp
+Text Label 7400 3600 0    50   ~ 0
+A2
+Text Label 8050 3600 0    50   ~ 0
+A3
+Text Label 9300 3600 0    50   ~ 0
+A4
+Text Label 10750 3600 0    50   ~ 0
+A5
+Wire Wire Line
+	7400 4300 7400 3600
+Wire Wire Line
+	8050 3600 8050 4300
+Wire Wire Line
+	9300 3600 9300 4300
+Wire Wire Line
+	10750 3600 10750 4300
+Wire Wire Line
+	7400 5200 7400 5650
+Wire Wire Line
+	7400 5650 8050 5650
+Connection ~ 8050 5650
+Wire Wire Line
+	7400 4900 7400 4600
+$Comp
+L Device:R R?
+U 1 1 61ECA9B5
+P 10750 4450
+F 0 "R?" H 10820 4496 50  0000 L CNN
+F 1 "7.3kΩ, 0805 SMD" H 10820 4405 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
+F 3 "~" H 10750 4450 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
+	1    10750 4450
+	-1   0    0    1   
+$EndComp
 $EndSCHEMATC
