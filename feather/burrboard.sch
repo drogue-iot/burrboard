@@ -738,7 +738,7 @@ L Device:R R9
 U 1 1 61F66B47
 P 9300 4450
 F 0 "R9" H 9370 4496 50  0000 L CNN
-F 1 "3.3kΩ, 0805 SMD" H 9370 4405 50  0000 L CNN
+F 1 "3.3kΩ, 0805 SMD" H 8900 4250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 9230 4450 50  0001 C CNN
 F 3 "~" H 9300 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 9300 4450 50  0001 C CNN "Digikey"
@@ -750,7 +750,7 @@ L Device:R R7
 U 1 1 61F66FDE
 P 8050 4450
 F 0 "R7" H 8120 4496 50  0000 L CNN
-F 1 "3.3kΩ, 0805 SMD" H 8120 4405 50  0000 L CNN
+F 1 "3.3kΩ, 0805 SMD" H 7650 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7980 4450 50  0001 C CNN
 F 3 "~" H 8050 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8050 4450 50  0001 C CNN "Digikey"
@@ -789,9 +789,9 @@ Connection ~ 3050 7100
 Wire Wire Line
 	3050 7100 3050 7200
 Wire Wire Line
-	4600 3550 5300 3550
+	4600 3550 4850 3550
 Wire Wire Line
-	4600 4650 5300 4650
+	4600 4650 4850 4650
 Text Label 8850 1700 0    50   ~ 0
 A2
 Text Label 8850 1800 0    50   ~ 0
@@ -812,10 +812,10 @@ NoConn ~ 9850 2000
 NoConn ~ 9850 1900
 NoConn ~ 9850 1800
 $Comp
-L Device:LED D?
+L Device:LED D4
 U 1 1 61E42159
 P 10750 5050
-F 0 "D?" V 10789 4932 50  0000 R CNN
+F 0 "D4" V 10789 4932 50  0000 R CNN
 F 1 "YELLOW" V 10698 4932 50  0000 R CNN
 F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 10750 5050 50  0001 C CNN
 F 3 "~" H 10750 5050 50  0001 C CNN
@@ -824,11 +824,11 @@ F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSYCK-J3-PRV/51
 	0    -1   -1   0   
 $EndComp
 $Comp
-L Device:R R?
+L Device:R R6
 U 1 1 61EB1307
 P 7400 4450
-F 0 "R?" H 7470 4496 50  0000 L CNN
-F 1 "7.5kΩ, 0805 SMD" H 7470 4405 50  0000 L CNN
+F 0 "R6" H 7470 4496 50  0000 L CNN
+F 1 "7.5kΩ, 0805 SMD" H 7200 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7330 4450 50  0001 C CNN
 F 3 "~" H 7400 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7400 4450 50  0001 C CNN "Digikey"
@@ -859,15 +859,57 @@ Connection ~ 8050 5650
 Wire Wire Line
 	7400 4900 7400 4600
 $Comp
-L Device:R R?
+L Device:R R8
 U 1 1 61ECA9B5
 P 10750 4450
-F 0 "R?" H 10820 4496 50  0000 L CNN
-F 1 "7.3kΩ, 0805 SMD" H 10820 4405 50  0000 L CNN
+F 0 "R8" H 10820 4496 50  0000 L CNN
+F 1 "7.3kΩ, 0805 SMD" H 10350 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
 F 3 "~" H 10750 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
 	1    10750 4450
 	-1   0    0    1   
 $EndComp
+$Comp
+L Device:R R4
+U 1 1 61ECBA21
+P 4850 3300
+F 0 "R4" H 4920 3346 50  0000 L CNN
+F 1 "10kΩ, 0805 SMD" H 4920 3255 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 4780 3300 50  0001 C CNN
+F 3 "~" H 4850 3300 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 4850 3300 50  0001 C CNN "Digikey"
+	1    4850 3300
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R5
+U 1 1 61ECCC98
+P 4850 4350
+F 0 "R5" H 4920 4396 50  0000 L CNN
+F 1 "10kΩ, 0805 SMD" H 4920 4305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 4780 4350 50  0001 C CNN
+F 3 "~" H 4850 4350 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 4850 4350 50  0001 C CNN "Digikey"
+	1    4850 4350
+	-1   0    0    1   
+$EndComp
+Text Label 4850 3050 0    50   ~ 0
+3V3
+Wire Wire Line
+	4850 3050 4850 3150
+Text Label 4850 4050 0    50   ~ 0
+3V3
+Wire Wire Line
+	4850 4050 4850 4200
+Wire Wire Line
+	4850 3450 4850 3550
+Connection ~ 4850 3550
+Wire Wire Line
+	4850 3550 5300 3550
+Wire Wire Line
+	4850 4500 4850 4650
+Connection ~ 4850 4650
+Wire Wire Line
+	4850 4650 5300 4650
 $EndSCHEMATC
