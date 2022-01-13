@@ -7,7 +7,7 @@
       "Application": "Pcbnew",
       "Version":     "(5.1.10-1-10_14)"
     },
-    "CreationDate":  "2022-01-07T13:41:57+01:00"
+    "CreationDate":  "2022-01-13T12:35:27+01:00"
   },
   "GeneralSpecs":
   {
@@ -15,7 +15,7 @@
     {
       "Name": "burrboard",
       "GUID": "62757272-626f-4617-9264-2e6b69636164",
-      "Revision": "v1.0"
+      "Revision": "v2.0"
     },
     "Size":
     {

@@ -5,8 +5,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Drogue IoT BurrBoard"
-Date "2021-12-19"
-Rev "v1.0"
+Date "2022-01-13"
+Rev "v2.0"
 Comp "Red Hat"
 Comment1 ""
 Comment2 "https://apache.org/licenses/LICENSE-2.0"
@@ -105,9 +105,9 @@ Wire Wire Line
 Text Label 8650 1200 0    50   ~ 0
 3V3
 Text Label 6750 1850 0    50   ~ 0
-A1
+A5
 Text Label 3250 2050 0    50   ~ 0
-A0
+A1
 $Comp
 L Device:CP1 C3
 U 1 1 61D5EC83
@@ -663,7 +663,7 @@ NoConn ~ 9050 2300
 NoConn ~ 9050 2200
 NoConn ~ 9050 2100
 Text Label 3750 6050 0    50   ~ 0
-F0
+F1
 Wire Wire Line
 	3450 6050 3750 6050
 Text Label 10000 2600 0    50   ~ 0
@@ -677,7 +677,7 @@ Wire Wire Line
 Wire Wire Line
 	3750 6150 3450 6150
 Text Label 3750 6150 0    50   ~ 0
-F1
+F0
 $Comp
 L power:GND #PWR07
 U 1 1 61F06D8B
@@ -836,13 +836,13 @@ F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/E
 	-1   0    0    1   
 $EndComp
 Text Label 7400 3600 0    50   ~ 0
-A2
+A0
 Text Label 8050 3600 0    50   ~ 0
-A3
+A2
 Text Label 9300 3600 0    50   ~ 0
-A4
+A3
 Text Label 10750 3600 0    50   ~ 0
-A5
+A4
 Wire Wire Line
 	7400 4300 7400 3600
 Wire Wire Line
