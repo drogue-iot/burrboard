@@ -738,7 +738,7 @@ L Device:R R9
 U 1 1 61F66B47
 P 9300 4450
 F 0 "R9" H 9370 4496 50  0000 L CNN
-F 1 "3.3kΩ, 0805 SMD" H 8900 4250 50  0000 L CNN
+F 1 "650Ω, 0805 SMD" H 8900 4250 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 9230 4450 50  0001 C CNN
 F 3 "~" H 9300 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 9300 4450 50  0001 C CNN "Digikey"
@@ -750,7 +750,7 @@ L Device:R R7
 U 1 1 61F66FDE
 P 8050 4450
 F 0 "R7" H 8120 4496 50  0000 L CNN
-F 1 "3.3kΩ, 0805 SMD" H 7650 4300 50  0000 L CNN
+F 1 "650Ω, 0805 SMD" H 7650 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7980 4450 50  0001 C CNN
 F 3 "~" H 8050 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8050 4450 50  0001 C CNN "Digikey"
@@ -828,7 +828,7 @@ L Device:R R6
 U 1 1 61EB1307
 P 7400 4450
 F 0 "R6" H 7470 4496 50  0000 L CNN
-F 1 "7.5kΩ, 0805 SMD" H 7200 4300 50  0000 L CNN
+F 1 "1.5kΩ, 0805 SMD" H 7200 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7330 4450 50  0001 C CNN
 F 3 "~" H 7400 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7400 4450 50  0001 C CNN "Digikey"
@@ -863,7 +863,7 @@ L Device:R R8
 U 1 1 61ECA9B5
 P 10750 4450
 F 0 "R8" H 10820 4496 50  0000 L CNN
-F 1 "7.3kΩ, 0805 SMD" H 10350 4300 50  0000 L CNN
+F 1 "1.5kΩ, 0805 SMD" H 10350 4300 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
 F 3 "~" H 10750 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
