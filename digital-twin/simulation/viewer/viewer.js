@@ -55,8 +55,8 @@ function init() {
     };
     client.onMessageArrived = function(msg) {
         let data = JSON.parse(msg.payloadString).data;
-        state.accel = data.accel;
-        setState(data.accel.x, data.accel.y, data.accel.z);
+        state.accel = data.value.features.accelerometer.properties;
+        setState(state.accel.x, state.accel.y, state.accel.z);
     }
 
     setField("mqtt", "Connecting");

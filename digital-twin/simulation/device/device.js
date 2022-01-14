@@ -1,7 +1,7 @@
 
 const application = "ctron-test-ditto";
 const device = "device1";
-const password = "";
+const password = "foobar";
 
 let client;
 let canSend = true;
@@ -21,8 +21,14 @@ function setState(x,y,z) {
         canSend = false;
         lastSend = now;
         client.send("state", JSON.stringify({
-            "accel": {
-                "x": x, "y": y, "z": z
+            "value": {
+                "features": {
+                    "accelerometer": {
+                        "properties": {
+                            "x": x, "y": y, "z": z
+                        }
+                    }
+                }
             }
         }), 0, false);
     }
@@ -53,7 +59,14 @@ function init() {
         setState("?", "?", "?");
 
         window.addEventListener("deviceorientation", function (event) {
-            setState(event.alpha, event.gamma, event.beta);
+            // alpha: rotation around z-axis
+            const rotateDegrees = event.alpha;
+            // gamma: left to right
+            const leftToRight = event.gamma;
+            // beta: front back motion
+            const frontToBack = event.beta;
+
+            setState(frontToBack, leftToRight, rotateDegrees);
         }, true);
 
         client = new Paho.Client("wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt", randomClientId());
