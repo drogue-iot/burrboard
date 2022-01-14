@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <title>Device Viewer</title>
+
+  <style>
+      body {
+          margin: 0;
+          background: black;
+          color: white;
+          font-family: sans-serif;
+      }
+      .label {
+          font-weight: bold;
+          padding-right: .5em;
+      }
+      .label::after {
+          content: ": ";
+      }
+      .value {
+          padding-right: 1em;
+      }
+  </style>
+
+</head>
+
+<body>
+
+  <div>
+    <span class="label">MQTT</span><span class="value" id="mqtt"></span>
+    <span class="label">X</span><span class="value" id="accel-x"></span>
+    <span class="label">Y</span><span class="value" id="accel-y"></span>
+    <span class="label">Z</span><span class="value" id="accel-z"></span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha512-Y5n0fbohPllOQ21fTwM/h9sQQ/1a1h5KhweGhu2zwD8lAoJnTgVa7NIrFa1bRDIMQHixtyuRV2ubIx+qWbGdDA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="viewer.js"></script>
+  <script>init();</script>
+  <script>
+      const MathUtils = THREE.MathUtils;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      document.body.appendChild( renderer.domElement );
+
+      const light = new THREE.AmbientLight( 0x808080 ); // soft white light
+      scene.add( light );
+      const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+      scene.add( directionalLight );
+
+      const geometry = new THREE.BoxGeometry(2, 4, .2);
+      const materialDisconnected = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
+      const materialConnected = new THREE.MeshStandardMaterial( { color: 0x00ff00 } );
+      const cube = new THREE.Mesh( geometry, materialDisconnected );
+      scene.add( cube );
+
+      camera.position.z = 5;
+
+      function animate() {
+          requestAnimationFrame( animate );
+
+          if (state.connected) {
+              cube.material = materialConnected;
+          } else {
+              cube.material = materialDisconnected;
+          }
+
+          cube.rotation.x = MathUtils.degToRad(state.accel.x);
+          cube.rotation.y = MathUtils.degToRad(state.accel.y);
+          cube.rotation.z = MathUtils.degToRad(state.accel.z);
+
+          renderer.render( scene, camera );
+      }
+      animate();
+
+  </script>
+</body>
+
+</html>
