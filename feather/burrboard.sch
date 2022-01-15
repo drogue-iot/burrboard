@@ -40,10 +40,12 @@ L Device:CP1 C1
 U 1 1 61D2FCBB
 P 1100 2150
 F 0 "C1" H 1215 2196 50  0000 L CNN
-F 1 "100.0nF, 0805 SMD" H 1215 2105 50  0000 L CNN
+F 1 "100n" H 1215 2105 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1100 2150 50  0001 C CNN
 F 3 "~" H 1100 2150 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1100 2150 50  0001 C CNN "Url"
+F 5 "Samsung Electro-Mechanics" H 1100 2150 50  0001 C CNN "Manufacturer"
+F 6 "CL21B104KBCNNNC" H 1100 2150 50  0001 C CNN "MPN"
 	1    1100 2150
 	1    0    0    -1  
 $EndComp
@@ -62,10 +64,11 @@ L Connector_Generic:Conn_01x12 J2
 U 1 1 5D375CC4
 P 9650 2100
 F 0 "J2" H 9570 1275 50  0000 C CNN
-F 1 " M20-7821242" H 9570 1366 50  0000 C CNN
+F 1 "J2" H 9570 1366 50  0000 C CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x12_P2.54mm_Vertical" H 9650 2100 50  0001 C CNN
 F 3 "~" H 9650 2100 50  0001 C CNN
-F 4 "Harwin" H 9650 2100 50  0001 C CNN "Manufacturer"
+F 4 "Harwin Inc" H 9650 2100 50  0001 C CNN "Manufacturer"
+F 5 " M20-7821242" H 9650 2100 50  0001 C CNN "MPN"
 	1    9650 2100
 	-1   0    0    1   
 $EndComp
@@ -113,10 +116,12 @@ L Device:CP1 C3
 U 1 1 61D5EC83
 P 1650 5000
 F 0 "C3" H 1765 5046 50  0000 L CNN
-F 1 "100.0nF, 0805 SMD " H 1765 4955 50  0000 L CNN
+F 1 "100n" H 1765 4955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1650 5000 50  0001 C CNN
 F 3 "~" H 1650 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 1650 5000 50  0001 C CNN "Url"
+F 5 "CL21B104KBCNNNC" H 1650 5000 50  0001 C CNN "MPN"
+F 6 "Samsung Electro-Mechanics" H 1650 5000 50  0001 C CNN "Manufacturer"
 	1    1650 5000
 	1    0    0    -1  
 $EndComp
@@ -125,10 +130,12 @@ L Device:CP1 C4
 U 1 1 61D5FD39
 P 2200 5000
 F 0 "C4" H 2315 5046 50  0000 L CNN
-F 1 "100.0nF, 0805 SMD" H 2315 4955 50  0000 L CNN
+F 1 "100n" H 2315 4955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 2200 5000 50  0001 C CNN
 F 3 "~" H 2200 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05B104KO5NNNC/3886659" H 2200 5000 50  0001 C CNN "Url"
+F 5 "CL21B104KBCNNNC" H 2200 5000 50  0001 C CNN "MPN"
+F 6 "Samsung Electro-Mechanics" H 2200 5000 50  0001 C CNN "Manufacturer"
 	1    2200 5000
 	1    0    0    -1  
 $EndComp
@@ -137,10 +144,12 @@ L Device:CP1 C2
 U 1 1 61D6E064
 P 1200 5000
 F 0 "C2" H 1315 5046 50  0000 L CNN
-F 1 "10.0µF, 0805 SMD" H 1315 4955 50  0000 L CNN
+F 1 "10u" H 1315 4955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1200 5000 50  0001 C CNN
 F 3 "~" H 1200 5000 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/samsung-electro-mechanics/CL05A106MP8NUB8/5961314" H 1200 5000 50  0001 C CNN "Url"
+F 5 "CL21A106KAYNNNE" H 1200 5000 50  0001 C CNN "MPN"
+F 6 "Samsung Electro-Mechanics" H 1200 5000 50  0001 C CNN "Manufacturer"
 	1    1200 5000
 	1    0    0    -1  
 $EndComp
@@ -260,10 +269,11 @@ L Connector_Generic:Conn_01x16 J1
 U 1 1 5D375C76
 P 9250 1900
 F 0 "J1" H 9169 875 50  0000 C CNN
-F 1 "M20-7821642" H 9169 966 50  0000 C CNN
+F 1 "J1" H 9169 966 50  0000 C CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x16_P2.54mm_Vertical" H 9250 1900 50  0001 C CNN
 F 3 "~" H 9250 1900 50  0001 C CNN
-F 4 "Harwin" H 9250 1900 50  0001 C CNN "Manufacturer"
+F 4 "Harwin Inc" H 9250 1900 50  0001 C CNN "Manufacturer"
+F 5 "M20-7821642" H 9250 1900 50  0001 C CNN "MPN"
 	1    9250 1900
 	1    0    0    1   
 $EndComp
@@ -282,7 +292,7 @@ L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S2
 U 1 1 61E83BBE
 P 5500 4750
 F 0 "S2" H 5500 5097 60  0000 C CNN
-F 1 "PTS645SH43SMTR92LFS" H 5500 4991 60  0000 C CNN
+F 1 "B" H 5500 4991 60  0000 C CNN
 F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 5700 4950 60  0001 L CNN
 F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 5050 60  0001 L CNN
 F 4 "CKN9112CT-ND" H 5700 5150 60  0001 L CNN "Digi-Key_PN"
@@ -353,44 +363,27 @@ L Device:R R1
 U 1 1 61C212D9
 P 6050 2100
 F 0 "R1" H 6120 2146 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 6120 2055 50  0000 L CNN
+F 1 "10k" H 6120 2055 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 5980 2100 50  0001 C CNN
 F 3 "~" H 6050 2100 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 6050 2100 50  0001 C CNN "Digikey"
+F 5 "RMCF0805FT10K0" H 6050 2100 50  0001 C CNN "MPN"
+F 6 "Stackpole Electronics Inc" H 6050 2100 50  0001 C CNN "Manufacturer"
 	1    6050 2100
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	6050 1350 5950 1350
 $Comp
-L dk_Optical-Sensors-Phototransistors:TEMT6000X01 Q1
-U 1 1 61ECF6DC
-P 5850 1550
-F 0 "Q1" H 6037 1610 60  0000 L CNN
-F 1 "TEMT6000X01" H 6037 1504 60  0000 L CNN
-F 2 "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01" H 6050 1750 60  0001 L CNN
-F 3 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 1850 60  0001 L CNN
-F 4 "751-1055-1-ND" H 6050 1950 60  0001 L CNN "Digi-Key_PN"
-F 5 "TEMT6000X01" H 6050 2050 60  0001 L CNN "MPN"
-F 6 "Sensors, Transducers" H 6050 2150 60  0001 L CNN "Category"
-F 7 "Optical Sensors - Phototransistors" H 6050 2250 60  0001 L CNN "Family"
-F 8 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 2350 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/vishay-semiconductor-opto-division/TEMT6000X01/751-1055-1-ND/1681410" H 6050 2450 60  0001 L CNN "DK_Detail_Page"
-F 10 "SENSOR PHOTO 570NM TOP VIEW 1206" H 6050 2550 60  0001 L CNN "Description"
-F 11 "Vishay Semiconductor Opto Division" H 6050 2650 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 6050 2750 60  0001 L CNN "Status"
-	1    5850 1550
-	1    0    0    -1  
-$EndComp
-$Comp
 L Sensor_Temperature:TMP36xS U1
 U 1 1 61D58EE1
 P 2200 2050
 F 0 "U1" H 2744 2096 50  0000 L CNN
-F 1 "TMP36GSZ" H 2744 2005 50  0000 L CNN
+F 1 "TMP36" H 2744 2005 50  0000 L CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 2200 1600 50  0001 C CNN
 F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" H 2200 2050 50  0001 C CNN
 F 4 "Analog Devices Inc." H 2200 2050 50  0001 C CNN "Manufacturer"
+F 5 "TMP36FSZ" H 2200 2050 50  0001 C CNN "MPN"
 	1    2200 2050
 	1    0    0    -1  
 $EndComp
@@ -436,7 +429,7 @@ L dk_Tactile-Switches:PTS645SM43SMTR92_LFS S1
 U 1 1 61E8333F
 P 5500 3650
 F 0 "S1" H 5500 3997 60  0000 C CNN
-F 1 "PTS645SH43SMTR92LFS" H 5500 3891 60  0000 C CNN
+F 1 "A" H 5500 3891 60  0000 C CNN
 F 2 "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" H 5700 3850 60  0001 L CNN
 F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 5700 3950 60  0001 L CNN
 F 4 "CKN9112CT-ND" H 5700 4050 60  0001 L CNN "Digi-Key_PN"
@@ -468,10 +461,11 @@ L Device:Battery BT1
 U 1 1 61D45279
 P 4750 6750
 F 0 "BT1" H 4858 6796 50  0000 L CNN
-F 1 "2479" H 4858 6705 50  0000 L CNN
+F 1 "Battery" H 4858 6705 50  0000 L CNN
 F 2 "Battery:BatteryHolder_Keystone_2479_3xAAA" V 4750 6810 50  0001 C CNN
 F 3 "https://www.keyelco.com/userAssets/file/M65p28.pdf" V 4750 6810 50  0001 C CNN
-F 4 "Keystone" H 4750 6750 50  0001 C CNN "Manufacturer"
+F 4 "Keystone Electronics" H 4750 6750 50  0001 C CNN "Manufacturer"
+F 5 "2479" H 4750 6750 50  0001 C CNN "MPN"
 	1    4750 6750
 	1    0    0    -1  
 $EndComp
@@ -576,45 +570,6 @@ Wire Wire Line
 	5300 6750 5300 6300
 Connection ~ 5500 6750
 $Comp
-L Device:LED D1
-U 1 1 61E1B40A
-P 7400 5050
-F 0 "D1" V 7439 4932 50  0000 R CNN
-F 1 "APT2012LSECK/J3-PRV" V 7200 5400 50  0000 R CNN
-F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7400 5050 50  0001 C CNN
-F 3 "~" H 7400 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSECK-J3-PRV/5177436?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQqUArDTD0mINh279hYgrHrRZqTLgLFIZACwAGatUYt2kLr0Ejx4OhDmcgrWynbgsAAcsGqObroeXoa%2BBAC0NDJyvACuSrZkaox%2BqYFIloo2KpJq9kWiokA" V 7400 5050 50  0001 C CNN "Manufacturer"
-F 5 "APT2012LSECK/J3-PRV" V 7400 5050 50  0001 C CNN "MPN"
-	1    7400 5050
-	0    -1   -1   0   
-$EndComp
-$Comp
-L Device:LED D2
-U 1 1 61E38BD4
-P 8050 5050
-F 0 "D2" V 8089 4932 50  0000 R CNN
-F 1 "APT2012LZGCK" V 7998 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 8050 5050 50  0001 C CNN
-F 3 "~" H 8050 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LZGCK/5177440" V 8050 5050 50  0001 C CNN "Manufacturer"
-F 5 "APT2012LZGCK" V 8050 5050 50  0001 C CNN "MPN"
-	1    8050 5050
-	0    -1   -1   0   
-$EndComp
-$Comp
-L Device:LED D3
-U 1 1 61E38F69
-P 9300 5050
-F 0 "D3" V 9339 4932 50  0000 R CNN
-F 1 "APT2012LVBC/D" V 9248 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 9300 5050 50  0001 C CNN
-F 3 "~" H 9300 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LVBC-D/5177439?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQo0ADABYNEJiDYdu-YWIKx60Waky4CxSGQ1rq1Ri3aQuvQSPHg6ECzkFG2V7cFgADlgAVjVXPXdPIx8CAFoaGTleAFclOzJoxl9UgKQrRVsVSWiNItFRIA" V 9300 5050 50  0001 C CNN "Manufacturer"
-F 5 "APT2012LVBC/D" V 9300 5050 50  0001 C CNN "MPN"
-	1    9300 5050
-	0    -1   -1   0   
-$EndComp
-$Comp
 L power:GND #PWR06
 U 1 1 61E73D79
 P 1000 6800
@@ -717,10 +672,12 @@ L Device:R R2
 U 1 1 61F59D8E
 P 1550 5750
 F 0 "R2" H 1620 5796 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 1620 5705 50  0000 L CNN
+F 1 "10k" H 1620 5705 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 1480 5750 50  0001 C CNN
 F 3 "~" H 1550 5750 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 1550 5750 50  0001 C CNN "Digikey"
+F 5 "Stackpole Electronics Inc" H 1550 5750 50  0001 C CNN "Manufacturer"
+F 6 "RMCF0805FT10K0" H 1550 5750 50  0001 C CNN "MPN"
 	1    1550 5750
 	1    0    0    -1  
 $EndComp
@@ -729,10 +686,12 @@ L Device:R R3
 U 1 1 61F5E9E3
 P 1900 5750
 F 0 "R3" H 1970 5796 50  0000 L CNN
-F 1 "10.0kΩ, 0805 SMD" H 1970 5705 50  0000 L CNN
+F 1 "10k" H 1970 5705 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 1830 5750 50  0001 C CNN
 F 3 "~" H 1900 5750 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 1900 5750 50  0001 C CNN "Digikey"
+F 5 "RMCF0805FT10K0" H 1900 5750 50  0001 C CNN "MPN"
+F 6 "Stackpole Electronics Inc" H 1900 5750 50  0001 C CNN "Manufacturer"
 	1    1900 5750
 	1    0    0    -1  
 $EndComp
@@ -741,10 +700,12 @@ L Device:R R9
 U 1 1 61F66B47
 P 9300 4450
 F 0 "R9" H 9370 4496 50  0000 L CNN
-F 1 "650Ω, 0805 SMD" H 8900 4250 50  0000 L CNN
+F 1 "680" H 9350 4400 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 9230 4450 50  0001 C CNN
 F 3 "~" H 9300 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 9300 4450 50  0001 C CNN "Digikey"
+F 5 "Stackpole Electronics Inc" H 9300 4450 50  0001 C CNN "Manufacturer"
+F 6 "RMCF0805FT680R" H 9300 4450 50  0001 C CNN "MPN"
 	1    9300 4450
 	-1   0    0    1   
 $EndComp
@@ -753,10 +714,12 @@ L Device:R R7
 U 1 1 61F66FDE
 P 8050 4450
 F 0 "R7" H 8120 4496 50  0000 L CNN
-F 1 "650Ω, 0805 SMD" H 7650 4300 50  0000 L CNN
+F 1 "680" H 8100 4400 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7980 4450 50  0001 C CNN
 F 3 "~" H 8050 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 8050 4450 50  0001 C CNN "Digikey"
+F 5 "RMCF0805FT680R" H 8050 4450 50  0001 C CNN "MPN"
+F 6 "Stackpole Electronics Inc" H 8050 4450 50  0001 C CNN "Manufacturer"
 	1    8050 4450
 	-1   0    0    1   
 $EndComp
@@ -815,27 +778,16 @@ NoConn ~ 9850 2000
 NoConn ~ 9850 1900
 NoConn ~ 9850 1800
 $Comp
-L Device:LED D4
-U 1 1 61E42159
-P 10750 5050
-F 0 "D4" V 10789 4932 50  0000 R CNN
-F 1 "APT2012LSYCK/J3-PRV" V 10698 4932 50  0000 R CNN
-F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 10750 5050 50  0001 C CNN
-F 3 "~" H 10750 5050 50  0001 C CNN
-F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSYCK-J3-PRV/5177438?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqRAAWGrQAMqxi3aQuvQSPEhY9aLNSZcBYpDKrN1arpBsO3fsLEEwdCEs5BVtlB3BYAA5YAFZNNw8DL2NfEABaGhk5XgBXJXsyGMZTNMCka0U7FUkYnQZRBqA" V 10750 5050 50  0001 C CNN "Manufacturer"
-F 5 "APT2012LSYCK/J3-PRV" V 10750 5050 50  0001 C CNN "MPN"
-	1    10750 5050
-	0    -1   -1   0   
-$EndComp
-$Comp
 L Device:R R6
 U 1 1 61EB1307
 P 7400 4450
 F 0 "R6" H 7470 4496 50  0000 L CNN
-F 1 "1.5kΩ, 0805 SMD" H 7200 4300 50  0000 L CNN
+F 1 "1.5k" H 7450 4400 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7330 4450 50  0001 C CNN
 F 3 "~" H 7400 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 7400 4450 50  0001 C CNN "Digikey"
+F 5 "RMCF0805FT1K50" H 7400 4450 50  0001 C CNN "MPN"
+F 6 "Stackpole Electronics Inc" H 7400 4450 50  0001 C CNN "Manufacturer"
 	1    7400 4450
 	-1   0    0    1   
 $EndComp
@@ -867,10 +819,12 @@ L Device:R R8
 U 1 1 61ECA9B5
 P 10750 4450
 F 0 "R8" H 10820 4496 50  0000 L CNN
-F 1 "1.5kΩ, 0805 SMD" H 10350 4300 50  0000 L CNN
+F 1 "1.5k" H 10800 4400 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 10680 4450 50  0001 C CNN
 F 3 "~" H 10750 4450 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 10750 4450 50  0001 C CNN "Digikey"
+F 5 "Stackpole Electronics Inc" H 10750 4450 50  0001 C CNN "Manufacturer"
+F 6 "RMCF0805FT1K50" H 10750 4450 50  0001 C CNN "MPN"
 	1    10750 4450
 	-1   0    0    1   
 $EndComp
@@ -879,10 +833,12 @@ L Device:R R4
 U 1 1 61ECBA21
 P 4850 3300
 F 0 "R4" H 4920 3346 50  0000 L CNN
-F 1 "10kΩ, 0805 SMD" H 4920 3255 50  0000 L CNN
+F 1 "10k" H 4920 3255 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 4780 3300 50  0001 C CNN
 F 3 "~" H 4850 3300 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 4850 3300 50  0001 C CNN "Digikey"
+F 5 "Stackpole Electronics Inc" H 4850 3300 50  0001 C CNN "Manufacturer"
+F 6 "RMCF0805FT10K0" H 4850 3300 50  0001 C CNN "MPN"
 	1    4850 3300
 	-1   0    0    1   
 $EndComp
@@ -891,10 +847,12 @@ L Device:R R5
 U 1 1 61ECCC98
 P 4850 4350
 F 0 "R5" H 4920 4396 50  0000 L CNN
-F 1 "10kΩ, 0805 SMD" H 4920 4305 50  0000 L CNN
+F 1 "10k" H 4920 4305 50  0000 L CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 4780 4350 50  0001 C CNN
 F 3 "~" H 4850 4350 50  0001 C CNN
 F 4 "https://www.digikey.no/en/products/detail/panasonic-electronic-components/ERJ-3GEYJ103V/135662" H 4850 4350 50  0001 C CNN "Digikey"
+F 5 "Stackpole Electronics Inc" H 4850 4350 50  0001 C CNN "Manufacturer"
+F 6 "RMCF0805FT10K0" H 4850 4350 50  0001 C CNN "MPN"
 	1    4850 4350
 	-1   0    0    1   
 $EndComp
@@ -916,4 +874,76 @@ Wire Wire Line
 Connection ~ 4850 4650
 Wire Wire Line
 	4850 4650 5300 4650
+$Comp
+L dk_Optical-Sensors-Phototransistors:TEMT6000X01 Q1
+U 1 1 61ECF6DC
+P 5850 1550
+F 0 "Q1" H 6037 1610 60  0000 L CNN
+F 1 "TEMT6000X01" H 6037 1504 60  0000 L CNN
+F 2 "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01" H 6050 1750 60  0001 L CNN
+F 3 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 1850 60  0001 L CNN
+F 4 "751-1055-1-ND" H 6050 1950 60  0001 L CNN "Digi-Key_PN"
+F 5 "TEMT6000X01" H 6050 2050 60  0001 L CNN "MPN"
+F 6 "Sensors, Transducers" H 6050 2150 60  0001 L CNN "Category"
+F 7 "Optical Sensors - Phototransistors" H 6050 2250 60  0001 L CNN "Family"
+F 8 "http://www.vishay.com/docs/81579/temt6000.pdf" H 6050 2350 60  0001 L CNN "DK_Datasheet_Link"
+F 9 "/product-detail/en/vishay-semiconductor-opto-division/TEMT6000X01/751-1055-1-ND/1681410" H 6050 2450 60  0001 L CNN "DK_Detail_Page"
+F 10 "SENSOR PHOTO 570NM TOP VIEW 1206" H 6050 2550 60  0001 L CNN "Description"
+F 11 "Vishay Semiconductor Opto Division" H 6050 2650 60  0001 L CNN "Manufacturer"
+F 12 "Active" H 6050 2750 60  0001 L CNN "Status"
+	1    5850 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D4
+U 1 1 61E42159
+P 10750 5050
+F 0 "D4" V 10789 4932 50  0000 R CNN
+F 1 "YELLOW" V 10698 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 10750 5050 50  0001 C CNN
+F 3 "~" H 10750 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSYCK-J3-PRV/5177438?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqRAAWGrQAMqxi3aQuvQSPEhY9aLNSZcBYpDKrN1arpBsO3fsLEEwdCEs5BVtlB3BYAA5YAFZNNw8DL2NfEABaGhk5XgBXJXsyGMZTNMCka0U7FUkYnQZRBqA" V 10750 5050 50  0001 C CNN "Manufacturer"
+F 5 "APT2012LSYCK/J3-PRV" V 10750 5050 50  0001 C CNN "MPN"
+	1    10750 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D3
+U 1 1 61E38F69
+P 9300 5050
+F 0 "D3" V 9339 4932 50  0000 R CNN
+F 1 "BLUE" V 9248 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 9300 5050 50  0001 C CNN
+F 3 "~" H 9300 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LVBC-D/5177439?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQo0ADABYNEJiDYdu-YWIKx60Waky4CxSGQ1rq1Ri3aQuvQSPHg6ECzkFG2V7cFgADlgAVjVXPXdPIx8CAFoaGTleAFclOzJoxl9UgKQrRVsVSWiNItFRIA" V 9300 5050 50  0001 C CNN "Manufacturer"
+F 5 "APT2012LVBC/D" V 9300 5050 50  0001 C CNN "MPN"
+	1    9300 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D2
+U 1 1 61E38BD4
+P 8050 5050
+F 0 "D2" V 8089 4932 50  0000 R CNN
+F 1 "GREEN" V 7998 4932 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 8050 5050 50  0001 C CNN
+F 3 "~" H 8050 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LZGCK/5177440" V 8050 5050 50  0001 C CNN "Manufacturer"
+F 5 "APT2012LZGCK" V 8050 5050 50  0001 C CNN "MPN"
+	1    8050 5050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D1
+U 1 1 61E1B40A
+P 7400 5050
+F 0 "D1" V 7439 4932 50  0000 R CNN
+F 1 "RED" V 7350 4950 50  0000 R CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7400 5050 50  0001 C CNN
+F 3 "~" H 7400 5050 50  0001 C CNN
+F 4 "https://www.digikey.no/en/products/detail/kingbright/APT2012LSECK-J3-PRV/5177436?s=N4IgjCBcpgbFoDGUBmBDANgZwKYBoQB7KAbRAGYBOcgJkpAF0CAHAFyhAGVWAnASwB2AcxABfAuQDsCEMkjps%2BIqQqUArDTD0mINh279hYgrHrRZqTLgLFIZACwAGatUYt2kLr0Ejx4OhDmcgrWynbgsAAcsGqObroeXoa%2BBAC0NDJyvACuSrZkaox%2BqYFIloo2KpJq9kWiokA" V 7400 5050 50  0001 C CNN "Manufacturer"
+F 5 "APT2012LSECK/J3-PRV" V 7400 5050 50  0001 C CNN "MPN"
+	1    7400 5050
+	0    -1   -1   0   
+$EndComp
 $EndSCHEMATC
