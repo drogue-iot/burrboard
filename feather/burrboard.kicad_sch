@@ -3253,7 +3253,7 @@
   (symbol (lib_id "burrboard:TEMT6000X01") (at 177.8 43.18 90) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 666dc925-2b95-4de4-a148-45e51fb4be3f)
-    (property "Reference" "Q?" (id 0) (at 184.15 30.4799 90)
+    (property "Reference" "Q1" (id 0) (at 184.15 30.4799 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "TEMT6000X01" (id 1) (at 184.15 33.0199 90)
@@ -3511,7 +3511,7 @@
       (reference "J3") (unit 1) (value "Conn_01x02_Male") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
     )
     (path "/666dc925-2b95-4de4-a148-45e51fb4be3f"
-      (reference "Q?") (unit 1) (value "TEMT6000X01") (footprint "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01")
+      (reference "Q1") (unit 1) (value "TEMT6000X01") (footprint "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01")
     )
     (path "/00000000-0000-0000-0000-000061c212d9"
       (reference "R1") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0805_2012Metric")

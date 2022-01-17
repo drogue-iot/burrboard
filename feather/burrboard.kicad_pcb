@@ -747,7 +747,7 @@
     )
   )
 
-  (footprint "burrboard:rodney" (layer "F.Cu")
+  (footprint "burrboard:rodney" locked (layer "F.Cu")
     (tedit 0) (tstamp 00000000-0000-0000-0000-000061e013ca)
     (at 204.2922 128.0668)
     (attr board_only exclude_from_pos_files exclude_from_bom)
