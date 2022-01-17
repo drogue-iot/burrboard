@@ -1,4 +1,3 @@
 (sym_lib_table
-  (lib (name burrboard)(type Legacy)(uri ${KIPRJMOD}/burrboard.lib)(options "")(descr ""))
-  (lib (name burrboard-rescue)(type Legacy)(uri ${KIPRJMOD}/burrboard-rescue.lib)(options "")(descr ""))
+  (lib (name "burrboard")(type "Legacy")(uri "${KIPRJMOD}/burrboard.lib")(options "")(descr ""))
 )
