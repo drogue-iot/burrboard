@@ -13,11 +13,9 @@ use embassy::traits::i2c::I2c;
 use embassy::traits::spi::FullDuplex;
 use embassy_nrf::gpio::{Level, NoPin, Output, OutputDrive};
 use embassy_nrf::saadc::{ChannelConfig, Config, Saadc};
-use embassy_nrf::spim;
 use embassy_nrf::twim;
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
-use embedded_hal::blocking::spi::Transfer;
 
 #[macro_use]
 mod logger;
@@ -35,9 +33,15 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     config.mode = spim::MODE_3;
     let spim = spim::Spim::new(p.TWISPI1, irq, p.P0_17, p.P0_01, p.P0_13, config);
     defmt::info!("Initializing");
-    let mut adxl = adxl343::Adxl343::new(adxl343::SpiTransport::new(spim, cs)).unwrap();
     defmt::info!("Done");
     */
+    let mut config = twim::Config::default();
+    config.scl_pullup = true;
+    config.sda_pullup = true;
+    config.frequency = twim::Frequency::K100;
+    let irq = interrupt::take!(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1);
+    let i2c = twim::Twim::new(p.TWISPI1, irq, p.P0_12, p.P0_11, config);
+    let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
 
     logger::init(
         spawner,
@@ -77,8 +81,10 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         let tempc = (voltage - 0.5) * 100.0;
         info!("Temperature: {}", tempc);
 
-        //let accel = adxl.accel_raw().unwrap();
-        //defmt::info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
+        /*
+        let accel = adxl.accel_raw().unwrap();
+        defmt::info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
+        */
 
         Timer::after(Duration::from_millis(1000)).await;
     }
