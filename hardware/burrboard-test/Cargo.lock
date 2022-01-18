@@ -123,6 +123,7 @@ dependencies = [
  "embassy-nrf",
  "embedded-hal",
  "futures",
+ "heapless",
  "log",
  "panic-probe",
 ]

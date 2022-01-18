@@ -19,9 +19,10 @@ use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
 use embedded_hal::blocking::spi::Transfer;
 
-mod fmt;
+#[macro_use]
 mod logger;
-use fmt::*;
+
+mod fmt;
 
 #[embassy::main]
 async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
@@ -38,32 +39,37 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     defmt::info!("Done");
     */
 
-    let mut uart = uarte::Uarte::new(
-        p.UARTE0,
-        interrupt::take!(UARTE0_UART0),
-        p.P0_01,
-        p.P0_13,
-        NoPin,
-        NoPin,
-        Default::default(),
+    logger::init(
+        spawner,
+        uarte::Uarte::new(
+            p.UARTE0,
+            interrupt::take!(UARTE0_UART0),
+            p.P0_01,
+            p.P0_13,
+            NoPin,
+            NoPin,
+            Default::default(),
+        ),
     );
 
     let config = Config::default();
     let temp_channel = ChannelConfig::single_ended(&mut p.P0_02);
     let light_channel = ChannelConfig::single_ended(&mut p.P0_03);
+    let bat_channel = ChannelConfig::single_ended(&mut p.P0_04);
     let mut saadc = Saadc::new(
         p.SAADC,
         interrupt::take!(SAADC),
         config,
-        [temp_channel, light_channel],
+        [temp_channel, light_channel, bat_channel],
     );
 
     loop {
-        let mut buf = [0; 2];
+        let mut buf = [0; 3];
         saadc.sample(&mut buf).await;
 
-        info!("temp sample: {=i16}", &buf[0]);
-        info!("light sample: {=i16}", &buf[1]);
+        info!("temp sample: {}", &buf[0]);
+        info!("light sample: {}", &buf[1]);
+        info!("bat sample: {}", &buf[2]);
 
         let voltage = buf[0] as f32 * 3.3;
         let voltage = voltage / 4095 as f32;

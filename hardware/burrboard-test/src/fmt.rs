@@ -133,7 +133,7 @@ macro_rules! info {
             ::log::info!($s $(, $x)*);
             #[cfg(feature = "defmt")]
             ::defmt::info!($s $(, $x)*);
-            ::logger::print!($s);
+            print!($s $(, $x)*);
             #[cfg(not(any(feature = "log", feature="defmt")))]
             let _ = ($( & $x ),*);
         }

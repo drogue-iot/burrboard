@@ -1,6 +1,7 @@
+use core::fmt::Write;
 use drogue_device::*;
-use embassy_nrf::uarte;
-use log::{Level, Metadata, Record};
+use embassy::traits::uart::Write as _;
+use embassy_nrf::{peripherals::UARTE0, uarte};
 
 pub struct UartLogger<T: uarte::Instance> {
     uart: uarte::Uarte<'static, T>,
@@ -12,10 +13,10 @@ impl<T: uarte::Instance> UartLogger<T> {
     }
 }
 
-static LOGGER: ActorContext<UartLogger<UARTE0>> = ActorContext::new();
+pub static LOGGER: ActorContext<UartLogger<UARTE0>, 4> = ActorContext::new();
 
 impl<T: uarte::Instance> Actor for UartLogger<T> {
-    type Message<'m> = &'static str;
+    type Message<'m> = heapless::String<64>;
 
     // Workaround until async traits
     type OnMountFuture<'m, M>
@@ -35,17 +36,26 @@ impl<T: uarte::Instance> Actor for UartLogger<T> {
     {
         async move {
             loop {
-                if let Some(m) = inbox.next().await {
-                    let m = *m.message();
-                    self.uart.blocking_write(m.as_bytes());
+                if let Some(mut m) = inbox.next().await {
+                    let m = m.message();
+                    let _ = self.uart.write(m.as_bytes()).await;
                 }
             }
         }
     }
 }
 
+pub fn init(s: embassy::executor::Spawner, uart: uarte::Uarte<'static, UARTE0>) {
+    LOGGER.mount(s, UartLogger::new(uart));
+}
+
+#[macro_export]
 macro_rules! print {
     ($s:literal $(, $x:expr)* $(,)?) => {
-        LOGGER::address().notify($s).unwrap()
+        let mut b = heapless::String::new();
+        use core::fmt::Write;
+        let _ = write!(b, $s $(, $x)*);
+        let _ = write!(b, "\r\n");
+        let _ = logger::LOGGER.address().notify(b);
     };
 }
