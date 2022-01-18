@@ -5,7 +5,7 @@ This is the firmware for the burrboard application.
 
 ## Prerequisites
 
-* [uf2 utils]
+* [uf2] tools
 * [cargo-binutils](https://github.com/rust-embedded/cargo-binutils)
 
 ### Uf2 utils
