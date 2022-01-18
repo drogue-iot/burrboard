@@ -1,4 +1,3 @@
-use core::fmt::Write;
 use drogue_device::*;
 use embassy::traits::uart::Write as _;
 use embassy_nrf::{peripherals::UARTE0, uarte};

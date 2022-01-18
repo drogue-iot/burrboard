@@ -9,10 +9,8 @@ use panic_probe as _;
 
 use adxl343::accelerometer::RawAccelerometer;
 use embassy::time::{Duration, Timer};
-use embassy::traits::i2c::I2c;
-use embassy::traits::spi::FullDuplex;
 use embassy_nrf::config::Config;
-use embassy_nrf::gpio::{Level, NoPin, Output, OutputDrive};
+use embassy_nrf::gpio::NoPin;
 use embassy_nrf::interrupt::Priority;
 use embassy_nrf::saadc;
 use embassy_nrf::twim;
@@ -52,25 +50,11 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     config.sda_pullup = true;
     config.frequency = twim::Frequency::K100;
     let irq = interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0);
-    let mut i2c = twim::Twim::new(p.TWISPI0, irq, p.P0_12, p.P0_11, config);
+    let i2c = twim::Twim::new(p.TWISPI0, irq, p.P0_12, p.P0_11, config);
 
-    info!("Waiting for initializing");
     // Ensure accel is ready
-    Timer::after(Duration::from_millis(5000)).await;
-    info!("Initializing");
-    let w: [u8; 1] = [0; 1];
-    let mut buffer: [u8; 1] = [0; 1];
-    const ADDRESS: u8 = 0x53;
-    match i2c.write_read(ADDRESS, &w, &mut buffer).await {
-        Ok(_) => {
-            info!("Whoami: {}", buffer[0]);
-        }
-        Err(e) => {
-            info!("Error i2c : {:?}", e);
-        }
-    }
-    loop {}
-    //let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
+    Timer::after(Duration::from_millis(100)).await;
+    let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
 
     let config = saadc::Config::default();
     let temp_channel = saadc::ChannelConfig::single_ended(&mut p.P0_05);
@@ -97,10 +81,8 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         let tempc = (voltage - 0.5) * 100.0;
         info!("Temperature: {}", tempc);
 
-        /*
         let accel = adxl.accel_raw().unwrap();
-        defmt::info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
-        */
+        info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
 
         Timer::after(Duration::from_millis(1000)).await;
     }
