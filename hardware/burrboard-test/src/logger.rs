@@ -1,5 +1,6 @@
 use drogue_device::*;
 use embassy_nrf::uarte;
+use log::{Level, Metadata, Record};
 
 pub struct UartLogger<T: uarte::Instance> {
     uart: uarte::Uarte<'static, T>,
@@ -36,21 +37,15 @@ impl<T: uarte::Instance> Actor for UartLogger<T> {
             loop {
                 if let Some(m) = inbox.next().await {
                     let m = *m.message();
-
+                    self.uart.blocking_write(m.as_bytes());
                 }
             }
         }
+    }
+}
 
-macro_rules! info {
-    ($l:ident, $s:literal $(, $x:expr)* $(,)?) => {
-        {
-            $l.notify($s)
-            #[cfg(feature = "log")]
-            ::log::info!($s $(, $x)*);
-            #[cfg(feature = "defmt")]
-            ::defmt::info!($s $(, $x)*);
-            #[cfg(not(any(feature = "log", feature="defmt")))]
-            let _ = ($( & $x ),*);
-        }
+macro_rules! print {
+    ($s:literal $(, $x:expr)* $(,)?) => {
+        LOGGER::address().notify($s).unwrap()
     };
 }

@@ -18,7 +18,7 @@ cortex-m-rt = "0.7"
 
 embassy = { version = "0.1.0", default-features = false, features = ["defmt"] }
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52833", "time-driver-rtc1", "gpiote"]}
-drogue-device = { path = "../../../../drogue-iot/drogue-device/device", default-features = false, features = ["defmt", "time"] }
+drogue-device = { path = "../../../drogue-iot/drogue-device/device", default-features = false, features = ["defmt", "time"] }
 
 futures = { version = "0.3", default-features = false }
 bitflags = { version = "1.3", default-features = false }

@@ -19,6 +19,10 @@ use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
 use embedded_hal::blocking::spi::Transfer;
 
+mod fmt;
+mod logger;
+use fmt::*;
+
 #[embassy::main]
 async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     /*let cs = Output::new(p.P0_12, Level::High, OutputDrive::Standard);
@@ -58,14 +62,14 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         let mut buf = [0; 2];
         saadc.sample(&mut buf).await;
 
-        defmt::info!("temp sample: {=i16}", &buf[0]);
-        defmt::info!("light sample: {=i16}", &buf[1]);
+        info!("temp sample: {=i16}", &buf[0]);
+        info!("light sample: {=i16}", &buf[1]);
 
         let voltage = buf[0] as f32 * 3.3;
         let voltage = voltage / 4095 as f32;
-        defmt::info!("Voltage: {}", voltage);
+        info!("Voltage: {}", voltage);
         let tempc = (voltage - 0.5) * 100.0;
-        defmt::info!("Temperature: {}", tempc);
+        info!("Temperature: {}", tempc);
 
         //let accel = adxl.accel_raw().unwrap();
         //defmt::info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
