@@ -10,7 +10,7 @@ This is the firmware for the burrboard application.
 
 ### Uf2 utils
 
-* Clone the [uf2 utils] git repository.
+* Clone the [uf2] git repository.
 * Add the utils/ folder of your local copy to your $PATH environment variable.
  
  ### cargo-binutils
@@ -30,3 +30,5 @@ MEDIA=/run/media/lulf/FTHR840BOOT cargo run --release
 ```
 
 NOTE: To watch debug output, connect a serial console to the UART TX/RX pins.
+
+[uf2]: https://github.com/microsoft/uf2
