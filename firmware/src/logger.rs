@@ -16,7 +16,7 @@ impl<T: uarte::Instance> UartLogger<T> {
 pub static LOGGER: ActorContext<UartLogger<UARTE0>, 4> = ActorContext::new();
 
 impl<T: uarte::Instance> Actor for UartLogger<T> {
-    type Message<'m> = heapless::String<64>;
+    type Message<'m> = heapless::String<128>;
 
     // Workaround until async traits
     type OnMountFuture<'m, M>

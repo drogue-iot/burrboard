@@ -19,11 +19,6 @@ use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
 use embedded_hal::blocking::spi::Transfer;
 
-#[macro_use]
-mod logger;
-
-mod fmt;
-
 #[embassy::main]
 async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     /*let cs = Output::new(p.P0_12, Level::High, OutputDrive::Standard);
@@ -38,19 +33,28 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     let mut adxl = adxl343::Adxl343::new(adxl343::SpiTransport::new(spim, cs)).unwrap();
     defmt::info!("Done");
     */
+    defmt::info!("HELLO THERE");
 
-    logger::init(
-        spawner,
-        uarte::Uarte::new(
-            p.UARTE0,
-            interrupt::take!(UARTE0_UART0),
-            p.P0_01,
-            p.P0_13,
-            NoPin,
-            NoPin,
-            Default::default(),
-        ),
-    );
+    let mut config = twim::Config::default();
+    config.scl_pullup = true;
+    config.sda_pullup = true;
+    config.frequency = twim::Frequency::K100;
+    let irq = interrupt::take!(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1);
+    let mut i2c = twim::Twim::new(p.TWISPI1, irq, p.P1_00, p.P0_26, config);
+
+    Timer::after(Duration::from_millis(100)).await;
+    defmt::info!("Initializing");
+    let w: [u8; 1] = [0; 1];
+    let mut buffer: [u8; 1] = [0; 1];
+    const ADDRESS: u8 = 0x53;
+    match i2c.write_read(ADDRESS, &w, &mut buffer).await {
+        Ok(_) => {
+            defmt::info!("Whoami: {}", buffer[0]);
+        }
+        Err(e) => {
+            defmt::info!("Error i2c : {:?}", e);
+        }
+    }
 
     let config = Config::default();
     let temp_channel = ChannelConfig::single_ended(&mut p.P0_02);
@@ -67,15 +71,15 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         let mut buf = [0; 3];
         saadc.sample(&mut buf).await;
 
-        info!("temp sample: {}", &buf[0]);
-        info!("light sample: {}", &buf[1]);
-        info!("bat sample: {}", &buf[2]);
+        defmt::info!("temp sample: {}", &buf[0]);
+        defmt::info!("light sample: {}", &buf[1]);
+        defmt::info!("bat sample: {}", &buf[2]);
 
         let voltage = buf[0] as f32 * 3.3;
         let voltage = voltage / 4095 as f32;
-        info!("Voltage: {}", voltage);
+        defmt::info!("Voltage: {}", voltage);
         let tempc = (voltage - 0.5) * 100.0;
-        info!("Temperature: {}", tempc);
+        defmt::info!("Temperature: {}", tempc);
 
         //let accel = adxl.accel_raw().unwrap();
         //defmt::info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
