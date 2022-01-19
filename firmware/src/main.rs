@@ -5,13 +5,21 @@
 #![feature(type_alias_impl_trait)]
 
 use defmt_rtt as _;
+use drogue_device::{
+    actors::{
+        self,
+        button::{Button, ButtonEvent, ButtonEventHandler},
+    },
+    drivers, ActorContext,
+};
 use panic_probe as _;
 
 use adxl343::accelerometer::RawAccelerometer;
 use embassy::time::{Duration, Timer};
 use embassy_nrf::config::Config;
-use embassy_nrf::gpio::NoPin;
+use embassy_nrf::gpio::{Input, NoPin, Pull};
 use embassy_nrf::interrupt::Priority;
+use embassy_nrf::peripherals::P1_02;
 use embassy_nrf::saadc;
 use embassy_nrf::twim;
 use embassy_nrf::uarte;
@@ -67,6 +75,14 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         [temp_channel, light_channel, bat_channel],
     );
 
+    DFU_BUTTON.mount(
+        spawner,
+        Button::new(
+            drivers::button::Button::new(Input::new(p.P1_02, Pull::Up)),
+            DfuActivator,
+        ),
+    );
+
     loop {
         let mut buf = [0; 3];
         saadc.sample(&mut buf).await;
@@ -87,3 +103,24 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         Timer::after(Duration::from_millis(1000)).await;
     }
 }
+
+pub struct DfuActivator;
+
+impl ButtonEventHandler for DfuActivator {
+    fn handle(&mut self, event: ButtonEvent) {
+        use embassy_nrf::pac;
+        if let ButtonEvent::Released = event {
+            unsafe {
+                let cp = pac::Peripherals::steal();
+                // 0x57 - Regular bootloader
+                // 0xA8 - OTA bootloader
+                // 0x4E - Serial bootloader
+                cp.POWER.gpregret.write(|w| w.bits(0xA8));
+                pac::SCB::sys_reset();
+            }
+        }
+    }
+}
+
+type UserButton = drivers::button::Button<Input<'static, P1_02>, drivers::ActiveLow>;
+static DFU_BUTTON: ActorContext<Button<UserButton, DfuActivator>> = ActorContext::new();
