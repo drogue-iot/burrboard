@@ -1,15 +1,4 @@
 
-function setState(x,y,z) {
-    setField('accel-x', x);
-    setField('accel-y', y);
-    setField('accel-z', z);
-}
-
-function setField(id, value) {
-    let field = document.getElementById(id);
-    field.innerText = typeof value == 'number' && value.toFixed(1) || value;
-}
-
 function onConnect() {
     // Once a connection has been made, make a subscription and send a message.
     console.log("onConnect");
@@ -35,15 +24,8 @@ function randomClientId() {
     return Array.from(id, toHex).join('')
 }
 
-let state = {
-    connected: false,
-    accel: {
-        x: 0, y: 0, z: 0
-    }
-};
-
-function init() {
-    setState("?", "?", "?");
+function connect() {
+    setState(null);
 
     client = new Paho.Client("wss://mqtt-integration-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt", randomClientId());
 
@@ -55,9 +37,9 @@ function init() {
     };
     client.onMessageArrived = function(msg) {
         let data = JSON.parse(msg.payloadString).data;
-        state.accel = data.value.features.accelerometer.properties;
-        setState(state.accel.x, state.accel.y, state.accel.z);
-    }
+        let accel = data.value.features.accelerometer.properties;
+        setState(accel);
+    };
 
     setField("mqtt", "Connecting");
 
