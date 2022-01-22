@@ -16,14 +16,17 @@ use panic_probe as _;
 
 use adxl343::accelerometer::RawAccelerometer;
 use embassy::time::{Duration, Timer};
+use embassy::traits::gpio::WaitForLow;
 use embassy_nrf::config::Config;
-use embassy_nrf::gpio::{Input, NoPin, Pull};
+use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::interrupt::Priority;
 use embassy_nrf::peripherals::P1_02;
 use embassy_nrf::saadc;
 use embassy_nrf::twim;
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
+use embedded_hal::digital::v2::{InputPin, OutputPin};
+use futures::future::{select, Either};
 
 #[macro_use]
 mod logger;
@@ -53,6 +56,7 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         ),
     );
 
+    /*
     let mut config = twim::Config::default();
     config.scl_pullup = true;
     config.sda_pullup = true;
@@ -61,8 +65,9 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
     let i2c = twim::Twim::new(p.TWISPI0, irq, p.P0_12, p.P0_11, config);
 
     // Ensure accel is ready
-    Timer::after(Duration::from_millis(100)).await;
+    Timer::after(Duration::from_millis(500)).await;
     let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
+    */
 
     let config = saadc::Config::default();
     let temp_channel = saadc::ChannelConfig::single_ended(&mut p.P0_05);
@@ -75,6 +80,7 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         [temp_channel, light_channel, bat_channel],
     );
 
+    /*
     DFU_BUTTON.mount(
         spawner,
         Button::new(
@@ -83,6 +89,18 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         ),
     );
 
+    */
+
+    let mut button_a = Input::new(p.P0_27, Pull::None);
+    let mut button_b = Input::new(p.P0_26, Pull::None);
+
+    let mut leds: [Output<'static, AnyPin>; 4] = [
+        Output::new(p.P0_06.degrade(), Level::Low, OutputDrive::Standard),
+        Output::new(p.P0_30.degrade(), Level::Low, OutputDrive::Standard),
+        Output::new(p.P0_28.degrade(), Level::Low, OutputDrive::Standard),
+        Output::new(p.P0_02.degrade(), Level::Low, OutputDrive::Standard),
+    ];
+    let mut led_idx = 0;
     loop {
         let mut buf = [0; 3];
         saadc.sample(&mut buf).await;
@@ -97,10 +115,33 @@ async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
         let tempc = (voltage - 0.5) * 100.0;
         info!("Temperature: {}", tempc);
 
+        leds[led_idx].set_high();
+        /*
         let accel = adxl.accel_raw().unwrap();
         info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
+        */
 
-        Timer::after(Duration::from_millis(1000)).await;
+        match select(button_a.wait_for_low(), button_b.wait_for_low()).await {
+            Either::Left((_, _)) => {
+                info!("Button 'A' pressed");
+                leds[led_idx].set_low();
+                if led_idx == 0 {
+                    led_idx = 3;
+                } else {
+                    led_idx -= 1;
+                }
+            }
+            Either::Right((_, _)) => {
+                info!("Button 'B' pressed");
+                leds[led_idx].set_low();
+                if led_idx == 3 {
+                    led_idx = 0;
+                } else {
+                    led_idx += 1;
+                }
+            }
+        }
+        Timer::after(Duration::from_millis(250)).await;
     }
 }
 

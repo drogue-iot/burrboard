@@ -21,20 +21,6 @@ use embedded_hal::blocking::spi::Transfer;
 
 #[embassy::main]
 async fn main(spawner: embassy::executor::Spawner, mut p: Peripherals) {
-    /*let cs = Output::new(p.P0_12, Level::High, OutputDrive::Standard);
-    Timer::after(Duration::from_millis(1000)).await;
-
-    let irq = interrupt::take!(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1);
-    let mut config = spim::Config::default();
-    config.frequency = spim::Frequency::K125;
-    config.mode = spim::MODE_3;
-    let spim = spim::Spim::new(p.TWISPI1, irq, p.P0_17, p.P0_01, p.P0_13, config);
-    defmt::info!("Initializing");
-    let mut adxl = adxl343::Adxl343::new(adxl343::SpiTransport::new(spim, cs)).unwrap();
-    defmt::info!("Done");
-    */
-    defmt::info!("HELLO THERE");
-
     let mut config = twim::Config::default();
     config.scl_pullup = true;
     config.sda_pullup = true;
