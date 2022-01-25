@@ -1,47 +1,10 @@
-
-const application = "ctron-test-ditto";
-const device = "device1";
-const password = "foobar";
-
-let client;
-let canSend = true;
-let paused = false;
-let lastSend = Date.now();
+'use strict';
 
 const SEND_DELAY = 1000 / 30; // ms, 30Hz
-
-function setState(x,y,z) {
-    setField('accel-x', x);
-    setField('accel-y', y);
-    setField('accel-z', z);
-
-    const now = Date.now();
-
-    if (client && canSend && !paused && ((now - lastSend > SEND_DELAY))) {
-        canSend = false;
-        lastSend = now;
-        client.send("state", JSON.stringify({
-            "value": {
-                "features": {
-                    "accelerometer": {
-                        "properties": {
-                            "x": x, "y": y, "z": z
-                        }
-                    }
-                }
-            }
-        }), 0, false);
-    }
-}
 
 function setField(id, value) {
     let field = document.getElementById(id);
     field.innerText = typeof value == 'number' && value.toFixed(1) || value;
-}
-
-function onConnect() {
-    canSend = true;
-    setField("mqtt", "Connected");
 }
 
 function toHex(dec) {
@@ -54,56 +17,168 @@ function randomClientId() {
     return Array.from(id, toHex).join('')
 }
 
-function init() {
-    if (window.DeviceOrientationEvent) {
-        setState("?", "?", "?");
+class Device {
 
-        window.addEventListener("deviceorientation", function (event) {
-            // alpha: rotation around z-axis
-            const rotateDegrees = event.alpha;
-            // gamma: left to right
-            const leftToRight = event.gamma;
-            // beta: front back motion
-            const frontToBack = event.beta;
+    constructor(onLedChange) {
+        this.lastSend = new Date();
+        this.paused = false;
+        this.counters = {
+            "A": 0,
+            "B": 0,
+        };
+        this.onLedChange = onLedChange;
 
-            setState(frontToBack, leftToRight, rotateDegrees);
-        }, true);
+        this.setConnectionState("Disconnected");
 
-        client = new Paho.Client("wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt", randomClientId());
-        client.onConnectionLost = function(responseObject) {
+        this.client = new Paho.Client("wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt", randomClientId());
+        this.client.onConnectionLost = (responseObject) => {
             if (responseObject.errorCode !== 0) {
                 console.log("onConnectionLost: " + responseObject.errorMessage);
             }
-            setField("mqtt", "Disconnected");
+            this.setConnectionState("Disconnected");
         };
-        client.onMessageDelivered = function () {
-            canSend = true;
+        if (onLedChange) {
+            this.client.onMessageArrived = (msg) => {
+                this.commandInbox(msg);
+            };
         }
 
-        setField("mqtt", "Connecting");
+        if (window.DeviceOrientationEvent) {
+            this.showAccelState("?", "?", "?");
+            window.addEventListener("deviceorientation", (event) => {
+                // alpha: rotation around z-axis
+                const rotateDegrees = event.alpha;
+                // gamma: left to right
+                const leftToRight = event.gamma;
+                // beta: front back motion
+                const frontToBack = event.beta;
 
-        client.connect({
+                this.setAccelState({x: frontToBack, y: leftToRight, z: rotateDegrees});
+            }, true);
+        } else {
+            this.showAccelState("n/a", "n/a", "n/a");
+        }
+    }
+
+    setAccelState(state) {
+        this.sendAccelUpdate({
+            "x": state.x, "y": state.y, "z": state.z
+        });
+        this.showAccelState(state.x, state.y, state.z);
+    }
+
+    showAccelState(x, y, z) {
+        setField('accel-x', x);
+        setField('accel-y', y);
+        setField('accel-z', z);
+    }
+
+    setConnectionState(connectionState) {
+        this.connectionState = connectionState;
+        setField("connection", connectionState);
+    }
+
+    connect(application, device, password) {
+        if (this.client.isConnected()) {
+            return;
+        }
+
+        this.setConnectionState("Connecting");
+
+        this.client.connect({
             userName: device + "@" + application,
             password: password,
             cleanSession: true,
             reconnect: true,
             useSSL: true,
             mqttVersion: 4,
-            onSuccess: onConnect,
-            onFailure: function(err) {
-                setField("mqtt", "Failed: " + JSON.stringify(err));
+            onSuccess: () => {
+                this.setConnectionState("Subscribing");
+                this.client.subscribe("command/inbox/#", {
+                    qos: 0,
+                    timeout: 5,
+                    onSuccess: () => {
+                        this.setConnectionState("Connected");
+                    },
+                    onFailure: (err) => {
+                        this.setConnectionState("Subscribe failed: " + JSON.stringify(err));
+                    }
+                })
+            },
+            onFailure: (err) => {
+                this.setConnectionState("Failed: " + JSON.stringify(err))
             }
         });
-
-    } else {
-        setState("n/a", "n/a", "n/a");
     }
-}
 
-function pause() {
-    paused = true;
-}
+    disconnect() {
+        this.client.disconnect();
+    }
 
-function resume() {
-    paused = false;
+    sendAccelUpdate(data) {
+        const now = Date.now();
+
+        if (this.client.isConnected() && !this.paused && ((now - this.lastSend > SEND_DELAY))) {
+            this.lastSend = now;
+            this.updateFeature("accelerometer", data);
+        }
+    }
+
+    updateFeature(feature, properties) {
+        if (!this.client.isConnected()) {
+            return;
+        }
+
+        this.client.send("state", JSON.stringify({
+            "path": "/features/" + feature,
+            "value": {
+                "properties": properties
+            }
+        }), 0, false);
+    }
+
+    pause() {
+        this.paused = true;
+    }
+
+    resume() {
+        this.paused = false;
+    }
+
+    press(button) {
+        this.counters[button] += 1;
+        this.updateFeature("buttons", this.counters);
+    }
+
+    commandInbox(msg) {
+        console.log("Command: ", msg);
+        const segments = msg.topic.split("/", 4);
+        console.log("Segments: ", segments);
+        if (segments.length !== 4) {
+            return;
+        }
+
+        try {
+            this.handleCommand(segments[3], JSON.parse(msg.payloadString));
+        } catch (err) {
+            console.log("Failed to decode payload: ", err);
+        }
+    }
+
+    handleCommand(command, payload) {
+        console.log("Command: ", command, " Payload: ", payload);
+        if (command === "set-leds") {
+            const leds = Object.assign(
+                {
+                    "1": false,
+                    "2": false,
+                    "3": false,
+                    "4": false
+                },
+                payload
+            );
+            this.onLedChange(leds);
+        }
+    }
+
 }

@@ -9,6 +9,36 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 
   <title>Device Simulator</title>
+  <style>
+    .led {
+        border: solid;
+        border-radius: 50%;
+        width: 3rem;
+        height: 3rem;
+        flex-shrink: 0;
+        margin: .5rem;
+        filter: brightness(50%);
+    }
+    .led-red {
+        border-color: rgb(80%, 0%, 0%);
+        background-color: rgb(100%, 0%, 0%);
+    }
+    .led-green {
+        border-color: rgb(0%, 80%, 0%);
+        background-color: rgb(0%, 100%, 0%);
+    }
+    .led-blue {
+        border-color: rgb(0%, 0%, 80%);
+        background-color: rgb(30%, 30%, 100%);
+    }
+    .led-yellow {
+        border-color: rgb(80%, 80%, 0%);
+        background-color: rgb(90%, 90%, 0%);
+    }
+    .led-active {
+        filter: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -18,23 +48,147 @@
 </header>
 
 <main class="container">
-  <div class="row">
-    <div class="col-6"><button class="btn btn-secondary" onclick="pause()">Pause</button></div>
-    <div class="col-6"><button class="btn btn-secondary" onclick="resume()">Resume</button></div>
+
+  <form id="con-properties" class="row g-3 mb-3">
+    <div class="col-sm-4">
+      <label for="con-application" class="form-label">Application</label>
+      <input type="text" class="form-control" placeholder="Application" id="con-application" value="ctron-test-ditto">
+    </div>
+    <div class="col-sm-4">
+      <label for="con-device" class="form-label">Device</label>
+      <input type="text" class="form-control" placeholder="Device" id="con-device" value="device1">
+    </div>
+    <div class="col-sm-4">
+      <label for="con-password" class="form-label">Password</label>
+      <input type="password" class="form-control" placeholder="Password" id="con-password">
+    </div>
+  </form>
+
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6">
+      <div class="btn-group me-2">
+        <button class="btn btn-primary" id="con-connect" onclick="connect()">Connect</button>
+        <button class="btn btn-secondary" id="con-disconnect" onclick="disconnect()">Disconnect</button>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="device.pause()">Pause</button>
+        <button class="btn btn-secondary" onclick="device.resume()">Resume</button>
+      </div>
+    </div>
   </div>
+
   <dl class="row">
-    <dt class="col-sm-2">MQTT</dt><dd class="col-sm-10" id="mqtt"></dd>
-    <dt class="col-sm-2">X</dt><dd class="col-sm-10" id="accel-x"></dd>
-    <dt class="col-sm-2">Y</dt><dd class="col-sm-10" id="accel-y"></dd>
-    <dt class="col-sm-2">Z</dt><dd class="col-sm-10" id="accel-z"></dd>
+    <dt class="col-4">Connection</dt>
+    <dd class="col-8" id="connection"></dd>
+
+    <dt class="col-4">Accelerometer</dt>
+    <dd class="col-8">
+      <span id="accel-x"></span> /
+      <span id="accel-y"></span> /
+      <span id="accel-z"></span>
+    </dd>
   </dl>
+
+  <div class="row mb-3">
+    <div class="col d-flex justify-content-center">
+      <div class="led led-red" id="led-1"></div>
+      <div class="led led-green" id="led-2"></div>
+      <div class="led led-blue" id="led-3"></div>
+      <div class="led led-yellow" id="led-4"></div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-6 mx-auto d-flex gap-2 justify-content-center">
+      <button class="btn btn-lg btn-outline-secondary" onclick="device.press('A')">A</button>
+    </div>
+    <div class="col-6 mx-auto d-flex gap-2 justify-content-center">
+      <button class="btn btn-lg btn-outline-secondary" onclick="device.press('B')">B</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <label for="sensor-temperature" class="form-label">Temperature (<span id="temperature"></span>)</label>
+      <input id="sensor-temperature" type="range" class="form-range" min="20" max="40" value="30" step="0.1" oninput="updateTemp();">
+    </div>
+    <div class="col">
+      <label for="sensor-light" class="form-label">Light (<span id="light"></span>)</label>
+      <input id="sensor-light" type="range" class="form-range" min="0" max="4095" value="1024" oninput="updateLight();">
+    </div>
+  </div>
+
+  <!-- LEDs: red, green, blue, yellow -->
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha512-Y5n0fbohPllOQ21fTwM/h9sQQ/1a1h5KhweGhu2zwD8lAoJnTgVa7NIrFa1bRDIMQHixtyuRV2ubIx+qWbGdDA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="device.js"></script>
 <script>
-  init();
+
+    function setLed(led, state) {
+        const ele = document.getElementById("led-" + led);
+        if (ele) {
+            if (state) {
+                ele.classList.add("led-active");
+            } else {
+                ele.classList.remove("led-active");
+            }
+        }
+    }
+
+    let device = new Device( (leds) =>{
+      console.log("LEDS - ", leds);
+        for (const led in leds) {
+            setLed(led, leds[led]);
+        }
+    });
+    let connecting = false;
+
+    update();
+    updateTemp();
+    updateLight();
+
+    function update() {
+        document.getElementById("con-connect").disabled = connecting;
+        document.getElementById("con-disconnect").disabled = !connecting;
+        if (connecting) {
+            document.getElementById("con-properties").style.display = "none";
+        } else {
+            document.getElementById("con-properties").style.display = "flex";
+        }
+    }
+
+    function connect () {
+        const applicationName = document.getElementById("con-application").value;
+        const deviceName = document.getElementById("con-device").value;
+        const password = document.getElementById("con-password").value;
+        connecting = true;
+        update();
+        device.connect(applicationName, deviceName, password);
+    }
+
+    function disconnect () {
+        connecting = false;
+        update();
+        device.disconnect();
+    }
+
+    function updateTemp() {
+        const value = document.getElementById("sensor-temperature").valueAsNumber;
+        document.getElementById("temperature").textContent = value;
+        device.updateFeature("temperature", {"value": value });
+    }
+
+    function updateLight() {
+        const value = document.getElementById("sensor-light").valueAsNumber;
+        document.getElementById("light").textContent = value;
+        device.updateFeature("light", {"value": value });
+    }
+
 </script>
 
 </body>
