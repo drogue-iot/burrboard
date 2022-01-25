@@ -7,14 +7,20 @@ spec:
       kafka:
         bootstrap_servers: "kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443"
         properties:
-          sasl.jaas.config: "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"abc\" password=\"xyz\";"
           sasl.mechanism: SCRAM-SHA-512
+          sasl.username: user
+          sasl.password: password
           security.protocol: SASL_SSL
         topic: sensor-events
       topics:
         - twinEvents:
             extraFields:
               - features/accelerometer
+              - features/buttons
+              - features/leds
+              - features/light
+              - features/temperature
+              - features/state
   publish:
     rules:
       - then:
