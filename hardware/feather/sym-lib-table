@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name "burrboard")(type "KiCad")(uri "${KIPRJMOD}/burrboard.kicad_sym")(options "")(descr ""))
+  (lib (name "logo")(type "KiCad")(uri "${KIPRJMOD}/logo.kicad_sym")(options "")(descr ""))
 )

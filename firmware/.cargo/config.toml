@@ -1,6 +1,6 @@
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
-runner = "./fruitrunner"
-#runner = "probe-run --chip nrf52840_xxAA"
+#runner = "./fruitrunner"
+runner = "probe-run --chip nrf52840_xxAA"
 
 [build]
 target = "thumbv7em-none-eabi"

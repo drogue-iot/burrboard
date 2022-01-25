@@ -13,7 +13,7 @@ fn main() {
     let mem = if env::var("CARGO_FEATURE_SENSE").is_ok() {
         MEM_UF2
     } else {
-        MEM_UF2
+        MEM_BM
     };
     File::create(out.join("memory.x"))
         .unwrap()

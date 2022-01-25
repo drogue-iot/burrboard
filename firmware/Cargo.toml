@@ -18,7 +18,7 @@ cortex-m-rt = "0.7"
 
 embassy = { version = "0.1.0", default-features = false, features = ["defmt"] }
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac"]}
-drogue-device = { path = "../../../drogue-iot/drogue-device/device", default-features = false, features = ["defmt", "time"] }
+drogue-device = { version = "0.1.0", default-features = false, features = ["defmt", "time"] }
 embedded-hal = { version = "0.2", features = ["unproven"] }
 
 futures = { version = "0.3", default-features = false }
@@ -35,3 +35,4 @@ sense = []
 [patch.crates-io]
 embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "0d67ceb066f7b6d3b0163eaa3688b0499439a21c" }
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "0d67ceb066f7b6d3b0163eaa3688b0499439a21c" }
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "7856c168dfb912f43c2be3ae5082c599327c4eac" }
