@@ -76,8 +76,8 @@ the simple version will be used to keep things short and simple. However, actual
     },
     "buttons" : {
       "properties": {
-        "counter1": 0,
-        "counter2": 0
+        "A": 0,  <1>
+        "B": 0   <2>
       }
     },
     "leds": {
@@ -97,6 +97,8 @@ the simple version will be used to keep things short and simple. However, actual
   }
 }
 ----
+<1> Counter value for Button A
+<2> Counter value for Button B
 
 == WebSockets streaming
 
