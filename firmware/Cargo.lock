@@ -125,6 +125,7 @@ dependencies = [
  "futures",
  "heapless",
  "log",
+ "lsm6ds33",
  "panic-probe",
 ]
 
@@ -575,6 +576,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "lsm6ds33"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96f8048a2646427724a7e728ec7a75b4bc2c1a3dc4eae6e25cbad5598ca017cd"
+dependencies = [
+ "embedded-hal",
 ]
 
 [[package]]
