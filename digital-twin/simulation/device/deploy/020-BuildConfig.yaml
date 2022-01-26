@@ -1,0 +1,25 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: device-simulator
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: device-simulator:latest
+  source:
+    contextDir: digital-twin/simulation/device
+    dockerfile: |
+      FROM registry.access.redhat.com/ubi8/nginx-120:latest
+
+      ADD device.js index.html ./
+
+      CMD nginx -g "daemon off;"
+    git:
+      ref: main
+      uri: https://github.com/drogue-iot/burrboard
+  strategy:
+    dockerStrategy: {}
+    type: Docker
+  triggers:
+    - type: ConfigChange

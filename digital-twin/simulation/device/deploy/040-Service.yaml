@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: device-simulator
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: device-simulator
+  ports:
+    - port: 8080
+      targetPort: http
+      name: http
