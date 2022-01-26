@@ -1550,6 +1550,7 @@
     )
   )
 
+
   (junction (at 273.05 143.51) (diameter 0) (color 0 0 0 0)
     (uuid 2891767f-251c-48c4-91c0-deb1b368f45c)
   )
@@ -2097,6 +2098,10 @@
   (label "A0" (at 224.79 38.1 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid aca4de92-9c41-4c2b-9afa-540d02dafa1c)
+  )
+  (label "VUSB" (at 109.22 25.4 180)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid b5e42dbc-1969-4137-a800-eaea7a44fee4)
   )
   (label "A1" (at 224.79 40.64 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -2974,22 +2979,6 @@
     )
   )
 
-  (symbol (lib_id "power:VDD") (at 109.22 25.4 0) (unit 1)
-    (in_bom yes) (on_board yes)
-    (uuid 30d56621-b469-406c-9984-c3e3f5682099)
-    (property "Reference" "#PWR08" (id 0) (at 109.22 29.21 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "VDD" (id 1) (at 109.601 21.0058 0))
-    (property "Footprint" "" (id 2) (at 109.22 25.4 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (id 3) (at 109.22 25.4 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 2d46fe9d-6197-459f-9a8a-0a5847b8284e))
-  )
-
   (symbol (lib_id "power:PWR_FLAG") (at 55.88 63.5 270) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 3fecb429-1ee6-4e2e-89b6-bbe8ef4c3585)
@@ -3232,9 +3221,6 @@
     )
     (path "/00000000-0000-0000-0000-000061f06d8b"
       (reference "#PWR07") (unit 1) (value "GND") (footprint "")
-    )
-    (path "/30d56621-b469-406c-9984-c3e3f5682099"
-      (reference "#PWR08") (unit 1) (value "VDD") (footprint "")
     )
     (path "/f382406d-81c4-43b6-97fa-b574d17e5924"
       (reference "#PWR09") (unit 1) (value "GND") (footprint "")
