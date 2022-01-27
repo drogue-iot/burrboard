@@ -1,6 +1,7 @@
 'use strict';
 
 const SEND_DELAY = 1000 / 30; // ms, 30Hz
+const LEDS = ["1", "2", "3", "4"];
 
 function setField(id, value) {
     let field = document.getElementById(id);
@@ -27,6 +28,7 @@ class Device {
             "B": 0,
         };
         this.onLedChange = onLedChange;
+        this.leds = Object.fromEntries(LEDS.map(led => [led, false]));
 
         this.setConnectionState("Disconnected");
 
@@ -98,6 +100,7 @@ class Device {
                     qos: 0,
                     timeout: 5,
                     onSuccess: () => {
+                        this.connectionEstablished();
                         this.setConnectionState("Connected");
                     },
                     onFailure: (err) => {
@@ -115,6 +118,10 @@ class Device {
         this.client.disconnect();
     }
 
+    connectionEstablished() {
+        this.sendLedUpdate();
+    }
+
     sendAccelUpdate(data) {
         const now = Date.now();
 
@@ -124,15 +131,19 @@ class Device {
         }
     }
 
+    sendLedUpdate() {
+        this.updateFeature("leds", this.leds);
+    }
+
     updateFeature(feature, properties) {
         if (!this.client.isConnected()) {
             return;
         }
 
         this.client.send("state", JSON.stringify({
-            "path": "/features/" + feature,
+            "path": "/features/" + encodeURIComponent(feature) + "/properties",
             "value": {
-                "properties": properties
+                properties
             }
         }), 0, false);
     }
@@ -167,17 +178,18 @@ class Device {
 
     handleCommand(command, payload) {
         console.log("Command: ", command, " Payload: ", payload);
-        if (command === "set-leds") {
-            const leds = Object.assign(
-                {
-                    "1": false,
-                    "2": false,
-                    "3": false,
-                    "4": false
-                },
+        if (command === "leds") {
+            this.leds = Object.assign(
+                this.leds,
                 payload
             );
-            this.onLedChange(leds);
+            for (const ledsKey in this.leds) {
+                if (LEDS.indexOf(ledsKey) === -1) {
+                    delete this.leds[ledsKey];
+                }
+            }
+            console.log("New LED state: ", this.leds);
+            this.onLedChange(this.leds);
         }
     }
 
