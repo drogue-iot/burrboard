@@ -19,7 +19,6 @@ use panic_probe as _;
 use adxl343::accelerometer::Accelerometer;
 use adxl343::accelerometer::RawAccelerometer;
 use embassy::time::{Duration, Timer};
-use embassy::traits::gpio::WaitForLow;
 use embassy_nrf::config::Config;
 use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::interrupt::Priority;
