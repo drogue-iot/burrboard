@@ -211,13 +211,13 @@
     function updateTemp() {
         const value = document.getElementById("sensor-temperature").valueAsNumber;
         document.getElementById("temperature").textContent = value;
-        device.updateFeature("temperature", {"value": value });
+        device.setTemperature(value);
     }
 
     function updateLight() {
         const value = document.getElementById("sensor-light").valueAsNumber;
         document.getElementById("light").textContent = value;
-        device.updateFeature("light", {"value": value });
+        device.setLight(value);
     }
 
 </script>

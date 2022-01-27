@@ -29,6 +29,8 @@ class Device {
         };
         this.onLedChange = onLedChange;
         this.leds = Object.fromEntries(LEDS.map(led => [led, false]));
+        this.temperature = null;
+        this.light = null;
 
         this.setConnectionState("Disconnected");
 
@@ -120,6 +122,12 @@ class Device {
 
     connectionEstablished() {
         this.sendLedUpdate();
+        if (this.temperature !== null) {
+            this.setTemperature(this.temperature);
+        }
+        if (this.light !== null) {
+            this.setLight(this.light);
+        }
     }
 
     sendAccelUpdate(data) {
@@ -140,11 +148,11 @@ class Device {
             return;
         }
 
+        console.log(feature, " = ", properties);
+
         this.client.send("state", JSON.stringify({
             "path": "/features/" + encodeURIComponent(feature) + "/properties",
-            "value": {
-                properties
-            }
+            "value": properties
         }), 0, false);
     }
 
@@ -191,6 +199,16 @@ class Device {
             console.log("New LED state: ", this.leds);
             this.onLedChange(this.leds);
         }
+    }
+
+    setTemperature(value) {
+        this.temperature = value;
+        this.updateFeature("temperature", {"value": value});
+    }
+
+    setLight(value) {
+        this.light = value;
+        this.updateFeature("light", {"value": value});
     }
 
 }
