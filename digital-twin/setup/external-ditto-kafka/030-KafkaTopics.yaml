@@ -1,3 +1,4 @@
+---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
@@ -10,3 +11,16 @@ spec:
   partitions: 3
   replicas: 1
   topicName: sensor-events
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ditto-events
+  namespace: burrboard
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  config: {}
+  partitions: 3
+  replicas: 1
+  topicName: ditto-events

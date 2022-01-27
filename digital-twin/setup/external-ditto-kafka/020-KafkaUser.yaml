@@ -38,3 +38,29 @@ spec:
           name: "*"
           patternType: literal
           type: group
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: ditto-reconciler
+  namespace: burrboard
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - host: "*"
+        operation: Read
+        resource:
+          name: ditto-events
+          patternType: literal
+          type: topic
+      - host: "*"
+        operation: Read
+        resource:
+          name: "*"
+          patternType: literal
+          type: group

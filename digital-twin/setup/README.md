@@ -3,24 +3,37 @@ metadata:
   name: my-app
 spec:
   ditto:
-    exporter:
-      kafka:
-        bootstrap_servers: "kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443"
+    exporters:
+    - kafka:
+        bootstrapServers: "kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443"
         properties:
           sasl.mechanism: SCRAM-SHA-512
           sasl.username: user
           sasl.password: password
           security.protocol: SASL_SSL
-        topic: sensor-events
-      topics:
-        - twinEvents:
-            extraFields:
-              - features/accelerometer
-              - features/buttons
-              - features/leds
-              - features/light
-              - features/temperature
-              - features/state
+      targets:
+        - topic: ditto-events
+          mode:
+            ditto:
+              normalized: true
+          subscriptions:
+            - twinEvents:
+                - extraFields:
+                    - features/state
+                    - features/leds
+        - topic: sensor-events
+          mode:
+            cloudEvents:
+              normalized: true
+          subscriptions:
+            - twinEvents:
+                extraFields:
+                  - features/accelerometer
+                  - features/buttons
+                  - features/leds
+                  - features/light
+                  - features/temperature
+                  - features/state
   publish:
     rules:
       - then:
