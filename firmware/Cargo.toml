@@ -29,10 +29,6 @@ accelerometer = { version = "0.12.0" }
 lsm6ds33 = "0.2.0"
 heapless = "0.7"
 
-[features]
-express = []
-sense = []
-
 [patch.crates-io]
 #embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "0d67ceb066f7b6d3b0163eaa3688b0499439a21c" }
 #embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "0d67ceb066f7b6d3b0163eaa3688b0499439a21c" }

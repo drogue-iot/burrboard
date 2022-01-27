@@ -9,15 +9,9 @@ fn main() {
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.
     let out = &PathBuf::from(env::var_os("OUT_DIR").unwrap());
-
-    let mem = if env::var("CARGO_FEATURE_SENSE").is_ok() {
-        MEM_UF2
-    } else {
-        MEM_BM
-    };
     File::create(out.join("memory.x"))
         .unwrap()
-        .write_all(mem)
+        .write_all(include_bytes!("memory.x"))
         .unwrap();
     println!("cargo:rustc-link-search={}", out.display());
 
@@ -25,8 +19,7 @@ fn main() {
     // any file in the project changes. By specifying `memory.x`
     // here, we ensure the build script is only re-run when
     // `memory.x` is changed.
-    println!("cargo:rerun-if-changed=memory-uf2.x");
-    println!("cargo:rerun-if-changed=memory-bm.x");
+    println!("cargo:rerun-if-changed=memory.x");
 
     println!("cargo:rustc-link-arg-bins=--nmagic");
     println!("cargo:rustc-link-arg-bins=-Tlink.x");
