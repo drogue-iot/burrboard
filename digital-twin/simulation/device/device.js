@@ -198,6 +198,7 @@ class Device {
             }
             console.log("New LED state: ", this.leds);
             this.onLedChange(this.leds);
+            this.sendLedUpdate();
         }
     }
 
