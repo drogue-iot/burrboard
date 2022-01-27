@@ -1,0 +1,42 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakClient
+metadata:
+  name: client-game
+  namespace: drogue-iot
+spec:
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/component: sso
+      app.kubernetes.io/instance: drogue-dev
+      app.kubernetes.io/name: drogue
+
+  client:
+    clientId: game
+    clientAuthenticatorType: client-secret
+    enabled: true
+    publicClient: false
+    implicitFlowEnabled: false
+    standardFlowEnabled: false
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: true
+    fullScopeAllowed: true
+    defaultClientScopes:
+      - "email"
+      - "profile"
+      - "roles"
+      - "web-origins"
+    optionalClientScopes:
+      - "address"
+      - "microprofile-jwt"
+      - "offline_access"
+      - "phone"
+    defaultRoles:
+      - "drogue-user"
+    protocolMappers:
+      - name: add-audience
+        protocol: openid-connect
+        protocolMapper: oidc-audience-mapper
+        config:
+          "included.client.audience": "services"
+          "id.token.claim": "false"
+          "access.token.claim": "true"
