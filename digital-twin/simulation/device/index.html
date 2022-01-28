@@ -38,13 +38,16 @@
     .led-active {
         filter: none;
     }
+    #device-tag {
+        font-size: 0.5em;
+    }
   </style>
 </head>
 
 <body>
 
 <header class="container">
-  <h1>Device simulator</h1>
+  <h1>Device simulator <span id="device-tag" class="badge bg-secondary"></span></h1>
 </header>
 
 <main class="container">
@@ -151,7 +154,7 @@
         } else {
             qr = new QRCode(document.getElementById("qr-code"), uri);
         }
-
+        document.getElementById("device-tag").textContent = `${deviceName}@${applicationName}`;
     }
 
     function setLed(led, state) {

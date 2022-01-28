@@ -148,13 +148,48 @@ class Device {
             return;
         }
 
-        console.log(feature, " = ", properties);
+        const path = "/features/" + encodeURIComponent(feature) + "/properties";
+
+        let headers = {
+            "content-type": "application/merge-patch+json"
+        };
+
+        console.log(feature, " = ", properties, " headers = ", headers);
 
         this.client.send("state", JSON.stringify({
-            "path": "/features/" + encodeURIComponent(feature) + "/properties",
+            "headers": headers,
+            "path": path,
             "value": properties
         }), 0, false);
     }
+
+    // currently unused
+    static buildConditions(prefix, value) {
+        let conditions = ""
+        for (const pair of Device.expand(prefix, value)) {
+            if (conditions.length > 0) {
+                conditions += ","
+            }
+            conditions += `ne(${pair.name},${pair.value})`;
+        }
+        return `or(${conditions})`;
+    }
+
+    // currently unused
+    static* expand(prefix, value) {
+        if (typeof value === "boolean") {
+            yield {name: prefix, value: value};
+        } else if (typeof value === "number") {
+            yield {name: prefix, value: value};
+        } else if (value === null || value === undefined) {
+            yield {name: prefix, value: "null"};
+        } else {
+            for (const field in value) {
+                yield* Device.expand(prefix + `/${field}`, value[field]);
+            }
+        }
+    }
+
 
     pause() {
         this.paused = true;
