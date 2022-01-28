@@ -1,4 +1,36 @@
 
+# Cheatsheet
+
+## Creating devices (for the simulator)
+
+Requires drg >= 0.8.1 (alpha1)
+
+```shell
+drg create device -a ctron-test-ditto device1
+drg set password -a ctron-test-ditto foobar1 device1
+drg label device -a device1 ditto=true
+```
+
+Create a list of devices:
+
+```shell
+for i in $(seq -w 1 10); do
+  drg create device -a ctron-test-ditto device$i
+  drg set password -a ctron-test-ditto foobar$i device$i
+  drg set label -a ctron-test-ditto --device device$i ditto=true
+done
+```
+
+Delete them again:
+
+```shell
+for i in $(seq -w 1 10); do
+  drg delete device -a ctron-test-ditto device$i
+done
+```
+
+## Access data
+
 ```shell
 USER="someuser"
 PASSWORD="abc"
