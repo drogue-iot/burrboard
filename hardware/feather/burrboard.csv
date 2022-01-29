@@ -1,7 +1,7 @@
-"Source:","/home/lulf/dev/drogue-iot/burrboard/hardware/feather/burrboard.kicad_sch"
-"Date:","Wed 26 Jan 2022 04:08:14 PM CET"
-"Tool:","Eeschema 6.0.1-1.fc35"
-"Generator:","/usr/share/kicad/plugins/bom_csv_grouped_by_value.py"
+"Source:","/Users/lulf/dev/burrboard/hardware/feather/burrboard.kicad_sch"
+"Date:","2022 January 27, Thursday 20:46:38"
+"Tool:","Eeschema (6.0.0-0)"
+"Generator:","/Applications/KiCad/KiCad.app/Contents/SharedSupport/plugins/bom_csv_grouped_by_value.py"
 "Component Count:","23"
 
 "Individual Components:"

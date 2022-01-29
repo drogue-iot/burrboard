@@ -3,8 +3,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-const MEM_UF2: &[u8] = include_bytes!("memory-uf2.x");
-const MEM_BM: &[u8] = include_bytes!("memory-bm.x");
 fn main() {
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.

@@ -382,6 +382,7 @@ version = "0.1.0"
 dependencies = [
  "embassy",
  "embedded-storage",
+ "embedded-storage-async",
 ]
 
 [[package]]
@@ -394,6 +395,7 @@ dependencies = [
  "embassy-boot",
  "embassy-nrf",
  "embedded-storage",
+ "embedded-storage-async",
  "nrf-softdevice-mbr",
 ]
 
@@ -489,8 +491,15 @@ dependencies = [
 [[package]]
 name = "embedded-storage"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "723dce4e9f25b6e6c5f35628e144794e5b459216ed7da97b7c4b66cdb3fa82ca"
+source = "git+https://github.com/embassy-rs/embedded-storage.git?branch=embassy#24309dcc22dffb1dda10fccf37b4cde92c94bd69"
+
+[[package]]
+name = "embedded-storage-async"
+version = "0.2.0"
+source = "git+https://github.com/embassy-rs/embedded-storage.git?branch=embassy#24309dcc22dffb1dda10fccf37b4cde92c94bd69"
+dependencies = [
+ "embedded-storage",
+]
 
 [[package]]
 name = "fixed"
@@ -760,7 +769,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-mbr"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=6e196a3c48857aba00ff400e4e31e730faab20b1#6e196a3c48857aba00ff400e4e31e730faab20b1"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
 
 [[package]]
 name = "nrf-softdevice-s140"
