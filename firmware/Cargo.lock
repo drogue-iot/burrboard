@@ -332,6 +332,7 @@ dependencies = [
 [[package]]
 name = "drogue-device"
 version = "0.1.0"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=c53431c07aaa351f9d37a387af2df0aec52b6b82#c53431c07aaa351f9d37a387af2df0aec52b6b82"
 dependencies = [
  "atomic-polyfill",
  "base64",
@@ -350,6 +351,7 @@ dependencies = [
 [[package]]
 name = "drogue-device-macros"
 version = "0.1.0"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=c53431c07aaa351f9d37a387af2df0aec52b6b82#c53431c07aaa351f9d37a387af2df0aec52b6b82"
 dependencies = [
  "cfg-if",
  "config",
@@ -362,6 +364,7 @@ dependencies = [
 [[package]]
 name = "embassy"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "atomic-polyfill",
  "cfg-if",
@@ -379,6 +382,7 @@ dependencies = [
 [[package]]
 name = "embassy-boot"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "embassy",
  "embedded-storage",
@@ -388,6 +392,7 @@ dependencies = [
 [[package]]
 name = "embassy-boot-nrf"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -402,6 +407,7 @@ dependencies = [
 [[package]]
 name = "embassy-hal-common"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "cortex-m",
  "embassy",
@@ -412,6 +418,7 @@ dependencies = [
 [[package]]
 name = "embassy-macros"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "darling 0.13.1",
  "proc-macro2",
@@ -422,6 +429,7 @@ dependencies = [
 [[package]]
 name = "embassy-nrf"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -446,6 +454,7 @@ dependencies = [
 [[package]]
 name = "embassy-traits"
 version = "0.1.0"
+source = "git+https://github.com/lulf/embassy.git?branch=embassy-boot#016aa0bd7961aac16cabae431c3049c2727c8326"
 dependencies = [
  "embedded-hal 0.2.6",
  "embedded-hal 1.0.0-alpha.6",
@@ -669,9 +678,9 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 
 [[package]]
 name = "lock_api"
-version = "0.4.5"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "712a4d093c9976e24e7dbca41db895dabcbac38eb5f4045393d17a95bdfb1109"
+checksum = "88943dd7ef4a2e5a4bfa2753aaab3013e34ce2533d1996fb18ef591e315e2b3b"
 dependencies = [
  "scopeguard",
 ]
@@ -738,12 +747,14 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=6e196a3c48857aba00ff400e4e31e730faab20b1#6e196a3c48857aba00ff400e4e31e730faab20b1"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "critical-section",
  "embassy",
+ "embedded-storage",
+ "embedded-storage-async",
  "fixed",
  "futures",
  "heapless",
@@ -756,7 +767,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-macro"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=6e196a3c48857aba00ff400e4e31e730faab20b1#6e196a3c48857aba00ff400e4e31e730faab20b1"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
 dependencies = [
  "Inflector",
  "darling 0.10.2",
@@ -774,7 +785,7 @@ source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb63599649
 [[package]]
 name = "nrf-softdevice-s140"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=6e196a3c48857aba00ff400e4e31e730faab20b1#6e196a3c48857aba00ff400e4e31e730faab20b1"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
 
 [[package]]
 name = "nrf-usbd"

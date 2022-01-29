@@ -7,33 +7,47 @@
 use defmt_rtt as _;
 use drogue_device::{
     actors::{
-        self,
         button::{Button, ButtonPressed},
+        led::Led,
     },
-    drivers,
     drivers::button::Button as ButtonDriver,
-    ActorContext, *,
+    drivers::led::Led as LedDriver,
+    ActorContext,
 };
 use panic_probe as _;
 
-use adxl343::accelerometer::Accelerometer;
-use adxl343::accelerometer::RawAccelerometer;
 use embassy::time::{Duration, Timer};
 use embassy_nrf::config::Config;
-use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
+use embassy_nrf::gpio::{Input, Level, NoPin, Output, OutputDrive, Pull};
 use embassy_nrf::interrupt::Priority;
-use embassy_nrf::peripherals::{P0_26, P0_27, P1_02};
-use embassy_nrf::saadc;
-use embassy_nrf::twim;
+use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
-use embedded_hal::digital::v2::{InputPin, OutputPin};
-use futures::future::{select, Either};
 
 #[macro_use]
 mod logger;
 
 mod fmt;
+
+mod accel;
+mod analog;
+mod counter;
+
+use accel::*;
+use analog::*;
+use counter::*;
+
+pub type RedLed = LedDriver<Output<'static, P0_06>>;
+pub type GreenLed = LedDriver<Output<'static, P0_30>>;
+pub type BlueLed = LedDriver<Output<'static, P0_28>>;
+pub type YellowLed = LedDriver<Output<'static, P0_02>>;
+
+pub type ButtonA = ButtonDriver<Input<'static, P0_27>>;
+pub type ButtonB = ButtonDriver<Input<'static, P0_26>>;
+
+pub type BatteryPin = P0_04;
+pub type TemperaturePin = P0_05;
+pub type LightPin = P0_03;
 
 // Application must run at a lower priority than softdevice
 fn config() -> Config {
@@ -44,7 +58,7 @@ fn config() -> Config {
 }
 
 #[embassy::main(config = "config()")]
-async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
+async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     logger::init(
         s,
         uarte::Uarte::new(
@@ -58,149 +72,84 @@ async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
         ),
     );
 
-    let mut config = twim::Config::default();
-    config.scl_pullup = false;
-    config.sda_pullup = false;
-    config.frequency = twim::Frequency::K100;
-    let irq = interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0);
-    let i2c = twim::Twim::new(p.TWISPI0, irq, p.P0_12, p.P0_11, config);
-
     // Ensure accel is ready
     Timer::after(Duration::from_millis(500)).await;
-    //let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
-    //let mut lsm = lsm6ds33::Lsm6ds33::new(i2c, 0x6A).unwrap();
-    //lsm.set_accelerometer_output(lsm6ds33::AccelerometerOutput::Rate13)
-    //    .unwrap();
-    //lsm.set_accelerometer_scale(lsm6ds33::AccelerometerScale::G04)
-    //    .unwrap();
 
-    let config = saadc::Config::default();
-    let temp_channel = saadc::ChannelConfig::single_ended(&mut p.P0_05);
-    let light_channel = saadc::ChannelConfig::single_ended(&mut p.P0_03);
-    let mut bat_channel = saadc::ChannelConfig::single_ended(&mut p.P0_04);
-    bat_channel.time = saadc::Time::_40US;
-    bat_channel.gain = saadc::Gain::GAIN1_5;
-    bat_channel.resistor = saadc::Resistor::BYPASS;
-    let mut saadc = saadc::Saadc::new(
-        p.SAADC,
-        interrupt::take!(SAADC),
-        config,
-        [temp_channel, light_channel], //, bat_channel],
+    // Actor for accelerometer
+    static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
+    let _accel = ACCEL.mount(s, Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11));
+
+    // Actor for all analog sensors
+    static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
+    let _analog = ANALOG.mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
+
+    // Actor for red LED
+    static RED: ActorContext<Led<RedLed>> = ActorContext::new();
+    RED.mount(
+        s,
+        Led::new(RedLed::new(Output::new(
+            p.P0_06,
+            Level::Low,
+            OutputDrive::Standard,
+        ))),
     );
 
-    static APP: ActorContext<TestApp> = ActorContext::new();
-    let mut leds: [Output<'static, AnyPin>; 4] = [
-        Output::new(p.P0_06.degrade(), Level::Low, OutputDrive::Standard),
-        Output::new(p.P0_30.degrade(), Level::Low, OutputDrive::Standard),
-        Output::new(p.P0_28.degrade(), Level::Low, OutputDrive::Standard),
-        Output::new(p.P0_02.degrade(), Level::Low, OutputDrive::Standard),
-    ];
+    // Actor for green LED
+    static GREEN: ActorContext<Led<GreenLed>> = ActorContext::new();
+    GREEN.mount(
+        s,
+        Led::new(GreenLed::new(Output::new(
+            p.P0_30,
+            Level::Low,
+            OutputDrive::Standard,
+        ))),
+    );
 
-    let app = APP.mount(s, TestApp { leds });
+    // Actor for blue LED
+    static BLUE: ActorContext<Led<BlueLed>> = ActorContext::new();
+    BLUE.mount(
+        s,
+        Led::new(BlueLed::new(Output::new(
+            p.P0_28,
+            Level::Low,
+            OutputDrive::Standard,
+        ))),
+    );
 
+    // Actor for yellow LED
+    static YELLOW: ActorContext<Led<YellowLed>> = ActorContext::new();
+    YELLOW.mount(
+        s,
+        Led::new(YellowLed::new(Output::new(
+            p.P0_02,
+            Level::Low,
+            OutputDrive::Standard,
+        ))),
+    );
+
+    // Actor for button A and press counter
+    static COUNTER_A: ActorContext<Counter> = ActorContext::new();
     static BUTTON_A: ActorContext<
-        Button<ButtonDriver<Input<'static, P0_27>>, ButtonPressed<TestApp>>,
+        Button<ButtonDriver<Input<'static, P0_27>>, ButtonPressed<Counter>>,
     > = ActorContext::new();
-    static BUTTON_B: ActorContext<
-        Button<ButtonDriver<Input<'static, P0_26>>, ButtonPressed<TestApp>>,
-    > = ActorContext::new();
-
     BUTTON_A.mount(
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_27, Pull::None)),
-            ButtonPressed(app, Event::Left),
+            ButtonPressed(COUNTER_A.mount(s, Counter::new()), Increment),
         ),
     );
+
+    // Actor for button B and press counter
+    static COUNTER_B: ActorContext<Counter> = ActorContext::new();
+    static BUTTON_B: ActorContext<
+        Button<ButtonDriver<Input<'static, P0_26>>, ButtonPressed<Counter>>,
+    > = ActorContext::new();
     BUTTON_B.mount(
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_26, Pull::None)),
-            ButtonPressed(app, Event::Right),
+            ButtonPressed(COUNTER_B.mount(s, Counter::new()), Increment),
         ),
     );
-
-    loop {
-        let mut buf = [0; 2];
-        saadc.sample(&mut buf).await;
-
-        //info!("temp sample: {}", &buf[0]);
-
-        let voltage = buf[0] as f32 * 3.3;
-        let voltage = voltage / 4095 as f32;
-        //info!("Voltage: {}", voltage);
-        let tempc = (voltage - 0.5) * 100.0;
-        info!("Temperature: {}", tempc);
-        info!("brightness sample: {}", buf[1] as f32 / 4095 as f32);
-
-        /*
-        info!("bat sample: {}", &buf[2]);
-        let bat_voltage = buf[2] as f32 * 3 as f32;
-        let bat_voltage = bat_voltage * 1.5 / 4064 as f32;
-        info!("Bat voltage: {} V", bat_voltage);
-        */
-        //        let accel = adxl.accel_norm().unwrap();
-        //       info!("Accel (X, Y, Z): ({}, {}, {})", accel.x, accel.y, accel.z);
-
-        //let result = lsm.read_accelerometer().unwrap();
-        //info!("Result: x: {}, y: {}, z: {}", result.0, result.1, result.2);
-        Timer::after(Duration::from_millis(1000)).await;
-    }
-}
-
-pub struct TestApp {
-    leds: [Output<'static, AnyPin>; 4],
-}
-
-#[derive(Clone, Copy)]
-pub enum Event {
-    Left,
-    Right,
-}
-
-impl Actor for TestApp {
-    type Message<'m> = Event;
-
-    type OnMountFuture<'m, M>
-    where
-        M: 'm,
-    = impl core::future::Future<Output = ()> + 'm;
-
-    fn on_mount<'m, M>(
-        &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
-    ) -> Self::OnMountFuture<'m, M>
-    where
-        M: Inbox<Self> + 'm,
-        Self: 'm,
-    {
-        async move {
-            let mut led_idx = 0;
-            loop {
-                if let Some(mut m) = inbox.next().await {
-                    self.leds[led_idx].set_low();
-                    match *m.message() {
-                        Event::Left => {
-                            info!("Go left");
-                            if led_idx == 0 {
-                                led_idx = 3;
-                            } else {
-                                led_idx -= 1;
-                            }
-                        }
-                        Event::Right => {
-                            info!("Go right");
-                            if led_idx == 3 {
-                                led_idx = 0;
-                            } else {
-                                led_idx += 1;
-                            }
-                        }
-                    }
-                    self.leds[led_idx].set_high();
-                }
-            }
-        }
-    }
 }
