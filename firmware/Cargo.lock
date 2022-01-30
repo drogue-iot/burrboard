@@ -13,35 +13,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "accelerometer"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fdb58b67792d50fc2e41763d7ebfff7a0fd479e8bf3a14d4c6c76415170486a"
-dependencies = [
- "micromath",
-]
-
-[[package]]
-name = "accelerometer"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a4586d95cb0695e748760c9a751141eebb68265b1b20392a0f14db608679f7a"
-dependencies = [
- "micromath",
-]
-
-[[package]]
-name = "adxl343"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fb325e5b476e84d1a271584903971ca39dd9049fa9b7a4bc00e5d5531281be9"
-dependencies = [
- "accelerometer 0.11.0",
- "bitflags",
- "embedded-hal 0.2.6",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,8 +92,6 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 name = "burrboard-firmware"
 version = "0.1.0"
 dependencies = [
- "accelerometer 0.12.0",
- "adxl343",
  "bitflags",
  "cortex-m",
  "cortex-m-rt",
@@ -133,6 +102,8 @@ dependencies = [
  "embassy-boot-nrf",
  "embassy-nrf",
  "embedded-hal 0.2.6",
+ "embedded-storage",
+ "embedded-storage-async",
  "futures",
  "heapless",
  "log",
@@ -602,16 +573,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "generic-array"
-version = "0.14.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd48d33ec7f05fbfa152300fdad764757cbded343c1aa1cff2fbaf4134851803"
-dependencies = [
- "typenum",
- "version_check",
-]
-
-[[package]]
 name = "half"
 version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -708,15 +669,6 @@ name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
-
-[[package]]
-name = "micromath"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
-dependencies = [
- "generic-array",
-]
 
 [[package]]
 name = "nb"

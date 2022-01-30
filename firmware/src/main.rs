@@ -23,6 +23,7 @@ use embassy_nrf::interrupt::Priority;
 use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
+use nrf_softdevice::Softdevice;
 
 #[macro_use]
 mod logger;
@@ -32,10 +33,14 @@ mod fmt;
 mod accel;
 mod analog;
 mod counter;
+mod dfu;
+mod flash;
 
 use accel::*;
 use analog::*;
 use counter::*;
+use dfu::*;
+use flash::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
 pub type GreenLed = LedDriver<Output<'static, P0_30>>;
@@ -71,6 +76,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             Default::default(),
         ),
     );
+
+    let sd = Softdevice::enable(&Default::default());
 
     // Ensure accel is ready
     Timer::after(Duration::from_millis(500)).await;
@@ -152,4 +159,12 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             ButtonPressed(COUNTER_B.mount(s, Counter::new()), Increment),
         ),
     );
+
+    // Actor for Flash
+    static FLASH: ActorContext<SharedFlash> = ActorContext::new();
+    let flash = FLASH.mount(s, SharedFlash::new(sd));
+
+    // Actor for DFU
+    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
+    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
 }
