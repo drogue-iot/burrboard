@@ -12,20 +12,17 @@ use drogue_device::{
     },
     drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
-    ActorContext, Address,
+    ActorContext,
 };
 use panic_probe as _;
 
 use embassy::time::{Duration, Timer};
-use embassy::util::Forever;
 use embassy_nrf::config::Config;
 use embassy_nrf::gpio::{Input, Level, NoPin, Output, OutputDrive, Pull};
 use embassy_nrf::interrupt::Priority;
 use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
-use heapless::Vec;
-use nrf_softdevice::ble::gatt_server;
 use nrf_softdevice::Softdevice;
 
 #[macro_use]
@@ -35,14 +32,12 @@ mod fmt;
 
 mod accel;
 mod analog;
-mod ble;
 mod counter;
 mod dfu;
 mod flash;
 
 use accel::*;
 use analog::*;
-use ble::*;
 use counter::*;
 use dfu::*;
 use flash::*;
@@ -81,8 +76,6 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             Default::default(),
         ),
     );
-
-    let sd = Softdevice::enable(&Default::default());
 
     // Ensure accel is ready
     Timer::after(Duration::from_millis(500)).await;
@@ -166,69 +159,11 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     );
 
     // Actor for shared access to flash
+    let sd = Softdevice::enable(&Default::default());
     static FLASH: ActorContext<SharedFlash> = ActorContext::new();
     let flash = FLASH.mount(s, SharedFlash::new(sd));
 
     // Actor for DFU
     static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
     DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
-
-    // BLE for testing
-    let sd = BleController::new_sd("Drogue IoT BurrBoard");
-
-    let server: BurrBoardServer = gatt_server::register(sd).unwrap();
-    server
-        .device_info
-        .model_number_set(Vec::from_slice(b"Drogue IoT BurrBoard").unwrap())
-        .unwrap();
-    server
-        .device_info
-        .serial_number_set(Vec::from_slice(b"1").unwrap())
-        .unwrap();
-    server
-        .device_info
-        .manufacturer_name_set(Vec::from_slice(b"Red Hat").unwrap())
-        .unwrap();
-    server
-        .device_info
-        .hardware_revision_set(Vec::from_slice(b"3").unwrap());
-    static SERVER: Forever<BurrBoardServer> = Forever::new();
-    let server = SERVER.put(server);
-
-    static CONTROLLER: ActorContext<BleController> = ActorContext::new();
-    CONTROLLER.mount(s, BleController::new(sd));
-
-    static GATT: ActorContext<GattServer<BurrBoardServer, GattHandler>> = ActorContext::new();
-    let gatt = GATT.mount(s, GattServer::new(server, GattHandler {}));
-
-    static ADVERTISER: ActorContext<
-        BleAdvertiser<Address<GattServer<BurrBoardServer, GattHandler>>>,
-    > = ActorContext::new();
-    ADVERTISER.mount(s, BleAdvertiser::new(sd, "Drogue IoT BurrBoard", gatt));
-}
-
-pub struct GattHandler;
-
-impl GattEventHandler<BurrBoardServer> for GattHandler {
-    type OnEventFuture<'m>
-    where
-        Self: 'm,
-    = impl core::future::Future<Output = ()> + 'm;
-    fn on_event<'m>(&'m mut self, event: GattEvent<BurrBoardServer>) -> Self::OnEventFuture<'m> {
-        async move {
-            match event {
-                GattEvent::Write(connection, e) => {
-                    //match e {
-                    //    self.temperature.request((connection, e)).unwrap().await;
-                    //}
-                }
-                GattEvent::Connected(_) => {
-                    info!("Connected");
-                }
-                GattEvent::Disconnected(_) => {
-                    info!("Disconnected");
-                }
-            }
-        }
-    }
 }
