@@ -41,6 +41,7 @@ defmt = [
       "embassy/defmt",
       "drogue-device/defmt",
       "panic-probe",
+      "nrf-softdevice/defmt",
 ]
 log = [
     "dep:log",

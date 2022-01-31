@@ -15,12 +15,14 @@ use drogue_device::{
     ActorContext,
 };
 use embassy::time::{Duration, Timer};
+use embassy::util::Forever;
 use embassy_nrf::config::Config;
 use embassy_nrf::gpio::{Input, Level, NoPin, Output, OutputDrive, Pull};
 use embassy_nrf::interrupt::Priority;
 use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
+use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::raw;
 use nrf_softdevice::Softdevice;
 
@@ -43,12 +45,14 @@ mod analog;
 mod counter;
 mod dfu;
 mod flash;
+mod gatt;
 
 use accel::*;
 use analog::*;
 use counter::*;
 use dfu::*;
 use flash::*;
+use gatt::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
 pub type GreenLed = LedDriver<Output<'static, P0_30>>;
@@ -77,8 +81,45 @@ async fn softdevice_task(sd: &'static Softdevice) {
 
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
-    let sd = Softdevice::enable(&Default::default());
+    let config = nrf_softdevice::Config {
+        clock: Some(raw::nrf_clock_lf_cfg_t {
+            source: raw::NRF_CLOCK_LF_SRC_RC as u8,
+            rc_ctiv: 4,
+            rc_temp_ctiv: 2,
+            accuracy: 7,
+        }),
+        conn_gap: Some(raw::ble_gap_conn_cfg_t {
+            conn_count: 6,
+            event_length: 6,
+        }),
+        conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 128 }),
+        gatts_attr_tab_size: Some(raw::ble_gatts_cfg_attr_tab_size_t {
+            attr_tab_size: 32768,
+        }),
+        gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
+            adv_set_count: 1,
+            periph_role_count: 3,
+            central_role_count: 0,
+            central_sec_count: 0,
+            _bitfield_1: raw::ble_gap_cfg_role_count_t::new_bitfield_1(0),
+        }),
+        gap_device_name: Some(raw::ble_gap_cfg_device_name_t {
+            p_value: b"BurrBoard" as *const u8 as _,
+            current_len: 9,
+            max_len: 9,
+            write_perm: unsafe { core::mem::zeroed() },
+            _bitfield_1: raw::ble_gap_cfg_device_name_t::new_bitfield_1(
+                raw::BLE_GATTS_VLOC_STACK as u8,
+            ),
+        }),
+        ..Default::default()
+    };
+
+    let sd = Softdevice::enable(&config);
     s.spawn(softdevice_task(sd)).unwrap();
+
+    static GATT: Forever<BurrBoardServer> = Forever::new();
+    let server = GATT.put(gatt_server::register(sd).unwrap());
 
     #[cfg(feature = "log")]
     {
@@ -157,7 +198,10 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_27, Pull::None)),
-            ButtonPressed(COUNTER_A.mount(s, Counter::new()), Increment),
+            ButtonPressed(
+                COUNTER_A.mount(s, Counter::new(BoardButton::A, &server.board)),
+                Increment,
+            ),
         ),
     );
 
@@ -170,7 +214,10 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_26, Pull::None)),
-            ButtonPressed(COUNTER_B.mount(s, Counter::new()), Increment),
+            ButtonPressed(
+                COUNTER_B.mount(s, Counter::new(BoardButton::B, &server.board)),
+                Increment,
+            ),
         ),
     );
 
@@ -179,6 +226,44 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     let flash = FLASH.mount(s, SharedFlash::new(sd));
 
     // Actor for DFU
-    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
-    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+    //    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
+    //    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+
+    s.spawn(bluetooth_task(sd, server)).unwrap();
+}
+
+#[embassy::task]
+async fn bluetooth_task(sd: &'static Softdevice, server: &'static BurrBoardServer) {
+    #[rustfmt::skip]
+    let adv_data = &[
+        0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
+        0x03, 0x03, 0x60, 0x18,
+        0x0a, 0x09, b'B', b'u', b'r', b'r', b'B', b'o', b'a', b'r', b'd',
+    ];
+    #[rustfmt::skip]
+    let scan_data = &[
+        0x03, 0x03, 0x09, 0x18,
+    ];
+
+    loop {
+        let config = peripheral::Config::default();
+        let adv = peripheral::ConnectableAdvertisement::ScannableUndirected {
+            adv_data,
+            scan_data,
+        };
+        let conn = unwrap!(peripheral::advertise_connectable(sd, adv, &config).await);
+
+        info!("advertising done!");
+
+        let res = gatt_server::run(&conn, server, |e| match e {
+            BurrBoardServerEvent::Board(_) => {}
+            BurrBoardServerEvent::DeviceInfo(_) => {}
+            BurrBoardServerEvent::Firmware(_) => {}
+        })
+        .await;
+
+        if let Err(e) = res {
+            info!("gatt_server run exited with error: {:?}", e);
+        }
+    }
 }
