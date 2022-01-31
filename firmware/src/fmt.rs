@@ -1,6 +1,9 @@
 #![macro_use]
 #![allow(unused_macros)]
 
+#[cfg(all(feature = "defmt", feature = "log"))]
+compile_error!("You may not enable both `defmt` and `log` features.");
+
 macro_rules! assert {
     ($($x:tt)*) => {
         {
@@ -131,9 +134,8 @@ macro_rules! info {
         {
             #[cfg(feature = "log")]
             ::log::info!($s $(, $x)*);
-
+            #[cfg(feature = "defmt")]
             ::defmt::info!($s $(, $x)*);
-            print!($s $(, $x)*);
             #[cfg(not(any(feature = "log", feature="defmt")))]
             let _ = ($( & $x ),*);
         }

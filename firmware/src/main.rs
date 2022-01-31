@@ -3,8 +3,8 @@
 #![macro_use]
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
+#![allow(unused)]
 
-use defmt_rtt as _;
 use drogue_device::{
     actors::{
         button::{Button, ButtonPressed},
@@ -14,7 +14,12 @@ use drogue_device::{
     drivers::led::Led as LedDriver,
     ActorContext,
 };
+
+#[cfg(all(feature = "defmt", not(feature = "log")))]
 use panic_probe as _;
+
+#[cfg(all(feature = "defmt", not(feature = "log")))]
+use defmt_rtt as _;
 
 use embassy::time::{Duration, Timer};
 use embassy_nrf::config::Config;
@@ -25,10 +30,13 @@ use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
 use nrf_softdevice::Softdevice;
 
-#[macro_use]
+mod fmt;
+
+#[cfg(feature = "log")]
 mod logger;
 
-mod fmt;
+#[cfg(not(feature = "defmt"))]
+use panic_reset as _;
 
 mod accel;
 mod analog;
@@ -64,9 +72,9 @@ fn config() -> Config {
 
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
-    logger::init(
-        s,
-        uarte::Uarte::new(
+    #[cfg(feature = "log")]
+    {
+        logger::init(uarte::Uarte::new(
             p.UARTE0,
             interrupt::take!(UARTE0_UART0),
             p.P0_24,
@@ -74,8 +82,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             NoPin,
             NoPin,
             Default::default(),
-        ),
-    );
+        ));
+    }
 
     // Ensure accel is ready
     Timer::after(Duration::from_millis(500)).await;

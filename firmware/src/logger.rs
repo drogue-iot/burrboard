@@ -1,5 +1,7 @@
-use drogue_device::*;
+use embassy::util::Forever;
+
 use embassy_nrf::{peripherals::UARTE0, uarte};
+use log::{Level, Log, Metadata, Record};
 
 pub struct UartLogger<T: uarte::Instance> {
     uart: uarte::Uarte<'static, T>,
@@ -11,49 +13,30 @@ impl<T: uarte::Instance> UartLogger<T> {
     }
 }
 
-pub static LOGGER: ActorContext<UartLogger<UARTE0>, 4> = ActorContext::new();
+pub static LOGGER: Forever<UartLogger<UARTE0>> = Forever::new();
 
-impl<T: uarte::Instance> Actor for UartLogger<T> {
-    type Message<'m> = heapless::String<128>;
+pub fn init(uart: uarte::Uarte<'static, UARTE0>) {
+    LOGGER.put(UartLogger::new(uart));
+    log::set_max_level(log::LevelFilter::Debug);
+    log::set_logger(unsafe { LOGGER.steal() }).unwrap();
+}
 
-    // Workaround until async traits
-    type OnMountFuture<'m, M>
-    where
-        M: 'm,
-    = impl core::future::Future<Output = ()> + 'm;
+impl Log for UartLogger<UARTE0> {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= Level::Info
+    }
 
-    // Actor entry point
-    fn on_mount<'m, M>(
-        &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
-    ) -> Self::OnMountFuture<'m, M>
-    where
-        M: Inbox<Self> + 'm,
-        Self: 'm,
-    {
-        async move {
-            loop {
-                if let Some(mut m) = inbox.next().await {
-                    let m = m.message();
-                    let _ = self.uart.write(m.as_bytes()).await;
-                }
-            }
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            let mut b: heapless::String<256> = heapless::String::new();
+            use core::fmt::Write;
+            let _ = write!(b, "{}\r\n", record.args());
+            let _ = unsafe { LOGGER.steal() }
+                .uart
+                .blocking_write(b.as_bytes())
+                .unwrap();
         }
     }
-}
 
-pub fn init(s: embassy::executor::Spawner, uart: uarte::Uarte<'static, UARTE0>) {
-    LOGGER.mount(s, UartLogger::new(uart));
-}
-
-#[macro_export]
-macro_rules! print {
-    ($s:literal $(, $x:expr)* $(,)?) => {
-        let mut b = heapless::String::new();
-        use core::fmt::Write;
-        let _ = write!(b, $s $(, $x)*);
-        let _ = write!(b, "\r\n");
-        let _ = logger::LOGGER.address().request(b).unwrap().await;
-    };
+    fn flush(&self) {}
 }

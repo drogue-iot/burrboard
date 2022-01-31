@@ -1,4 +1,3 @@
-use crate::logger;
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
 use embassy_boot_nrf::FirmwareUpdater;
