@@ -14,13 +14,6 @@ use drogue_device::{
     drivers::led::Led as LedDriver,
     ActorContext,
 };
-
-#[cfg(all(feature = "defmt", not(feature = "log")))]
-use panic_probe as _;
-
-#[cfg(all(feature = "defmt", not(feature = "log")))]
-use defmt_rtt as _;
-
 use embassy::time::{Duration, Timer};
 use embassy_nrf::config::Config;
 use embassy_nrf::gpio::{Input, Level, NoPin, Output, OutputDrive, Pull};
@@ -28,7 +21,14 @@ use embassy_nrf::interrupt::Priority;
 use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
+use nrf_softdevice::raw;
 use nrf_softdevice::Softdevice;
+
+#[cfg(all(feature = "defmt", not(feature = "log")))]
+use panic_probe as _;
+
+#[cfg(all(feature = "defmt", not(feature = "log")))]
+use defmt_rtt as _;
 
 mod fmt;
 
@@ -70,8 +70,16 @@ fn config() -> Config {
     config
 }
 
+#[embassy::task]
+async fn softdevice_task(sd: &'static Softdevice) {
+    sd.run().await;
+}
+
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
+    let sd = Softdevice::enable(&Default::default());
+    s.spawn(softdevice_task(sd)).unwrap();
+
     #[cfg(feature = "log")]
     {
         logger::init(uarte::Uarte::new(
@@ -89,8 +97,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     Timer::after(Duration::from_millis(500)).await;
 
     // Actor for accelerometer
-    static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
-    let _accel = ACCEL.mount(s, Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11));
+    // static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
+    //let _accel = ACCEL.mount(s, Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11));
 
     // Actor for all analog sensors
     static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
@@ -167,7 +175,6 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     );
 
     // Actor for shared access to flash
-    let sd = Softdevice::enable(&Default::default());
     static FLASH: ActorContext<SharedFlash> = ActorContext::new();
     let flash = FLASH.mount(s, SharedFlash::new(sd));
 

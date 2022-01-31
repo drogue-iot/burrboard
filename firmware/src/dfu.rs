@@ -28,11 +28,12 @@ impl<F: AsyncNorFlash + AsyncReadNorFlash> Actor for FirmwareManager<F> {
         M: Inbox<Self> + 'm,
         Self: 'm,
     {
+        info!("Starting firmware manager");
         async move {
             // Mark ourselves as successfully booted
             // TODO: Make a more involved health check?
             self.updater.mark_booted(&mut self.flash).await.unwrap();
-            info!("Marked firmware as booted");
+            info!("Marked firmware as bootable");
         }
     }
 }

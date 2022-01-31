@@ -15,8 +15,6 @@ pub struct Accelerometer {
 impl Accelerometer {
     pub fn new(twi: TWISPI0, sda: P0_12, scl: P0_11) -> Self {
         let mut config = twim::Config::default();
-        config.scl_pullup = false;
-        config.sda_pullup = false;
         config.frequency = twim::Frequency::K100;
         let irq = interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0);
         let i2c = twim::Twim::new(twi, irq, sda, scl, config);
