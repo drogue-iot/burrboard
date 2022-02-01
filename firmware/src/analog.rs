@@ -30,34 +30,56 @@ impl AnalogSensors {
     }
 }
 
+pub struct Read;
+
+#[derive(Clone, Copy, Default)]
+pub struct SensorValues {
+    pub temperature: i16,
+    pub brightness: u16,
+    pub battery: u8,
+}
+
 impl Actor for AnalogSensors {
+    type Message<'m> = Read;
+    type Response = SensorValues;
+
     type OnMountFuture<'m, M>
     where
         Self: 'm,
         M: 'm,
     = impl Future<Output = ()> + 'm;
-    fn on_mount<'m, M>(&'m mut self, _: Address<Self>, _: &'m mut M) -> Self::OnMountFuture<'m, M>
+    fn on_mount<'m, M>(
+        &'m mut self,
+        _: Address<Self>,
+        inbox: &'m mut M,
+    ) -> Self::OnMountFuture<'m, M>
     where
         M: Inbox<Self> + 'm,
         Self: 'm,
     {
         async move {
             loop {
-                let mut buf = [0; 3];
-                self.saadc.sample(&mut buf).await;
+                if let Some(mut m) = inbox.next().await {
+                    let mut buf = [0; 3];
+                    self.saadc.sample(&mut buf).await;
 
-                let voltage = buf[0] as f32 * 3.3;
-                let voltage = voltage / 4095 as f32;
-                let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
-                let brightness = buf[1] as u16;
-                let battery_voltage = buf[2] as f32 * 4.5;
-                let battery = battery_voltage / 4095 as f32;
+                    let voltage = buf[0] as f32 * 3.3;
+                    let voltage = voltage / 4095 as f32;
+                    let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
+                    let brightness = buf[1] as u16;
+                    let battery_voltage = buf[2] as f32 * 4.5;
+                    let battery = (battery_voltage / 4095 as f32) as u8 / 100;
 
-                info!(
-                    "Temperature: {:?}, brightness: {:?}, battery: {:?}",
-                    temperature, brightness, battery
-                );
-                Timer::after(Duration::from_secs(1)).await;
+                    info!(
+                        "Temperature: {:?}, brightness: {:?}, battery: {:?}",
+                        temperature, brightness, battery
+                    );
+                    m.set_response(SensorValues {
+                        temperature,
+                        brightness,
+                        battery,
+                    });
+                }
             }
         }
     }

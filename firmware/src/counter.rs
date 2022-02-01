@@ -11,6 +11,7 @@ pub enum BoardButton {
 pub struct Counter {
     presses: u32,
     button: BoardButton,
+
     board: &'static BurrBoardService,
 }
 
@@ -25,10 +26,14 @@ impl Counter {
 }
 
 #[derive(Clone, Copy)]
-pub struct Increment;
+pub enum CounterMessage {
+    Increment,
+    Read,
+}
 
 impl Actor for Counter {
-    type Message<'m> = Increment;
+    type Message<'m> = CounterMessage;
+    type Response = Option<u32>;
 
     type OnMountFuture<'m, M>
     where
@@ -46,13 +51,20 @@ impl Actor for Counter {
     {
         async move {
             loop {
-                if let Some(_) = inbox.next().await {
-                    self.presses += 1;
-                    match self.button {
-                        BoardButton::A => self.board.button_a_set(self.presses),
-                        BoardButton::B => self.board.button_b_set(self.presses),
+                if let Some(mut m) = inbox.next().await {
+                    let response = match *m.message() {
+                        CounterMessage::Increment => {
+                            self.presses += 1;
+                            match self.button {
+                                BoardButton::A => self.board.button_a_set(self.presses),
+                                BoardButton::B => self.board.button_b_set(self.presses),
+                            };
+                            info!("Presses: {}", self.presses);
+                            None
+                        }
+                        CounterMessage::Read => Some(self.presses),
                     };
-                    info!("Presses: {}", self.presses);
+                    m.set_response(response);
                 }
             }
         }

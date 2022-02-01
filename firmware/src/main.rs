@@ -10,7 +10,7 @@ use drogue_device::{
     drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
     traits::led::Led as _,
-    ActorContext,
+    ActorContext, Address,
 };
 use embassy::time::{Duration, Timer};
 use embassy::util::Forever;
@@ -141,7 +141,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     // Actor for all analog sensors
     static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
-    let _analog = ANALOG.mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
+    let analog = ANALOG.mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
 
     // LEDs
     let mut red = RedLed::new(Output::new(p.P0_06, Level::Low, OutputDrive::Standard));
@@ -154,14 +154,12 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static BUTTON_A: ActorContext<
         Button<ButtonDriver<Input<'static, P0_27>>, ButtonPressed<Counter>>,
     > = ActorContext::new();
-    BUTTON_A.mount(
+    let counter_a = COUNTER_A.mount(s, Counter::new(BoardButton::A, &server.board));
+    let button_a = BUTTON_A.mount(
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_27, Pull::None)),
-            ButtonPressed(
-                COUNTER_A.mount(s, Counter::new(BoardButton::A, &server.board)),
-                Increment,
-            ),
+            ButtonPressed(counter_a, CounterMessage::Increment),
         ),
     );
 
@@ -170,20 +168,22 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static BUTTON_B: ActorContext<
         Button<ButtonDriver<Input<'static, P0_26>>, ButtonPressed<Counter>>,
     > = ActorContext::new();
-    BUTTON_B.mount(
+    let counter_b = COUNTER_B.mount(s, Counter::new(BoardButton::B, &server.board));
+    let button_b = BUTTON_B.mount(
         s,
         Button::new(
             ButtonDriver::new(Input::new(p.P0_26, Pull::None)),
-            ButtonPressed(
-                COUNTER_B.mount(s, Counter::new(BoardButton::B, &server.board)),
-                Increment,
-            ),
+            ButtonPressed(counter_b, CounterMessage::Increment),
         ),
     );
 
     // Actor for shared access to flash
     static FLASH: ActorContext<SharedFlash> = ActorContext::new();
     let flash = FLASH.mount(s, SharedFlash::new(sd));
+
+    // Actor for DFU
+    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
+    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
 
     // Self test
     red.on();
@@ -199,15 +199,43 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     blue.off();
     yellow.off();
 
-    // Actor for DFU
-    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
-    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+    // BLE Gatt test service
+    #[cfg(feature = "gatt")]
+    {
+        static MONITOR: ActorContext<BurrBoardMonitor> = ActorContext::new();
+        let monitor = MONITOR.mount(
+            s,
+            BurrBoardMonitor::new(&server.board, analog, counter_a, counter_b),
+        );
+        s.spawn(bluetooth_task(
+            sd,
+            server,
+            Leds {
+                red,
+                green,
+                blue,
+                yellow,
+            },
+            monitor,
+        ))
+        .unwrap();
+    }
+}
 
-    s.spawn(bluetooth_task(sd, server)).unwrap();
+pub struct Leds {
+    pub red: RedLed,
+    pub green: GreenLed,
+    pub blue: BlueLed,
+    pub yellow: YellowLed,
 }
 
 #[embassy::task]
-async fn bluetooth_task(sd: &'static Softdevice, server: &'static BurrBoardServer) {
+async fn bluetooth_task(
+    sd: &'static Softdevice,
+    server: &'static BurrBoardServer,
+    mut leds: Leds,
+    monitor: Address<BurrBoardMonitor>,
+) {
     #[rustfmt::skip]
     let adv_data = &[
         0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
@@ -229,12 +257,47 @@ async fn bluetooth_task(sd: &'static Softdevice, server: &'static BurrBoardServe
 
         info!("advertising done!");
 
+        monitor.notify(MonitorEvent::Connected(conn.clone()));
         let res = gatt_server::run(&conn, server, |e| match e {
-            BurrBoardServerEvent::Board(_) => {}
+            BurrBoardServerEvent::Board(event) => match event {
+                BurrBoardServiceEvent::RedLedWrite(val) => {
+                    if val == 0 {
+                        leds.red.off();
+                    } else {
+                        leds.red.on();
+                    }
+                }
+                BurrBoardServiceEvent::GreenLedWrite(val) => {
+                    if val == 0 {
+                        leds.green.off();
+                    } else {
+                        leds.green.on();
+                    }
+                }
+                BurrBoardServiceEvent::BlueLedWrite(val) => {
+                    if val == 0 {
+                        leds.blue.off();
+                    } else {
+                        leds.blue.on();
+                    }
+                }
+                BurrBoardServiceEvent::YellowLedWrite(val) => {
+                    if val == 0 {
+                        leds.yellow.off();
+                    } else {
+                        leds.yellow.on();
+                    }
+                }
+                e => {
+                    monitor.notify(MonitorEvent::Event(e));
+                }
+                _ => {}
+            },
             BurrBoardServerEvent::DeviceInfo(_) => {}
             BurrBoardServerEvent::Firmware(_) => {}
         })
         .await;
+        monitor.notify(MonitorEvent::Disconnected(conn));
 
         if let Err(e) = res {
             info!("gatt_server run exited with error: {:?}", e);
