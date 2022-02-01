@@ -2,33 +2,33 @@
 
 This is the firmware for the burrboard application. 
 
-
 ## Prerequisites
 
-* [uf2] tools
-* [cargo-binutils](https://github.com/rust-embedded/cargo-binutils)
+* `probe-run`
+* `probe-rs-cli`
+* `cargo-flash`
 
-### Uf2 utils
 
-* Clone the [uf2] git repository.
-* Add the utils/ folder of your local copy to your $PATH environment variable.
- 
- ### cargo-binutils
- 
- ```
- cargo install cargo-binutils
- rustup component add llvm-tools-preview
- ```
+## Installing softdevice
+
+Download `softdevice.hex` from https://github.com/drogue-iot/burrboard/releases/tag/firmware-0.1
+
+```
+probe-rs-cli download softdevice.hex --format Hex --chip nRF52840_xxAA
+```
+
+## Installing bootloader
+
+Download `bootloader.hex` from https://github.com/drogue-iot/burrboard/releases/tag/firmware-0.1
+
+```
+probe-rs-cli download bootloader.hex --base-address 0xfc000 --format Hex --chip nRF52840_xxAA
+```
 
 ## Running
 
-* Make sure the feather is in bootloader mode (double-press the reset button)
-* Set the MEDIA env to match your system
+To run with debugger and enabling GATT service:
 
 ```
-MEDIA=/run/media/lulf/FTHR840BOOT cargo run --release
+DEFMT_LOG=info cargo run --release --features defmt,gatt
 ```
-
-NOTE: To watch debug output, connect a serial console to the UART TX/RX pins.
-
-[uf2]: https://github.com/microsoft/uf2
