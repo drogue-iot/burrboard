@@ -137,9 +137,15 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     // Actor for accelerometer
     static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
-    let accel: Option<Address<Accelerometer>> = Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11)
-        .map(|a| ACCEL.mount(s, a))
-        .ok();
+    #[cfg(feature = "lsm")]
+    let accel: Option<Address<Accelerometer>> =
+        if let Ok(accel) = Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11) {
+            Some(ACCEL.mount(s, accel))
+        } else {
+            None
+        };
+    #[cfg(not(feature = "lsm"))]
+    let accel: Option<Address<Accelerometer>> = None;
 
     // Actor for all analog sensors
     static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
@@ -200,6 +206,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     green.off();
     blue.off();
     yellow.off();
+
+    info!("Firmware started");
 
     // BLE Gatt test service
     #[cfg(feature = "gatt")]
