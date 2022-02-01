@@ -1,6 +1,7 @@
 # burrboard firmware
 
-This is the firmware for the burrboard application. 
+This is the firmware for the burrboard application.  This works with both the nRF feather sense, the
+nRF feather express, and the nRF52840 DK.
 
 ## Prerequisites
 
