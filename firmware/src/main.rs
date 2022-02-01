@@ -6,12 +6,10 @@
 #![allow(unused)]
 
 use drogue_device::{
-    actors::{
-        button::{Button, ButtonPressed},
-        led::Led,
-    },
+    actors::button::{Button, ButtonPressed},
     drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
+    traits::led::Led as _,
     ActorContext,
 };
 use embassy::time::{Duration, Timer};
@@ -145,49 +143,11 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
     let _analog = ANALOG.mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
 
-    // Actor for red LED
-    static RED: ActorContext<Led<RedLed>> = ActorContext::new();
-    RED.mount(
-        s,
-        Led::new(RedLed::new(Output::new(
-            p.P0_06,
-            Level::Low,
-            OutputDrive::Standard,
-        ))),
-    );
-
-    // Actor for green LED
-    static GREEN: ActorContext<Led<GreenLed>> = ActorContext::new();
-    GREEN.mount(
-        s,
-        Led::new(GreenLed::new(Output::new(
-            p.P0_30,
-            Level::Low,
-            OutputDrive::Standard,
-        ))),
-    );
-
-    // Actor for blue LED
-    static BLUE: ActorContext<Led<BlueLed>> = ActorContext::new();
-    BLUE.mount(
-        s,
-        Led::new(BlueLed::new(Output::new(
-            p.P0_28,
-            Level::Low,
-            OutputDrive::Standard,
-        ))),
-    );
-
-    // Actor for yellow LED
-    static YELLOW: ActorContext<Led<YellowLed>> = ActorContext::new();
-    YELLOW.mount(
-        s,
-        Led::new(YellowLed::new(Output::new(
-            p.P0_02,
-            Level::Low,
-            OutputDrive::Standard,
-        ))),
-    );
+    // LEDs
+    let mut red = RedLed::new(Output::new(p.P0_06, Level::Low, OutputDrive::Standard));
+    let mut green = GreenLed::new(Output::new(p.P0_30, Level::Low, OutputDrive::Standard));
+    let mut blue = BlueLed::new(Output::new(p.P0_28, Level::Low, OutputDrive::Standard));
+    let mut yellow = YellowLed::new(Output::new(p.P0_02, Level::Low, OutputDrive::Standard));
 
     // Actor for button A and press counter
     static COUNTER_A: ActorContext<Counter> = ActorContext::new();
@@ -225,9 +185,23 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static FLASH: ActorContext<SharedFlash> = ActorContext::new();
     let flash = FLASH.mount(s, SharedFlash::new(sd));
 
+    // Self test
+    red.on();
+    Timer::after(Duration::from_secs(1)).await;
+    green.on();
+    Timer::after(Duration::from_secs(1)).await;
+    blue.on();
+    Timer::after(Duration::from_secs(1)).await;
+    yellow.on();
+    Timer::after(Duration::from_secs(1)).await;
+    red.off();
+    green.off();
+    blue.off();
+    yellow.off();
+
     // Actor for DFU
-    //    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
-    //    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
+    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
 
     s.spawn(bluetooth_task(sd, server)).unwrap();
 }
