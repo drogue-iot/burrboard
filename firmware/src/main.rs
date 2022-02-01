@@ -136,8 +136,10 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     Timer::after(Duration::from_millis(500)).await;
 
     // Actor for accelerometer
-    // static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
-    //let _accel = ACCEL.mount(s, Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11));
+    static ACCEL: ActorContext<Accelerometer> = ActorContext::new();
+    let accel: Option<Address<Accelerometer>> = Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11)
+        .map(|a| ACCEL.mount(s, a))
+        .ok();
 
     // Actor for all analog sensors
     static ANALOG: ActorContext<AnalogSensors> = ActorContext::new();
@@ -205,7 +207,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         static MONITOR: ActorContext<BurrBoardMonitor> = ActorContext::new();
         let monitor = MONITOR.mount(
             s,
-            BurrBoardMonitor::new(&server.board, analog, counter_a, counter_b),
+            BurrBoardMonitor::new(&server.board, analog, accel, counter_a, counter_b),
         );
         s.spawn(bluetooth_task(
             sd,

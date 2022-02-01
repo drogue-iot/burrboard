@@ -1,5 +1,8 @@
-use crate::analog::{AnalogSensors, Read as AnalogRead};
 use crate::counter::{Counter, CounterMessage};
+use crate::{
+    accel::{Accelerometer, Read as AccelRead},
+    analog::{AnalogSensors, Read as AnalogRead},
+};
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
 use nrf_softdevice::ble::Connection;
@@ -84,6 +87,7 @@ pub struct BurrBoardMonitor {
     analog: Address<AnalogSensors>,
     button_a: Address<Counter>,
     button_b: Address<Counter>,
+    accel: Option<Address<Accelerometer>>,
     connections: Vec<Connection, 2>,
     notifications: Notifications,
 }
@@ -103,6 +107,7 @@ impl BurrBoardMonitor {
     pub fn new(
         service: &'static BurrBoardService,
         analog: Address<AnalogSensors>,
+        accel: Option<Address<Accelerometer>>,
         button_a: Address<Counter>,
         button_b: Address<Counter>,
     ) -> Self {
@@ -111,6 +116,7 @@ impl BurrBoardMonitor {
             connections: Vec::new(),
             ticker: Ticker::every(Duration::from_secs(10)),
             analog,
+            accel,
             button_a,
             button_b,
             notifications: Notifications {
@@ -212,6 +218,11 @@ impl Actor for BurrBoardMonitor {
                         }
                     }
                     Either::Right((_, _)) => {
+                        let accel = if let Some(accel) = self.accel {
+                            accel.request(AccelRead).unwrap().await
+                        } else {
+                            None
+                        };
                         let analog = self.analog.request(AnalogRead).unwrap().await;
                         let button_a_presses = self
                             .button_a
@@ -233,6 +244,12 @@ impl Actor for BurrBoardMonitor {
                         self.service.button_a_set(button_a_presses);
                         self.service.button_b_set(button_b_presses);
 
+                        if let Some(accel) = accel {
+                            self.service.accel_x_set(accel.x);
+                            self.service.accel_y_set(accel.y);
+                            self.service.accel_z_set(accel.z);
+                        }
+
                         for c in self.connections.iter() {
                             if self.notifications.temperature {
                                 self.service.temperature_notify(&c, temperature).unwrap();
@@ -252,6 +269,18 @@ impl Actor for BurrBoardMonitor {
                             }
                             if self.notifications.button_b {
                                 self.service.button_b_notify(&c, button_b_presses).unwrap();
+                            }
+
+                            if let Some(accel) = accel {
+                                if self.notifications.accel_x {
+                                    self.service.accel_x_notify(&c, accel.x);
+                                }
+                                if self.notifications.accel_y {
+                                    self.service.accel_y_notify(&c, accel.y);
+                                }
+                                if self.notifications.accel_z {
+                                    self.service.accel_z_notify(&c, accel.z);
+                                }
                             }
                         }
                     }
