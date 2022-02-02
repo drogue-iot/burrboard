@@ -2703,7 +2703,7 @@
   (gr_text "ON" (at 191.262 68.58 90) (layer "B.SilkS") (tstamp 29bb7297-26fb-4776-9266-2355d022bab0)
     (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
   )
-  (gr_text "Warning: Turn OFF when connecting to USB" (at 196.596 71.882 180) (layer "B.SilkS") (tstamp 948b0a51-44e0-4426-8b07-d3028e3f2a4e)
+  (gr_text "Warning: Turn OFF when connecting to USB" (at 196.596 71.882) (layer "B.SilkS") (tstamp 948b0a51-44e0-4426-8b07-d3028e3f2a4e)
     (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
   )
   (gr_text "Drogue IoT BurrBoard v3.0\n" (at 181.4322 124.7648 90) (layer "B.SilkS") (tstamp e5217a0c-7f55-4c30-adda-7f8d95709d1b)
