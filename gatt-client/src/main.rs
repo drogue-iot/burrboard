@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use bluer::AdapterEvent;
 use clap::{ArgEnum, Parser};
 use futures::{pin_mut, StreamExt};
@@ -23,6 +25,9 @@ struct Args {
 
     #[clap(long)]
     turn_off: Option<Led>,
+
+    #[clap(long)]
+    firmware: Option<PathBuf>,
 }
 
 #[derive(Debug, ArgEnum, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -100,6 +105,9 @@ async fn main() -> bluer::Result<()> {
                             }
                             if let Some(led) = args.turn_off {
                                 board.set_led(led, false).await?;
+                            }
+                            if let Some(firmware) = args.firmware {
+                                board.update_firmware(&firmware).await?;
                             }
                             return Ok(());
                         }

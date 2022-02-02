@@ -68,9 +68,9 @@ pub struct DeviceInformationService {
 #[nrf_softdevice::gatt_service(uuid = "1861")]
 pub struct FirmwareUpdateService {
     #[characteristic(uuid = "1234", write)]
-    firmware: Vec<u8, 8>,
+    firmware: Vec<u8, 4>,
 
-    #[characteristic(uuid = "1235", read, write)]
+    #[characteristic(uuid = "1235", read)]
     offset: u32,
 
     #[characteristic(uuid = "1236", write)]
