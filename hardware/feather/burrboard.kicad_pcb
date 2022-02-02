@@ -190,7 +190,7 @@
       (net 25 "unconnected-(S2-Pad3)") (pintype "passive+no_connect") (tstamp 67f6e996-3c99-493c-8f6f-e739e2ed5d7a))
     (pad "4" smd rect locked (at 3.975 2.25) (size 1.55 1.3) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 2 "GND") (pintype "passive") (tstamp 32667662-ae86-4904-b198-3e95f11851bf))
-    (model "${KISYS3DMOD}/Button_Switch_SMD.3dshapes/SW_SPST_PTS645.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_PTS645.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -247,6 +247,11 @@
       (net 28 "/A5") (pinfunction "E_2") (pintype "passive") (tstamp 1546cb26-98ca-46d4-bc4a-01a1bafece90))
     (pad "3" smd rect (at 1.775 0 180) (size 1.1 0.8) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 9 "/3V3") (pinfunction "C") (pintype "passive") (tstamp 5b284e0c-ba05-4d9b-b580-69c618b42306))
+    (model "${KIPRJMOD}/3dmodels/TEMT6000X01.stp"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "burrboard:Switch_Tactile_SMD_6x6mm_PTS645" (layer "F.Cu")
@@ -307,7 +312,7 @@
       (net 23 "unconnected-(S1-Pad3)") (pintype "passive+no_connect") (tstamp 58dc14f9-c158-4824-a84e-24a6a482a7a4))
     (pad "4" smd rect locked (at 3.975 2.25) (size 1.55 1.3) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 2 "GND") (pintype "passive") (tstamp f976e2cc-36f9-4479-a816-2c74d1d5da6f))
-    (model "${KISYS3DMOD}/Button_Switch_SMD.3dshapes/SW_SPST_PTS645.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPST_PTS645.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -386,7 +391,7 @@
       (net 9 "/3V3") (pinfunction "Pin_15") (pintype "passive") (tstamp 97fe9c60-586f-4895-8504-4d3729f5f81a))
     (pad "16" thru_hole oval locked (at 0 38.1 270) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask)
       (net 16 "unconnected-(J1-Pad16)") (pinfunction "Pin_16") (pintype "passive+no_connect") (tstamp 922058ca-d09a-45fd-8394-05f3e2c1e03a))
-    (model "${KISYS3DMOD}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x16_P2.54mm_Vertical.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x16_P2.54mm_Vertical.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -457,7 +462,7 @@
       (net 34 "unconnected-(J2-Pad11)") (pinfunction "Pin_11") (pintype "passive+no_connect") (tstamp 3a7648d8-121a-4921-9b92-9b35b76ce39b))
     (pad "12" thru_hole oval locked (at 0 27.94 270) (size 1.7 1.7) (drill 1) (layers *.Cu *.Mask)
       (net 20 "unconnected-(J2-Pad12)") (pinfunction "Pin_12") (pintype "passive+no_connect") (tstamp 24f7628d-681d-4f0e-8409-40a129e929d9))
-    (model "${KISYS3DMOD}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x12_P2.54mm_Vertical.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x12_P2.54mm_Vertical.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -2598,7 +2603,7 @@
   )
 
   (footprint "burrboard:Switch_Slide_11.6x4mm_EG1218" (layer "B.Cu")
-    (tedit 5A1EC915) (tstamp 00000000-0000-0000-0000-000061d8d44e)
+    (tedit 61FA22D7) (tstamp 00000000-0000-0000-0000-000061d8d44e)
     (at 188.468 64.99 180)
     (descr "http://spec_sheets.e-switch.com/specs/P040040.pdf")
     (property "AISLER_MPN" "EG1218")
@@ -2643,12 +2648,17 @@
     (fp_line (start -3.42 -2) (end 8.18 -2) (layer "B.Fab") (width 0.1) (tstamp 6c2d26bc-6eca-436c-8025-79f817bf57d6))
     (fp_line (start -3.42 2) (end 8.18 2) (layer "B.Fab") (width 0.1) (tstamp bd065eaf-e495-4837-bdb3-129934de1fc7))
     (fp_line (start 8.18 -2) (end 8.18 2) (layer "B.Fab") (width 0.1) (tstamp cb24efdd-07c6-4317-9277-131625b065ac))
-    (pad "1" thru_hole rect locked (at 0 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
+    (pad "1" thru_hole rect (at 0 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
       (net 13 "/VUSB") (pinfunction "A") (pintype "passive") (tstamp e43dbe34-ed17-4e35-a5c7-2f1679b3c415))
-    (pad "2" thru_hole circle locked (at 2.5 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
+    (pad "2" thru_hole circle (at 2.5 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
       (net 1 "VDD") (pinfunction "B") (pintype "passive") (tstamp 14769dc5-8525-4984-8b15-a734ee247efa))
-    (pad "3" thru_hole circle locked (at 5 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
+    (pad "3" thru_hole circle (at 5 0 180) (size 1.9 1.9) (drill 0.9) (layers *.Cu *.Mask)
       (net 39 "unconnected-(S3-Pad3)") (pinfunction "C") (pintype "passive+no_connect") (tstamp 19c56563-5fe3-442a-885b-418dbc2421eb))
+    (model "${KIPRJMOD}/3dmodels/EG1218--3DModel-STEP-520916.STEP"
+      (offset (xyz 2.5 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
   )
 
   (gr_line (start 228.9048 129.286) (end 229.0064 129.9972) (layer "F.SilkS") (width 0.127) (tstamp 064b9ab8-0beb-4dbf-ade3-e5bc4486b94b))
