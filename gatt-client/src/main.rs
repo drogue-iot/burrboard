@@ -5,6 +5,7 @@ use log;
 use serde_json::json;
 
 mod board;
+use crate::board::{BurrBoard, Led};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -16,6 +17,12 @@ struct Args {
 
     #[clap(short, long)]
     interval: Option<u16>,
+
+    #[clap(long)]
+    turn_on: Option<Led>,
+
+    #[clap(long)]
+    turn_off: Option<Led>,
 }
 
 #[derive(Debug, ArgEnum, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -24,8 +31,6 @@ pub enum Operation {
     Read,
     Write,
 }
-
-use crate::board::BurrBoard;
 
 fn merge(a: &mut serde_json::Value, b: &serde_json::Value) {
     match (a, b) {
@@ -89,8 +94,14 @@ async fn main() -> bluer::Result<()> {
                         Operation::Write => {
                             if let Some(i) = args.interval {
                                 board.set_interval(i).await?;
-                                return Ok(());
                             }
+                            if let Some(led) = args.turn_on {
+                                board.set_led(led, true).await?;
+                            }
+                            if let Some(led) = args.turn_off {
+                                board.set_led(led, false).await?;
+                            }
+                            return Ok(());
                         }
                     }
                 }

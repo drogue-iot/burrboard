@@ -5,6 +5,7 @@ use bluer::{
 use core::pin::Pin;
 use futures::{stream, Stream, StreamExt};
 use serde_json::json;
+use std::str::FromStr;
 
 pub struct BurrBoard {
     device: Device,
@@ -20,6 +21,32 @@ const BUTTON_B_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002aec000010008
 
 const INTERVAL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00001b2500001000800000805f9b34fb);
 
+const RED_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae200001000800000805f9b34fb);
+const GREEN_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae300001000800000805f9b34fb);
+const BLUE_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae400001000800000805f9b34fb);
+const YELLOW_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae500001000800000805f9b34fb);
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Led {
+    Red,
+    Green,
+    Blue,
+    Yellow,
+}
+
+impl FromStr for Led {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "red" => Ok(Led::Red),
+            "green" => Ok(Led::Green),
+            "blue" => Ok(Led::Blue),
+            "yellow" => Ok(Led::Yellow),
+            _ => Err("unknown LED name"),
+        }
+    }
+}
+
 impl BurrBoard {
     pub fn new(device: Device) -> Self {
         Self { device }
@@ -28,6 +55,17 @@ impl BurrBoard {
     pub async fn set_interval(&self, i: u16) -> bluer::Result<()> {
         self.write_char(BOARD_SERVICE_UUID, INTERVAL_CHAR_UUID, &i.to_le_bytes())
             .await
+    }
+
+    pub async fn set_led(&self, led: Led, value: bool) -> bluer::Result<()> {
+        let c = match led {
+            Led::Red => RED_LED_CHAR_UUID,
+            Led::Green => GREEN_LED_CHAR_UUID,
+            Led::Blue => BLUE_LED_CHAR_UUID,
+            Led::Yellow => YELLOW_LED_CHAR_UUID,
+        };
+        let val = if value { 1 } else { 0 };
+        self.write_char(BOARD_SERVICE_UUID, c, &[val]).await
     }
 
     pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
