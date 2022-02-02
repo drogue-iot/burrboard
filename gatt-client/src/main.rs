@@ -2,7 +2,7 @@ use bluer::AdapterEvent;
 use clap::Parser;
 use futures::{pin_mut, StreamExt};
 use log;
-use std::time::Duration;
+use serde_json::json;
 
 mod board;
 
@@ -16,6 +16,19 @@ struct Args {
 }
 
 use crate::board::BurrBoard;
+
+fn merge(a: &mut serde_json::Value, b: &serde_json::Value) {
+    match (a, b) {
+        (&mut serde_json::Value::Object(ref mut a), &serde_json::Value::Object(ref b)) => {
+            for (k, v) in b {
+                merge(a.entry(k.clone()).or_insert(serde_json::Value::Null), v);
+            }
+        }
+        (a, b) => {
+            *a = b.clone();
+        }
+    }
+}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> bluer::Result<()> {
@@ -51,8 +64,10 @@ async fn main() -> bluer::Result<()> {
                     if args.wait {
                         let s = board.stream_sensors().await?;
                         pin_mut!(s);
+                        let mut view = json!({});
                         while let Some(n) = s.next().await {
-                            println!("{}", n);
+                            merge(&mut view, &n);
+                            println!("{}", view);
                         }
                     } else {
                         let sensor = board.read_sensors().await?;

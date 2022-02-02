@@ -1,11 +1,11 @@
 use crate::counter::{Counter, CounterMessage};
 use crate::{
-    accel::{Accelerometer, Read as AccelRead},
+    accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
 };
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
-use nrf_softdevice::ble::Connection;
+use nrf_softdevice::ble::{Connection, FixedGattValue};
 
 use embassy::time::Duration;
 
@@ -29,11 +29,7 @@ pub struct BurrBoardService {
     pub brightness: u16,
 
     #[characteristic(uuid = "2101", read, notify)]
-    pub accel_x: i16,
-    #[characteristic(uuid = "2102", read, notify)]
-    pub accel_y: i16,
-    #[characteristic(uuid = "2103", read, notify)]
-    pub accel_z: i16,
+    pub accel: Vec<u8, 6>,
 
     #[characteristic(uuid = "2a19", read, notify)]
     pub battery_level: u8,
@@ -95,9 +91,7 @@ pub struct BurrBoardMonitor {
 pub struct Notifications {
     temperature: bool,
     brightness: bool,
-    accel_x: bool,
-    accel_y: bool,
-    accel_z: bool,
+    accel: bool,
     battery_level: bool,
     button_a: bool,
     button_b: bool,
@@ -114,7 +108,7 @@ impl BurrBoardMonitor {
         Self {
             service,
             connections: Vec::new(),
-            ticker: Ticker::every(Duration::from_secs(10)),
+            ticker: Ticker::every(Duration::from_secs(2)),
             analog,
             accel,
             button_a,
@@ -122,9 +116,7 @@ impl BurrBoardMonitor {
             notifications: Notifications {
                 temperature: false,
                 brightness: false,
-                accel_x: false,
-                accel_y: false,
-                accel_z: false,
+                accel: false,
                 battery_level: false,
                 button_a: false,
                 button_b: false,
@@ -219,9 +211,9 @@ impl Actor for BurrBoardMonitor {
                     }
                     Either::Right((_, _)) => {
                         let accel = if let Some(accel) = self.accel {
-                            accel.request(AccelRead).unwrap().await
+                            accel.request(AccelRead).unwrap().await.unwrap()
                         } else {
-                            None
+                            AccelValues { x: 0, y: 0, z: 0 }
                         };
                         let analog = self.analog.request(AnalogRead).unwrap().await;
                         let button_a_presses = self
@@ -244,11 +236,12 @@ impl Actor for BurrBoardMonitor {
                         self.service.button_a_set(button_a_presses);
                         self.service.button_b_set(button_b_presses);
 
-                        if let Some(accel) = accel {
-                            self.service.accel_x_set(accel.x);
-                            self.service.accel_y_set(accel.y);
-                            self.service.accel_z_set(accel.z);
-                        }
+                        let x: [u8; 2] = accel.x.to_le_bytes();
+                        let y: [u8; 2] = accel.y.to_le_bytes();
+                        let z: [u8; 2] = accel.z.to_le_bytes();
+                        self.service.accel_set(
+                            Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
+                        );
 
                         for c in self.connections.iter() {
                             if self.notifications.temperature {
@@ -271,16 +264,14 @@ impl Actor for BurrBoardMonitor {
                                 self.service.button_b_notify(&c, button_b_presses).unwrap();
                             }
 
-                            if let Some(accel) = accel {
-                                if self.notifications.accel_x {
-                                    self.service.accel_x_notify(&c, accel.x);
-                                }
-                                if self.notifications.accel_y {
-                                    self.service.accel_y_notify(&c, accel.y);
-                                }
-                                if self.notifications.accel_z {
-                                    self.service.accel_z_notify(&c, accel.z);
-                                }
+                            if self.notifications.accel {
+                                let x: [u8; 2] = accel.x.to_le_bytes();
+                                let y: [u8; 2] = accel.y.to_le_bytes();
+                                let z: [u8; 2] = accel.z.to_le_bytes();
+                                self.service.accel_notify(
+                                    &c,
+                                    Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
+                                );
                             }
                         }
                     }
