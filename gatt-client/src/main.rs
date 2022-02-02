@@ -1,67 +1,68 @@
-use dbus::blocking::Connection;
-use envconfig::Envconfig;
+use bluer::AdapterEvent;
+use clap::Parser;
+use futures::{pin_mut, StreamExt};
 use log;
 use std::time::Duration;
 
 mod board;
-mod device;
-mod manager;
 
-use crate::board::BurrBoard;
-use crate::manager::DeviceManager;
+#[derive(Parser, Debug)]
+struct Args {
+    #[clap(short, long)]
+    device: String,
 
-#[derive(Envconfig)]
-pub struct Config {
-    #[envconfig(from = "BLUETOOTH_INTERFACE", default = "hci0")]
-    pub hci: String,
-    #[envconfig(from = "BLUETOOTH_DEVICE")]
-    pub device: String,
-    #[envconfig(from = "SENSOR_POLL_INTERVAL", default = "10")]
-    pub poll_interval: u64,
+    #[clap(short, long)]
+    wait: bool,
 }
 
-pub fn main() {
-    env_logger::init();
-    let config = Config::init_from_env().unwrap();
+use crate::board::BurrBoard;
 
-    let poll_interval = Duration::from_secs(config.poll_interval);
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> bluer::Result<()> {
+    let args = Args::parse();
+    stderrlog::new().verbosity(0).init().unwrap();
 
-    let conn = Connection::new_system().expect("error creating dbus connection");
+    let session = bluer::Session::new().await?;
+    let adapter = session.default_adapter().await?;
+    adapter.set_powered(true).await?;
+    let discover = adapter.discover_devices().await?;
+    pin_mut!(discover);
 
-    let device_manager = DeviceManager::new(&config.hci, conn);
-
-    log::info!("BLE Gateway Started");
-
-    // TODO: Make it possible to manage multiple devices.
-    let address = &config.device.replace(":", "_");
-    let sensor: BurrBoard = device_manager
-        .connect(&address)
-        .expect("unable to connect to device");
-
-    // TODO: Handle reconnects
-    while device_manager
-        .is_connected(&address)
-        .expect("unable to check connectivity")
-    {
-        match sensor.read() {
-            Ok(value) => {
-                let s = value.to_string();
-                log::info!("{}", &s);
-                /*   match cloud.publish(s) {
-                    Ok(_) => {
-                        log::info!("value published to the cloud");
+    while let Some(evt) = discover.next().await {
+        match evt {
+            AdapterEvent::DeviceAdded(addr) => {
+                log::info!("Discovered {}", addr);
+                if addr.to_string() == args.device {
+                    let device = adapter.device(addr)?;
+                    if !device.is_connected().await? {
+                        let mut retries = 2;
+                        loop {
+                            match device.connect().await {
+                                Ok(()) => break,
+                                Err(_) if retries > 0 => {
+                                    retries -= 1;
+                                }
+                                Err(err) => Err(err)?,
+                            }
+                        }
                     }
-                    Err(e) => {
-                        log::error!("error publishing value: {}", e);
+                    log::info!("Found our device!");
+                    let board = BurrBoard::new(device);
+                    if args.wait {
+                    } else {
+                        let sensor = board.read_sensors().await?;
+                        println!("{}", sensor);
+                        return Ok(());
                     }
                 }
-                */
             }
-            Err(e) => {
-                log::error!("{}", e);
+            AdapterEvent::DeviceRemoved(addr) => {
+                log::info!("Device removed {}", addr);
             }
+            _ => {}
         }
-        std::thread::sleep(poll_interval);
     }
+
     log::info!("BLE sensor disconnected, shutting down");
+    Ok(())
 }

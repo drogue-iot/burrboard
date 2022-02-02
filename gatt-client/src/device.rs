@@ -1,16 +1,15 @@
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-pub struct Device {
-    bus: Arc<Connection>,
-    hci: String,
-    address: String,
+pub struct BurrBoard {
+    device: bluer::Device,
 }
 
 impl Device {
-    pub fn new(bus: Arc<Connection>, hci: String, address: String) -> Device {
+    pub fn new(bus: bluer::Device) -> Device {
         Device { bus, hci, address }
     }
     pub fn read_value(&self, service: &str, characteristic: &str) -> Result<Vec<u8>, dbus::Error> {
@@ -27,7 +26,7 @@ impl Device {
                     .with_proxy("org.bluez", &path, Duration::from_millis(10000));
 
             if let Ok(uuid) = service_proxy.get::<String>("org.bluez.GattService1", "UUID") {
-                if uuid == service {
+                if &uuid[4..8] == service {
                     //log::info!("Found matching index at {}", idx);
                     service_idx = idx;
                     break;
@@ -38,14 +37,14 @@ impl Device {
         let mut char_idx = 0;
         for idx in 1..40 {
             let path = format!("{}/service{:04x}/char{:04x}", path, service_idx, idx);
-            //log::info!("Looking up char: {}", path);
+            log::info!("Looking up char: {}", path);
             let char_proxy = self
                 .bus
                 .with_proxy("org.bluez", &path, Duration::from_millis(10000));
             if let Ok(uuid) = char_proxy.get::<String>("org.bluez.GattCharacteristic1", "UUID") {
-                //log::info!("Found uuid for char {}", &uuid[4..8]);
+                log::info!("Found uuid for char {}", &uuid[4..8]);
                 if &uuid[4..8] == characteristic {
-                    //log::info!("Found matching index at {}", idx);
+                    log::info!("Found matching index at {}", idx);
                     char_idx = idx;
                     break;
                 }
@@ -56,13 +55,17 @@ impl Device {
             return Ok(Vec::new());
         }
         let path = format!("{}/service{:04x}/char{:04x}", path, service_idx, char_idx);
-        //log::info!("Using: {}", path);
+        log::info!("Using: {}", path);
         let char_proxy = self
             .bus
             .with_proxy("org.bluez", &path, Duration::from_millis(10000));
-        //let (data,): (Vec<u8>,) =
-        //    char_proxy.method_call("org.bluez.GattCharacteristic1", "ReadValue", ())?;
-        let data: Vec<u8> = char_proxy.get("org.bluez.GattCharacteristic1", "Value")?;
+        let options = HashMap::new();
+
+        let message = dbus::Message::new_method_call("org.bluez", &path, )
+        let (data,): (Vec<u8>,) =
+            char_proxy.method_call("org.bluez.GattCharacteristic1", "ReadValue", (options,))?;
+        //let data: Vec<u8> = char_proxy.get("org.bluez.GattCharacteristic1", "Value")?;
+        log::info!("GOT DATA: {:?}", data);
         //        let path = format!("{}/service{:04x}/char{:04x}", path, idx + 1, 1);
         //        let char_proxy = self
         //            .bus

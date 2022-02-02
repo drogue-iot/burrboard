@@ -7,9 +7,11 @@ description = "GATT client for burrboard"
 
 [dependencies]
 
-dbus = "0.9.0"
+uuid = { version = "0.8", features = ["v4"] }
+clap = { version = "3.0", features = ["derive"] }
+bluer = "0.13"
+tokio = { version = "1", features = ["full"] }
 log = "0.4.11"
-env_logger = "0.8.2"
-envconfig = "0.9.1"
 serde_json = "1.0"
-reqwest = { version = "0.10", features = ["blocking"] }
+stderrlog = "0.4"
+futures = "0.3"
