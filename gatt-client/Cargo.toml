@@ -1,9 +1,9 @@
 [package]
-name = "burrboard-gateway"
+name = "gatt-client"
 version = "0.1.0"
 authors = ["Ulf Lilleengen <ulf.lilleengen@gmail.com>"]
 edition = "2018"
-description = "Drogue IoT Bluetooth LE Gateway"
+description = "GATT client for burrboard"
 
 [dependencies]
 
