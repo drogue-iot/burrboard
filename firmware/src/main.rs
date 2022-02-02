@@ -191,7 +191,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     // Actor for DFU
     static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
-    DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+    let dfu = DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
 
     // Self test
     red.on();
@@ -217,6 +217,9 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             s,
             BurrBoardMonitor::new(&server.board, analog, accel, counter_a, counter_b),
         );
+
+        static FIRMWARE: ActorContext<BurrBoardFirmware> = ActorContext::new();
+        let firmware = FIRMWARE.mount(s, BurrBoardFirmware::new(&server.firmware, dfu));
         s.spawn(bluetooth_task(
             sd,
             server,
@@ -227,6 +230,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
                 yellow,
             },
             monitor,
+            firmware,
         ))
         .unwrap();
     }
@@ -245,6 +249,7 @@ async fn bluetooth_task(
     server: &'static BurrBoardServer,
     mut leds: Leds,
     monitor: Address<BurrBoardMonitor>,
+    firmware: Address<BurrBoardFirmware>,
 ) {
     #[rustfmt::skip]
     let adv_data = &[
@@ -304,7 +309,9 @@ async fn bluetooth_task(
                 _ => {}
             },
             BurrBoardServerEvent::DeviceInfo(_) => {}
-            BurrBoardServerEvent::Firmware(_) => {}
+            BurrBoardServerEvent::Firmware(e) => {
+                firmware.notify(e);
+            }
         })
         .await;
         monitor.notify(MonitorEvent::Disconnected(conn));

@@ -1,4 +1,6 @@
 use crate::counter::{Counter, CounterMessage};
+use crate::dfu::FirmwareManager;
+use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
@@ -273,6 +275,57 @@ impl Actor for BurrBoardMonitor {
                                     Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
                                 );
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub struct BurrBoardFirmware {
+    service: &'static FirmwareUpdateService,
+    dfu: Address<FirmwareManager<SharedFlashHandle>>,
+}
+
+impl BurrBoardFirmware {
+    pub fn new(
+        service: &'static FirmwareUpdateService,
+        dfu: Address<FirmwareManager<SharedFlashHandle>>,
+    ) -> Self {
+        Self { service, dfu }
+    }
+}
+
+impl Actor for BurrBoardFirmware {
+    type Message<'m> = FirmwareUpdateServiceEvent;
+
+    type OnMountFuture<'m, M>
+    where
+        Self: 'm,
+        M: 'm,
+    = impl Future<Output = ()> + 'm;
+    fn on_mount<'m, M>(
+        &'m mut self,
+        _: Address<Self>,
+        inbox: &'m mut M,
+    ) -> Self::OnMountFuture<'m, M>
+    where
+        M: Inbox<Self> + 'm,
+    {
+        async move {
+            loop {
+                if let Some(mut m) = inbox.next().await {
+                    match m.message() {
+                        FirmwareUpdateServiceEvent::ControlWrite(value) => {
+                            info!("Write firmware control: {}", value);
+                            self.service.offset_set(0);
+                        }
+                        FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
+                            info!("Write firmware value: {}", value);
+                            self.service.offset_set(
+                                self.service.offset_get().unwrap() + value.len() as u32,
+                            );
                         }
                     }
                 }

@@ -81,6 +81,7 @@ impl BurrBoard {
         let data = self
             .read_char(FIRMWARE_SERVICE_UUID, OFFSET_CHAR_UUID)
             .await?;
+        println!("Read offset data: {:?}", &data[..]);
         Ok(u32::from_le_bytes([data[0], data[1], data[2], data[3]]))
     }
 
@@ -93,11 +94,13 @@ impl BurrBoard {
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
             .await?;
 
+        println!("Triggered DFU");
         // Wait until firmware offset is reset
         while self.read_firmware_offset().await? != 0 {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         }
-        let mut offset = 0;
+        println!("Offset is reset, starting");
+        let mut offset: u32 = 0;
 
         loop {
             let mut done = false;
@@ -108,7 +111,7 @@ impl BurrBoard {
             }
             self.write_char(FIRMWARE_SERVICE_UUID, FIRMWARE_CHAR_UUID, &buf)
                 .await?;
-            offset += 4;
+            offset += 4 as u32;
 
             // Wait until firmware offset is incremented
             while self.read_firmware_offset().await? != offset {
@@ -120,6 +123,7 @@ impl BurrBoard {
         }
 
         // Write signal that DFU should be applied
+        println!("DFU process done, setting reset");
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
             .await?;
         Ok(())
