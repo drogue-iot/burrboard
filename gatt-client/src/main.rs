@@ -1,5 +1,5 @@
 use bluer::AdapterEvent;
-use clap::Parser;
+use clap::{ArgEnum, Parser};
 use futures::{pin_mut, StreamExt};
 use log;
 use serde_json::json;
@@ -11,8 +11,18 @@ struct Args {
     #[clap(short, long)]
     device: String,
 
+    #[clap(arg_enum)]
+    operation: Operation,
+
     #[clap(short, long)]
-    wait: bool,
+    interval: Option<u16>,
+}
+
+#[derive(Debug, ArgEnum, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Operation {
+    Stream,
+    Read,
+    Write,
 }
 
 use crate::board::BurrBoard;
@@ -61,18 +71,27 @@ async fn main() -> bluer::Result<()> {
                     }
                     log::info!("Found our device!");
                     let board = BurrBoard::new(device);
-                    if args.wait {
-                        let s = board.stream_sensors().await?;
-                        pin_mut!(s);
-                        let mut view = json!({});
-                        while let Some(n) = s.next().await {
-                            merge(&mut view, &n);
-                            println!("{}", view);
+                    match args.operation {
+                        Operation::Stream => {
+                            let s = board.stream_sensors().await?;
+                            pin_mut!(s);
+                            let mut view = json!({});
+                            while let Some(n) = s.next().await {
+                                merge(&mut view, &n);
+                                println!("{}", view);
+                            }
                         }
-                    } else {
-                        let sensor = board.read_sensors().await?;
-                        println!("{}", sensor);
-                        return Ok(());
+                        Operation::Read => {
+                            let sensor = board.read_sensors().await?;
+                            println!("{}", sensor);
+                            return Ok(());
+                        }
+                        Operation::Write => {
+                            if let Some(i) = args.interval {
+                                board.set_interval(i).await?;
+                                return Ok(());
+                            }
+                        }
                     }
                 }
             }

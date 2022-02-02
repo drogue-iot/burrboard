@@ -18,9 +18,16 @@ const BATTERY_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002a190000100080
 const BUTTON_A_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002aeb00001000800000805f9b34fb);
 const BUTTON_B_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002aec00001000800000805f9b34fb);
 
+const INTERVAL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00001b2500001000800000805f9b34fb);
+
 impl BurrBoard {
     pub fn new(device: Device) -> Self {
         Self { device }
+    }
+
+    pub async fn set_interval(&self, i: u16) -> bluer::Result<()> {
+        self.write_char(BOARD_SERVICE_UUID, INTERVAL_CHAR_UUID, &i.to_le_bytes())
+            .await
     }
 
     pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
@@ -109,6 +116,18 @@ impl BurrBoard {
 
         let value = c.read().await?;
         Ok(value)
+    }
+
+    async fn write_char(
+        &self,
+        service: uuid::Uuid,
+        c: uuid::Uuid,
+        value: &[u8],
+    ) -> bluer::Result<()> {
+        let service = self.find_service(service).await?.unwrap();
+        let c = self.find_char(&service, c).await?.unwrap();
+
+        c.write(value).await
     }
 
     async fn stream_char(
