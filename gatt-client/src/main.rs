@@ -49,6 +49,11 @@ async fn main() -> bluer::Result<()> {
                     log::info!("Found our device!");
                     let board = BurrBoard::new(device);
                     if args.wait {
+                        let s = board.stream_sensors().await?;
+                        pin_mut!(s);
+                        while let Some(n) = s.next().await {
+                            println!("{}", n);
+                        }
                     } else {
                         let sensor = board.read_sensors().await?;
                         println!("{}", sensor);
