@@ -1,6 +1,6 @@
 use crate::counter::{Counter, CounterMessage};
-use crate::dfu::FirmwareManager;
-use crate::flash::SharedFlashHandle;
+use crate::dfu::{DfuCommand, FirmwareManager};
+//use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
@@ -14,6 +14,7 @@ use embassy::time::Duration;
 use embassy::time::Ticker;
 use futures::{future::select, future::Either, pin_mut, StreamExt};
 use heapless::Vec;
+use nrf_softdevice::Flash;
 
 #[nrf_softdevice::gatt_server]
 pub struct BurrBoardServer {
@@ -70,13 +71,16 @@ pub struct DeviceInformationService {
 #[nrf_softdevice::gatt_service(uuid = "1861")]
 pub struct FirmwareUpdateService {
     #[characteristic(uuid = "1234", write)]
-    firmware: Vec<u8, 4>,
+    firmware: Vec<u8, 64>,
 
     #[characteristic(uuid = "1235", read)]
     offset: u32,
 
     #[characteristic(uuid = "1236", write)]
     control: u8,
+
+    #[characteristic(uuid = "1237", read)]
+    pub version: Vec<u8, 16>,
 }
 
 pub struct BurrBoardMonitor {
@@ -110,7 +114,7 @@ impl BurrBoardMonitor {
         Self {
             service,
             connections: Vec::new(),
-            ticker: Ticker::every(Duration::from_secs(2)),
+            ticker: Ticker::every(Duration::from_secs(10)),
             analog,
             accel,
             button_a,
@@ -285,13 +289,13 @@ impl Actor for BurrBoardMonitor {
 
 pub struct BurrBoardFirmware {
     service: &'static FirmwareUpdateService,
-    dfu: Address<FirmwareManager<SharedFlashHandle>>,
+    dfu: Address<FirmwareManager<Flash>>,
 }
 
 impl BurrBoardFirmware {
     pub fn new(
         service: &'static FirmwareUpdateService,
-        dfu: Address<FirmwareManager<SharedFlashHandle>>,
+        dfu: Address<FirmwareManager<Flash>>,
     ) -> Self {
         Self { service, dfu }
     }
@@ -319,13 +323,23 @@ impl Actor for BurrBoardFirmware {
                     match m.message() {
                         FirmwareUpdateServiceEvent::ControlWrite(value) => {
                             info!("Write firmware control: {}", value);
-                            self.service.offset_set(0);
+                            if *value == 1 {
+                                self.service.offset_set(0);
+                                self.dfu.request(DfuCommand::Start).unwrap().await.unwrap();
+                            } else if *value == 2 {
+                                self.dfu.notify(DfuCommand::Finish(0)).unwrap();
+                            } else if *value == 3 {
+                                self.dfu.notify(DfuCommand::Booted).unwrap();
+                            }
                         }
                         FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
-                            info!("Write firmware value: {}", value);
-                            self.service.offset_set(
-                                self.service.offset_get().unwrap() + value.len() as u32,
-                            );
+                            let offset = self.service.offset_get().unwrap();
+                            self.dfu
+                                .request(DfuCommand::WriteBlock(value))
+                                .unwrap()
+                                .await
+                                .unwrap();
+                            self.service.offset_set(offset + value.len() as u32);
                         }
                     }
                 }

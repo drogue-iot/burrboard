@@ -22,7 +22,7 @@ use embassy_nrf::uarte;
 use embassy_nrf::{interrupt, Peripherals};
 use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::raw;
-use nrf_softdevice::Softdevice;
+use nrf_softdevice::{Flash, Softdevice};
 
 #[cfg(all(feature = "defmt", not(feature = "log")))]
 use panic_probe as _;
@@ -42,14 +42,14 @@ mod accel;
 mod analog;
 mod counter;
 mod dfu;
-mod flash;
+//mod flash;
 mod gatt;
 
 use accel::*;
 use analog::*;
 use counter::*;
 use dfu::*;
-use flash::*;
+//use flash::*;
 use gatt::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
@@ -64,6 +64,8 @@ pub type BatteryPin = P0_04;
 pub type TemperaturePin = P0_05;
 pub type LightPin = P0_03;
 
+const FIRMWARE_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 // Application must run at a lower priority than softdevice
 fn config() -> Config {
     let mut config = embassy_nrf::config::Config::default();
@@ -75,6 +77,16 @@ fn config() -> Config {
 #[embassy::task]
 async fn softdevice_task(sd: &'static Softdevice) {
     sd.run().await;
+}
+
+// Keeps our system alive
+#[embassy::task]
+async fn watchdog_task() {
+    let mut handle = unsafe { embassy_nrf::wdt::WatchdogHandle::steal(0) };
+    loop {
+        handle.pet();
+        Timer::after(Duration::from_secs(2)).await;
+    }
 }
 
 #[embassy::main(config = "config()")]
@@ -115,6 +127,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     let sd = Softdevice::enable(&config);
     s.spawn(softdevice_task(sd)).unwrap();
+    s.spawn(watchdog_task()).unwrap();
 
     static GATT: Forever<BurrBoardServer> = Forever::new();
     let server = GATT.put(gatt_server::register(sd).unwrap());
@@ -186,12 +199,16 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     );
 
     // Actor for shared access to flash
-    static FLASH: ActorContext<SharedFlash> = ActorContext::new();
-    let flash = FLASH.mount(s, SharedFlash::new(sd));
+    //static FLASH: ActorContext<SharedFlash> = ActorContext::new();
+    // //FLASH.mount(s, SharedFlash::new(sd));
+    let flash = Flash::take(sd);
 
     // Actor for DFU
-    static DFU: ActorContext<FirmwareManager<SharedFlashHandle>> = ActorContext::new();
-    let dfu = DFU.mount(s, FirmwareManager::new(SharedFlashHandle(flash)));
+    static DFU: ActorContext<FirmwareManager<Flash>> = ActorContext::new();
+    let dfu = DFU.mount(
+        s,
+        FirmwareManager::new(flash, embassy_boot_nrf::updater::new()),
+    );
 
     // Self test
     red.on();
@@ -212,6 +229,9 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     // BLE Gatt test service
     #[cfg(feature = "gatt")]
     {
+        server
+            .firmware
+            .version_set(heapless::Vec::from_slice(FIRMWARE_VERSION.as_bytes()).unwrap());
         static MONITOR: ActorContext<BurrBoardMonitor> = ActorContext::new();
         let monitor = MONITOR.mount(
             s,
