@@ -1,5 +1,5 @@
 use crate::counter::{Counter, CounterMessage};
-use crate::dfu::FirmwareManager;
+use crate::dfu::{DfuCommand, FirmwareManager};
 use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
@@ -70,7 +70,7 @@ pub struct DeviceInformationService {
 #[nrf_softdevice::gatt_service(uuid = "1861")]
 pub struct FirmwareUpdateService {
     #[characteristic(uuid = "1234", write)]
-    firmware: Vec<u8, 4>,
+    firmware: Vec<u8, 16>,
 
     #[characteristic(uuid = "1235", read)]
     offset: u32,
@@ -285,6 +285,9 @@ impl Actor for BurrBoardMonitor {
 
 pub struct BurrBoardFirmware {
     service: &'static FirmwareUpdateService,
+    buffer: [u8; 4096],
+    b_offset: usize,
+    f_offset: usize,
     dfu: Address<FirmwareManager<SharedFlashHandle>>,
 }
 
@@ -293,7 +296,28 @@ impl BurrBoardFirmware {
         service: &'static FirmwareUpdateService,
         dfu: Address<FirmwareManager<SharedFlashHandle>>,
     ) -> Self {
-        Self { service, dfu }
+        Self {
+            service,
+            dfu,
+            buffer: [0; 4096],
+            b_offset: 0,
+            f_offset: 0,
+        }
+    }
+
+    async fn flush(&mut self) {
+        info!("Flushing Firmware buffer!");
+        if self.b_offset > 0 {
+            self.dfu
+                .request(DfuCommand::Write(
+                    self.f_offset as u32,
+                    &self.buffer[..self.b_offset],
+                ))
+                .unwrap()
+                .await;
+            self.f_offset += self.b_offset;
+            self.b_offset = 0;
+        }
     }
 }
 
@@ -319,13 +343,32 @@ impl Actor for BurrBoardFirmware {
                     match m.message() {
                         FirmwareUpdateServiceEvent::ControlWrite(value) => {
                             info!("Write firmware control: {}", value);
-                            self.service.offset_set(0);
+                            if *value == 1 {
+                                self.service.offset_set(0);
+                            } else if *value == 2 {
+                                self.flush().await;
+                            } else if *value == 3 {
+                                // Sanity check
+                                let offset = self.service.offset_get().unwrap();
+                                if offset != self.f_offset as u32 {
+                                    info!(
+                                        "Service offset({}) differs from flush offset({})!",
+                                        offset, self.f_offset
+                                    );
+                                } else {
+                                    self.dfu.notify(DfuCommand::Swap).unwrap();
+                                }
+                            }
                         }
                         FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
-                            info!("Write firmware value: {}", value);
-                            self.service.offset_set(
-                                self.service.offset_get().unwrap() + value.len() as u32,
-                            );
+                            let offset = self.service.offset_get().unwrap();
+                            self.buffer[self.b_offset..self.b_offset + value.len()]
+                                .copy_from_slice(&value);
+                            self.b_offset += value.len();
+                            self.service.offset_set(offset + value.len() as u32);
+                            if self.b_offset == self.buffer.len() {
+                                self.flush().await;
+                            }
                         }
                     }
                 }

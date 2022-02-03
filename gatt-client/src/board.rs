@@ -81,14 +81,13 @@ impl BurrBoard {
         let data = self
             .read_char(FIRMWARE_SERVICE_UUID, OFFSET_CHAR_UUID)
             .await?;
-        println!("Read offset data: {:?}", &data[..]);
         Ok(u32::from_le_bytes([data[0], data[1], data[2], data[3]]))
     }
 
     pub async fn update_firmware(&self, firmware: &PathBuf) -> bluer::Result<()> {
         println!("Updating firmware from {:?}", firmware);
         let mut file = std::fs::File::open(firmware).unwrap();
-        let mut buf = [0; 4];
+        let mut buf = [0; 16];
 
         // Trigger DFU process
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
@@ -111,7 +110,8 @@ impl BurrBoard {
             }
             self.write_char(FIRMWARE_SERVICE_UUID, FIRMWARE_CHAR_UUID, &buf)
                 .await?;
-            offset += 4 as u32;
+            println!("Write {} bytes at offset {}", buf.len(), offset);
+            offset += buf.len() as u32;
 
             // Wait until firmware offset is incremented
             while self.read_firmware_offset().await? != offset {
@@ -122,9 +122,14 @@ impl BurrBoard {
             }
         }
 
+        // Ensure buffer is flushed
+        println!("Flushing write dfu buffer");
+        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
+            .await?;
+
         // Write signal that DFU should be applied
         println!("DFU process done, setting reset");
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
+        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[3])
             .await?;
         Ok(())
     }

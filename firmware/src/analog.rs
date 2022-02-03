@@ -66,7 +66,7 @@ impl Actor for AnalogSensors {
                     let voltage = buf[0] as f32 * 3.3;
                     let voltage = voltage / 4095 as f32;
                     let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
-                    let brightness = buf[1] as u16;
+                    let brightness = 0; //buf[1] as u16;
                     let battery_voltage = buf[2] as f32 * 4.5;
                     let battery = (battery_voltage / 4095 as f32) as u8 / 100;
 
