@@ -77,6 +77,9 @@ pub struct FirmwareUpdateService {
 
     #[characteristic(uuid = "1236", write)]
     control: u8,
+
+    #[characteristic(uuid = "1237", read)]
+    pub version: Vec<u8, 16>,
 }
 
 pub struct BurrBoardMonitor {
@@ -110,7 +113,7 @@ impl BurrBoardMonitor {
         Self {
             service,
             connections: Vec::new(),
-            ticker: Ticker::every(Duration::from_secs(2)),
+            ticker: Ticker::every(Duration::from_secs(10)),
             analog,
             accel,
             button_a,
@@ -346,21 +349,41 @@ impl Actor for BurrBoardFirmware {
                             if *value == 1 {
                                 self.service.offset_set(0);
                             } else if *value == 2 {
+                                // Ensure the buffer is filled
+                                for i in self.b_offset..self.buffer.len() {
+                                    self.buffer[i] = 0;
+                                }
+                                self.b_offset = self.buffer.len();
                                 self.flush().await;
                             } else if *value == 3 {
                                 // Sanity check
-                                let offset = self.service.offset_get().unwrap();
-                                if offset != self.f_offset as u32 {
-                                    info!(
-                                        "Service offset({}) differs from flush offset({})!",
-                                        offset, self.f_offset
-                                    );
-                                } else {
-                                    self.dfu.notify(DfuCommand::Swap).unwrap();
-                                }
+                                //let offset = self.service.offset_get().unwrap();
+                                //if offset != self.f_offset as u32 {
+                                //    info!(
+                                //        "Service offset({}) differs from flush offset({})!",
+                                //        offset, self.f_offset
+                                //    );
+                                //} else {
+                                self.dfu.notify(DfuCommand::Swap).unwrap();
+                                //}
+                            } else if *value == 4 {
+                                // Mark our firmware as working
+                                self.dfu.notify(DfuCommand::MarkBooted).unwrap();
                             }
                         }
                         FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
+                            /*
+                            for i in (0..value.len()).step_by(4) {
+                                info!(
+                                    "gattword: 0x{:02x}{:02x}{:02x}{:02x}",
+                                    value[i + 3],
+                                    value[i + 2],
+                                    value[i + 1],
+                                    value[i],
+                                );
+                            }
+                            */
+
                             let offset = self.service.offset_get().unwrap();
                             self.buffer[self.b_offset..self.b_offset + value.len()]
                                 .copy_from_slice(&value);

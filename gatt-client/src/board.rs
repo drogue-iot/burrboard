@@ -34,6 +34,7 @@ const FIRMWARE_SERVICE_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00001861000010
 const CONTROL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123600001000800000805f9b34fb);
 const OFFSET_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123500001000800000805f9b34fb);
 const FIRMWARE_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123400001000800000805f9b34fb);
+const VERSION_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123700001000800000805f9b34fb);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Led {
@@ -84,8 +85,25 @@ impl BurrBoard {
         Ok(u32::from_le_bytes([data[0], data[1], data[2], data[3]]))
     }
 
+    pub async fn read_firmware_version(&self) -> bluer::Result<String> {
+        let data = self
+            .read_char(FIRMWARE_SERVICE_UUID, VERSION_CHAR_UUID)
+            .await?;
+        Ok(String::from_str(core::str::from_utf8(&data).unwrap()).unwrap())
+    }
+
+    pub async fn mark_booted(&self) -> bluer::Result<()> {
+        // Trigger DFU process
+        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[4])
+            .await
+    }
+
+    pub fn free(self) -> bluer::Device {
+        self.device
+    }
+
     pub async fn update_firmware(&self, firmware: &PathBuf) -> bluer::Result<()> {
-        println!("Updating firmware from {:?}", firmware);
+        println!("Updating firmware from file {:?}", firmware);
         let mut file = std::fs::File::open(firmware).unwrap();
         let mut buf = [0; 16];
 
@@ -93,12 +111,15 @@ impl BurrBoard {
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
             .await?;
 
-        println!("Triggered DFU");
+        println!("Triggered DFU init sequence");
         // Wait until firmware offset is reset
         while self.read_firmware_offset().await? != 0 {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         }
-        println!("Offset is reset, starting");
+        println!(
+            "Offset is reset, starting write of {} bytes",
+            file.metadata().unwrap().len()
+        );
         let mut offset: u32 = 0;
 
         loop {
@@ -110,8 +131,11 @@ impl BurrBoard {
             }
             self.write_char(FIRMWARE_SERVICE_UUID, FIRMWARE_CHAR_UUID, &buf)
                 .await?;
-            println!("Write {} bytes at offset {}", buf.len(), offset);
+            log::info!("Write {} bytes at offset {}", buf.len(), offset);
             offset += buf.len() as u32;
+            if offset % 4096 == 0 {
+                println!("{} bytes written", offset)
+            }
 
             // Wait until firmware offset is incremented
             while self.read_firmware_offset().await? != offset {
@@ -121,16 +145,20 @@ impl BurrBoard {
                 break;
             }
         }
+        if offset % 4096 == 0 {
+            println!("{} bytes written", offset)
+        }
 
         // Ensure buffer is flushed
-        println!("Flushing write dfu buffer");
+        log::info!("Flushing write dfu buffer");
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
             .await?;
 
         // Write signal that DFU should be applied
-        println!("DFU process done, setting reset");
+        log::debug!("DFU process done, setting reset");
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[3])
             .await?;
+
         Ok(())
     }
 

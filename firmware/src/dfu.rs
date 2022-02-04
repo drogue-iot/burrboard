@@ -21,6 +21,7 @@ pub enum DfuCommand<'m> {
     Erase,
     Write(u32, &'m [u8]),
     Swap,
+    MarkBooted,
 }
 
 impl<F: AsyncNorFlash + AsyncReadNorFlash> Actor for FirmwareManager<F> {
@@ -45,17 +46,18 @@ impl<F: AsyncNorFlash + AsyncReadNorFlash> Actor for FirmwareManager<F> {
     {
         info!("Starting firmware manager");
         async move {
-            // TODO: Mark ourselves as successfully booted
-            // TODO: Make a more involved health check?
-            //    self.updater.mark_booted(&mut self.flash).await.unwrap();
+            let mut word_counter = 0;
             loop {
                 if let Some(mut m) = inbox.next().await {
                     match m.message() {
+                        DfuCommand::MarkBooted => {
+                            self.updater.mark_booted(&mut self.flash).await.unwrap();
+                        }
                         DfuCommand::Erase => {
                             info!("ERASE");
                         }
                         DfuCommand::Swap => {
-                            /*
+                            info!("SWAP");
                             match self.updater.mark_update(&mut self.flash).await {
                                 Ok(_) => {
                                     info!("Tagged swap magic");
@@ -64,10 +66,22 @@ impl<F: AsyncNorFlash + AsyncReadNorFlash> Actor for FirmwareManager<F> {
                                     info!("Error marking swap updated");
                                 }
                             }
-                            self.updater.reset();*/
-                            info!("SWAPPED");
+                            self.updater.reset();
                         }
                         DfuCommand::Write(offset, data) => {
+                            word_counter += data.len() / 4;
+                            /*
+                            for i in (0..data.len()).step_by(4) {
+                                info!(
+                                    "word: 0x{:02x}{:02x}{:02x}{:02x}",
+                                    data[i + 3],
+                                    data[i + 2],
+                                    data[i + 1],
+                                    data[i],
+                                );
+                                use embassy::time::{Duration, Timer};
+                                Timer::after(Duration::from_millis(10)).await;
+                            }*/
                             match self
                                 .updater
                                 .write_firmware(*offset as usize, data, &mut self.flash)
@@ -80,6 +94,8 @@ impl<F: AsyncNorFlash + AsyncReadNorFlash> Actor for FirmwareManager<F> {
                                     info!("Error writing firmware");
                                 }
                             }
+
+                            info!("We have written {} words", word_counter);
                         }
                     }
                 }
