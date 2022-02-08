@@ -1,6 +1,6 @@
 use crate::counter::{Counter, CounterMessage};
 use crate::dfu::{DfuCommand, FirmwareManager};
-use crate::flash::SharedFlashHandle;
+//use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
@@ -14,6 +14,7 @@ use embassy::time::Duration;
 use embassy::time::Ticker;
 use futures::{future::select, future::Either, pin_mut, StreamExt};
 use heapless::Vec;
+use nrf_softdevice::Flash;
 
 #[nrf_softdevice::gatt_server]
 pub struct BurrBoardServer {
@@ -70,7 +71,7 @@ pub struct DeviceInformationService {
 #[nrf_softdevice::gatt_service(uuid = "1861")]
 pub struct FirmwareUpdateService {
     #[characteristic(uuid = "1234", write)]
-    firmware: Vec<u8, 16>,
+    firmware: Vec<u8, 64>,
 
     #[characteristic(uuid = "1235", read)]
     offset: u32,
@@ -288,39 +289,15 @@ impl Actor for BurrBoardMonitor {
 
 pub struct BurrBoardFirmware {
     service: &'static FirmwareUpdateService,
-    buffer: [u8; 4096],
-    b_offset: usize,
-    f_offset: usize,
-    dfu: Address<FirmwareManager<SharedFlashHandle>>,
+    dfu: Address<FirmwareManager<Flash>>,
 }
 
 impl BurrBoardFirmware {
     pub fn new(
         service: &'static FirmwareUpdateService,
-        dfu: Address<FirmwareManager<SharedFlashHandle>>,
+        dfu: Address<FirmwareManager<Flash>>,
     ) -> Self {
-        Self {
-            service,
-            dfu,
-            buffer: [0; 4096],
-            b_offset: 0,
-            f_offset: 0,
-        }
-    }
-
-    async fn flush(&mut self) {
-        info!("Flushing Firmware buffer!");
-        if self.b_offset > 0 {
-            self.dfu
-                .request(DfuCommand::Write(
-                    self.f_offset as u32,
-                    &self.buffer[..self.b_offset],
-                ))
-                .unwrap()
-                .await;
-            self.f_offset += self.b_offset;
-            self.b_offset = 0;
-        }
+        Self { service, dfu }
     }
 }
 
@@ -348,50 +325,21 @@ impl Actor for BurrBoardFirmware {
                             info!("Write firmware control: {}", value);
                             if *value == 1 {
                                 self.service.offset_set(0);
+                                self.dfu.request(DfuCommand::Start).unwrap().await.unwrap();
                             } else if *value == 2 {
-                                // Ensure the buffer is filled
-                                for i in self.b_offset..self.buffer.len() {
-                                    self.buffer[i] = 0;
-                                }
-                                self.b_offset = self.buffer.len();
-                                self.flush().await;
+                                self.dfu.notify(DfuCommand::Finish(0)).unwrap();
                             } else if *value == 3 {
-                                // Sanity check
-                                //let offset = self.service.offset_get().unwrap();
-                                //if offset != self.f_offset as u32 {
-                                //    info!(
-                                //        "Service offset({}) differs from flush offset({})!",
-                                //        offset, self.f_offset
-                                //    );
-                                //} else {
-                                self.dfu.notify(DfuCommand::Swap).unwrap();
-                                //}
-                            } else if *value == 4 {
-                                // Mark our firmware as working
-                                self.dfu.notify(DfuCommand::MarkBooted).unwrap();
+                                self.dfu.notify(DfuCommand::Booted).unwrap();
                             }
                         }
                         FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
-                            /*
-                            for i in (0..value.len()).step_by(4) {
-                                info!(
-                                    "gattword: 0x{:02x}{:02x}{:02x}{:02x}",
-                                    value[i + 3],
-                                    value[i + 2],
-                                    value[i + 1],
-                                    value[i],
-                                );
-                            }
-                            */
-
                             let offset = self.service.offset_get().unwrap();
-                            self.buffer[self.b_offset..self.b_offset + value.len()]
-                                .copy_from_slice(&value);
-                            self.b_offset += value.len();
+                            self.dfu
+                                .request(DfuCommand::WriteBlock(value))
+                                .unwrap()
+                                .await
+                                .unwrap();
                             self.service.offset_set(offset + value.len() as u32);
-                            if self.b_offset == self.buffer.len() {
-                                self.flush().await;
-                            }
                         }
                     }
                 }

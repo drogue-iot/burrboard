@@ -22,13 +22,14 @@ embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf528
 drogue-device = { version = "0.1.0", default-features = false, features = ["time"] }
 #embassy-boot-nrf = { git = "https://github.com/lulf/embassy.git", branch = "embassy-boot", features = ["softdevice"] }
 embassy-boot-nrf = { path = "../../../embassy/embassy-boot/nrf", features = ["softdevice"] }
+embassy-boot = { path = "../../../embassy/embassy-boot/boot" }
 embedded-hal = { version = "0.2", features = ["unproven"] }
 futures     = { version = "0.3.17", default-features = false, features = ["async-await"] }
 
-nrf-softdevice = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c63cb6359964926470e424fc899fa5e15612a5e6", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52840"] }
-nrf-softdevice-s140 = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c63cb6359964926470e424fc899fa5e15612a5e6" }
-embedded-storage = { git = "https://github.com/embassy-rs/embedded-storage.git", branch = "embassy" }
-embedded-storage-async = { git = "https://github.com/embassy-rs/embedded-storage.git", branch = "embassy" }
+nrf-softdevice = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52840"] }
+nrf-softdevice-s140 = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209" }
+embedded-storage = "0.3.0"
+embedded-storage-async = "0.3.0"
 
 bitflags = { version = "1.3", default-features = false }
 lsm6ds33 = "0.2.0"

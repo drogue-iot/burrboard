@@ -105,7 +105,7 @@ impl BurrBoard {
     pub async fn update_firmware(&self, firmware: &PathBuf) -> bluer::Result<()> {
         println!("Updating firmware from file {:?}", firmware);
         let mut file = std::fs::File::open(firmware).unwrap();
-        let mut buf = [0; 16];
+        let mut buf = [0; 64];
 
         // Trigger DFU process
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
@@ -149,14 +149,9 @@ impl BurrBoard {
             println!("{} bytes written", offset)
         }
 
-        // Ensure buffer is flushed
-        log::info!("Flushing write dfu buffer");
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
-            .await?;
-
-        // Write signal that DFU should be applied
+        // Write signal that DFU process is done and should be applied
         log::debug!("DFU process done, setting reset");
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[3])
+        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
             .await?;
 
         Ok(())

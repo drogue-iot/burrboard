@@ -1,15 +1,20 @@
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
+use embedded_storage::nor_flash::{ErrorType, NorFlashError, NorFlashErrorKind};
 use embedded_storage_async::nor_flash::{AsyncNorFlash, AsyncReadNorFlash};
-use nrf_softdevice::{Flash, FlashError, Softdevice};
 
-pub struct SharedFlash {
-    flash: Flash,
+pub struct SharedFlash<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    flash: F,
 }
 
-impl SharedFlash {
-    pub fn new(sd: &'static Softdevice) -> Self {
-        let flash = Flash::take(sd);
+impl<F> SharedFlash<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    pub fn new(flash: F) -> Self {
         Self { flash }
     }
 }
@@ -18,11 +23,41 @@ pub enum FlashOp<'m> {
     Write(u32, &'m [u8]),
     Erase(u32, u32),
     Read(u32, &'m mut [u8]),
+    Capacity(&'m mut usize),
 }
 
-impl Actor for SharedFlash {
-    type Message<'m> = FlashOp<'m>;
-    type Response = Option<Result<(), FlashError>>;
+#[derive(Debug)]
+pub enum FlashOpError<E>
+where
+    E: NorFlashError,
+{
+    Flash(E),
+    Actor,
+}
+
+impl<E> NorFlashError for FlashOpError<E>
+where
+    E: NorFlashError,
+{
+    fn kind(&self) -> NorFlashErrorKind {
+        match self {
+            Self::Flash(e) => e.kind(),
+            Self::Actor => NorFlashErrorKind::Other,
+        }
+    }
+}
+
+pub struct FlashOpResult<V, E>(Result<V, E>);
+
+impl<F> Actor for SharedFlash<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    type Message<'m>
+    where
+        Self: 'm,
+    = FlashOp<'m>;
+    type Response = Option<Result<(), F::Error>>;
 
     type OnMountFuture<'m, M>
     where
@@ -45,7 +80,11 @@ impl Actor for SharedFlash {
                     let response = match m.message() {
                         FlashOp::Write(offset, buf) => self.flash.write(*offset, buf).await,
                         FlashOp::Erase(from, to) => self.flash.erase(*from, *to).await,
-                        FlashOp::Read(offset, buf) => self.flash.read(*offset as usize, buf).await,
+                        FlashOp::Read(offset, buf) => self.flash.read(*offset, buf).await,
+                        FlashOp::Capacity(cap) => {
+                            **cap = self.flash.capacity();
+                            Ok(())
+                        }
                     };
                     m.set_response(Some(response));
                 }
@@ -54,14 +93,25 @@ impl Actor for SharedFlash {
     }
 }
 
-pub struct SharedFlashHandle(pub Address<SharedFlash>);
+pub struct SharedFlashHandle<F>(pub Address<SharedFlash<F>>)
+where
+    F: AsyncNorFlash + AsyncReadNorFlash + 'static;
 
-impl AsyncReadNorFlash for SharedFlashHandle {
-    const READ_SIZE: usize = Flash::READ_SIZE;
-    type Error = FlashError;
+impl<F> ErrorType for SharedFlashHandle<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    type Error = FlashOpError<F::Error>;
+}
 
-    type ReadFuture<'a> = impl Future<Output = Result<(), FlashError>> + 'a;
-    fn read<'a>(&'a mut self, address: usize, data: &'a mut [u8]) -> Self::ReadFuture<'a> {
+impl<F> AsyncReadNorFlash for SharedFlashHandle<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    const READ_SIZE: usize = F::READ_SIZE;
+
+    type ReadFuture<'a> = impl Future<Output = Result<(), Self::Error>> + 'a;
+    fn read<'a>(&'a mut self, address: u32, data: &'a mut [u8]) -> Self::ReadFuture<'a> {
         async move {
             self.0
                 .request(FlashOp::Read(address as u32, data))
@@ -72,16 +122,26 @@ impl AsyncReadNorFlash for SharedFlashHandle {
     }
 
     fn capacity(&self) -> usize {
-        // TODO: Create message for it?
-        256 * 4096
+        async move {
+            let mut capacity = 0;
+            self.0
+                .request(FlashOp::Capacity(&mut capacity))
+                .unwrap()
+                .await
+                .unwrap();
+            capacity
+        }
     }
 }
 
-impl AsyncNorFlash for SharedFlashHandle {
-    const WRITE_SIZE: usize = Flash::WRITE_SIZE;
-    const ERASE_SIZE: usize = Flash::ERASE_SIZE;
+impl<F> AsyncNorFlash for SharedFlashHandle<F>
+where
+    F: AsyncNorFlash + AsyncReadNorFlash,
+{
+    const WRITE_SIZE: usize = F::WRITE_SIZE;
+    const ERASE_SIZE: usize = F::ERASE_SIZE;
 
-    type WriteFuture<'a> = impl Future<Output = Result<(), FlashError>> + 'a;
+    type WriteFuture<'a> = impl Future<Output = Result<(), Self::Error>> + 'a;
     fn write<'a>(&'a mut self, offset: u32, data: &'a [u8]) -> Self::WriteFuture<'a> {
         async move {
             self.0
@@ -92,7 +152,7 @@ impl AsyncNorFlash for SharedFlashHandle {
         }
     }
 
-    type EraseFuture<'a> = impl Future<Output = Result<(), FlashError>> + 'a;
+    type EraseFuture<'a> = impl Future<Output = Result<(), Self::Error>> + 'a;
     fn erase<'a>(&'a mut self, from: u32, to: u32) -> Self::EraseFuture<'a> {
         async move {
             self.0

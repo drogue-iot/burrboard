@@ -99,6 +99,7 @@ dependencies = [
  "defmt-rtt",
  "drogue-device",
  "embassy",
+ "embassy-boot",
  "embassy-boot-nrf",
  "embassy-nrf",
  "embedded-hal 0.2.6",
@@ -343,7 +344,6 @@ dependencies = [
  "critical-section",
  "defmt",
  "embassy-macros",
- "embassy-traits",
  "embedded-hal 0.2.6",
  "futures",
  "heapless",
@@ -364,6 +364,7 @@ dependencies = [
 name = "embassy-boot-nrf"
 version = "0.1.0"
 dependencies = [
+ "cfg-if",
  "cortex-m",
  "cortex-m-rt",
  "defmt",
@@ -421,16 +422,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "embassy-traits"
-version = "0.1.0"
-dependencies = [
- "embedded-hal 0.2.6",
- "embedded-hal 1.0.0-alpha.6",
- "embedded-hal-async",
- "nb 1.0.0",
-]
-
-[[package]]
 name = "embedded-dma"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -467,13 +458,15 @@ dependencies = [
 
 [[package]]
 name = "embedded-storage"
-version = "0.2.0"
-source = "git+https://github.com/embassy-rs/embedded-storage.git?branch=embassy#24309dcc22dffb1dda10fccf37b4cde92c94bd69"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "156d7a2fdd98ebbf9ae579cbceca3058cff946e13f8e17b90e3511db0508c723"
 
 [[package]]
 name = "embedded-storage-async"
-version = "0.2.0"
-source = "git+https://github.com/embassy-rs/embedded-storage.git?branch=embassy#24309dcc22dffb1dda10fccf37b4cde92c94bd69"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ff04af74e47e9bb4315bd7aa2b01f3d1b05f33c03a6c4e9c3b20e9ce9cd8d79"
 dependencies = [
  "embedded-storage",
 ]
@@ -696,7 +689,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=ba31fc03d97facc54efb9456901abf02549a4209#ba31fc03d97facc54efb9456901abf02549a4209"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -717,7 +710,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-macro"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=ba31fc03d97facc54efb9456901abf02549a4209#ba31fc03d97facc54efb9456901abf02549a4209"
 dependencies = [
  "Inflector",
  "darling 0.10.2",
@@ -730,12 +723,12 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-mbr"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#ba31fc03d97facc54efb9456901abf02549a4209"
 
 [[package]]
 name = "nrf-softdevice-s140"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=c63cb6359964926470e424fc899fa5e15612a5e6#c63cb6359964926470e424fc899fa5e15612a5e6"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=ba31fc03d97facc54efb9456901abf02549a4209#ba31fc03d97facc54efb9456901abf02549a4209"
 
 [[package]]
 name = "nrf-usbd"
