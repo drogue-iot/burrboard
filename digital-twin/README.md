@@ -50,8 +50,7 @@ set USER "foo"
 set PASSWORD (oc -n burrboard get secret $USER -o json | jq -r '.data.password' | base64 -d)
 podman run --rm -it docker.io/edenhill/kcat:1.7.1 \
 	-b kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443 \
-	-C \
-	-t $TOPIC \
+	-o end \
 	-X security.protocol=SASL_SSL \
 	-X sasl.mechanism=SCRAM-SHA-512 \
 	-X sasl.username=$USER \
@@ -61,8 +60,25 @@ podman run --rm -it docker.io/edenhill/kcat:1.7.1 \
   Timestamp: %T
   Partition: %p
   Offset: %o
-  Headers: %h\n'
+  Headers: %h\n' \
+	-G my-kafka-group $TOPIC
 ```
+
+## Kafka stuff
+
+List consumer groups:
+
+```shell
+./bin/kafka-consumer-groups.sh --bootstrap-server kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443 --command-config config.properties --list
+./bin/kafka-consumer-groups.sh --bootstrap-server drogue-iot-kafka-bootstrap-drogue-dev.apps.wonderful.iot-playground.org:443 --command-config config2.properties --list
+```
+
+Watch consumer groups:
+```shell
+watch "./bin/kafka-consumer-groups.sh --bootstrap-server kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443 --command-config /home/jreimann/git/burrboard/digital-twin/config.properties --group ditto-reconciler --describe ; ./bin/kafka-consumer-groups.sh --bootstrap-server kafka-kafka-bootstrap-burrboard.apps.wonderful.iot-playground.org:443 --command-config /home/jreimann/git/burrboard/digital-twin/config.properties --group game-controller --describe ; ./bin/kafka-consumer-groups.sh --bootstrap-server drogue-iot-kafka-bootstrap-drogue-dev.apps.wonderful.iot-playground.org:443 --command-config /home/jreimann/git/burrboard/digital-twin/config2.properties --group ditto-kafka-drogue-ctron-test-ditto --describe"
+```
+
+## Work with digital twin
 
 Get state:
 
