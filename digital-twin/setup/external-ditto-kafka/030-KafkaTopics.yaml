@@ -7,7 +7,8 @@ metadata:
   labels:
     strimzi.io/cluster: kafka
 spec:
-  config: {}
+  config:
+    retention.ms: 300000 # 5 min
   partitions: 3
   replicas: 1
   topicName: sensor-events
