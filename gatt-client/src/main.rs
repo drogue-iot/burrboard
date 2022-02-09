@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use bluer::{AdapterEvent, Address};
-use clap::{ArgEnum, Parser};
+use clap::{ArgEnum, Parser, Subcommand};
 use core::str::FromStr;
 use futures::{pin_mut, StreamExt};
 use log;
@@ -16,34 +16,57 @@ use crate::firmware::*;
 
 #[derive(Parser, Debug)]
 struct Args {
+    #[clap(subcommand)]
+    mode: Mode,
+
     #[clap(short, long)]
     device: String,
 
     #[clap(short, long)]
-    interval: Option<u16>,
-
-    #[clap(long)]
-    turn_on: Option<Led>,
-
-    #[clap(long)]
-    turn_off: Option<Led>,
-
-    #[clap(long)]
-    firmware: Option<PathBuf>,
-
-    #[clap(long)]
-    mode: Mode,
-
-    #[clap(short, long)]
     verbosity: Option<usize>,
-
-    #[]
 }
 
-#[derive(Debug, ArgEnum, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Subcommand, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Mode {
-    Gateway,
-    Client,
+    Gateway {
+        #[clap(long)]
+        endpoint_url: String,
+
+        #[clap(long)]
+        endpoint_user: String,
+
+        #[clap(long)]
+        endpoint_password: String,
+        /*
+            #[clap(long)]
+            hawkbit_url: String,
+
+            #[clap(long)]
+            hawkbit_: String,
+
+            #[clap(long)]
+            hawkbit: String,
+        */
+    },
+    Client {
+        #[clap(short, long)]
+        read: bool,
+
+        #[clap(short, long)]
+        stream: bool,
+
+        #[clap(long)]
+        turn_on: Option<Led>,
+
+        #[clap(long)]
+        turn_off: Option<Led>,
+
+        #[clap(long)]
+        firmware: Option<PathBuf>,
+
+        #[clap(long)]
+        report_interval: Option<u16>,
+    },
 }
 
 fn merge(a: &mut serde_json::Value, b: &serde_json::Value) {
@@ -102,36 +125,42 @@ async fn main() -> anyhow::Result<()> {
                 let board = BurrBoard::new(device);
                 let version = board.read_firmware_version().await?;
                 println!("Connected to board! Running version {}", version);
-                if
-                match args.operation {
-                    Operation::Server => {
-                        let s = board.stream_sensors().await?;
-                        pin_mut!(s);
-                        let mut view = json!({});
-                        while let Some(n) = s.next().await {
-                            merge(&mut view, &n);
-                            println!("{}", view);
-                        }
-                    }
-                    Operation::Read => {
-                        let sensor = board.read_sensors().await?;
-                        println!("{}", sensor);
-                        return Ok(());
-                    }
-                    Operation::Write => {
-                        if let Some(i) = args.interval {
-                            board.set_interval(i).await?;
+                match &args.mode {
+                    Mode::Client {
+                        read,
+                        stream,
+                        turn_on,
+                        turn_off,
+                        firmware,
+                        report_interval,
+                    } => {
+                        if *read {
+                            let sensor = board.read_sensors().await?;
+                            println!("{}", sensor);
                             return Ok(());
                         }
-                        if let Some(led) = args.turn_on {
-                            board.set_led(led, true).await?;
+                        if *stream {
+                            let s = board.stream_sensors().await?;
+                            pin_mut!(s);
+                            let mut view = json!({});
+                            while let Some(n) = s.next().await {
+                                merge(&mut view, &n);
+                                println!("{}", view);
+                            }
+                        }
+                        if let Some(i) = report_interval {
+                            board.set_interval(*i).await?;
                             return Ok(());
                         }
-                        if let Some(led) = args.turn_off {
-                            board.set_led(led, false).await?;
+                        if let Some(led) = turn_on {
+                            board.set_led(*led, true).await?;
                             return Ok(());
                         }
-                        if let Some(firmware) = &args.firmware {
+                        if let Some(led) = turn_off {
+                            board.set_led(*led, false).await?;
+                            return Ok(());
+                        }
+                        if let Some(firmware) = firmware {
                             let metadata = FirmwareMetadata::from_file(firmware)?;
                             if !firmware_updated {
                                 println!(
@@ -152,16 +181,44 @@ async fn main() -> anyhow::Result<()> {
                             } else {
                                 if version != metadata.version {
                                     return Err(anyhow::anyhow!(
-                                    "Error during firmware update! Device reports {}, expected {}",
-                                    version,
-                                    metadata.version
-                                ));
+                                            "Error during firmware update! Device reports {}, expected {}",
+                                            version,
+                                            metadata.version
+                                        ));
                                 } else {
                                     // Confirm that firmware is now using the latest version and mark it as bootable
                                     println!("Firmware updated successfully");
                                     board.mark_booted().await?;
                                     println!("Device firmware marked as booted");
                                     return Ok(());
+                                }
+                            }
+                        }
+                    }
+                    Mode::Gateway {
+                        endpoint_url,
+                        endpoint_user,
+                        endpoint_password,
+                    } => {
+                        let s = board.stream_sensors().await?;
+                        pin_mut!(s);
+                        let mut view = json!({});
+                        let client = reqwest::Client::new();
+                        while let Some(n) = s.next().await {
+                            merge(&mut view, &n);
+                            println!("{}", view);
+                            match client
+                                .post(endpoint_url)
+                                .basic_auth(endpoint_user, Some(endpoint_password))
+                                .json(&view)
+                                .send()
+                                .await
+                            {
+                                Ok(res) => {
+                                    println!("Ok response: {:?}", res);
+                                }
+                                Err(e) => {
+                                    println!("Error response: {:?}", e);
                                 }
                             }
                         }
