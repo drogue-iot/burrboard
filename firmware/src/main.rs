@@ -42,7 +42,7 @@ mod accel;
 mod analog;
 mod counter;
 mod dfu;
-mod flash;
+//mod flash;
 mod gatt;
 
 use accel::*;
@@ -77,6 +77,16 @@ fn config() -> Config {
 #[embassy::task]
 async fn softdevice_task(sd: &'static Softdevice) {
     sd.run().await;
+}
+
+// Keeps our system alive
+#[embassy::task]
+async fn watchdog_task() {
+    let mut handle = unsafe { embassy_nrf::wdt::WatchdogHandle::steal(0) };
+    loop {
+        handle.pet();
+        Timer::after(Duration::from_secs(2)).await;
+    }
 }
 
 #[embassy::main(config = "config()")]
@@ -117,6 +127,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     let sd = Softdevice::enable(&config);
     s.spawn(softdevice_task(sd)).unwrap();
+    s.spawn(watchdog_task()).unwrap();
 
     static GATT: Forever<BurrBoardServer> = Forever::new();
     let server = GATT.put(gatt_server::register(sd).unwrap());

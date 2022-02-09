@@ -19,9 +19,6 @@ struct Args {
     #[clap(short, long)]
     device: String,
 
-    #[clap(arg_enum)]
-    operation: Operation,
-
     #[clap(short, long)]
     interval: Option<u16>,
 
@@ -34,15 +31,19 @@ struct Args {
     #[clap(long)]
     firmware: Option<PathBuf>,
 
+    #[clap(long)]
+    mode: Mode,
+
     #[clap(short, long)]
     verbosity: Option<usize>,
+
+    #[]
 }
 
 #[derive(Debug, ArgEnum, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Operation {
-    Stream,
-    Read,
-    Write,
+pub enum Mode {
+    Gateway,
+    Client,
 }
 
 fn merge(a: &mut serde_json::Value, b: &serde_json::Value) {
@@ -101,8 +102,9 @@ async fn main() -> anyhow::Result<()> {
                 let board = BurrBoard::new(device);
                 let version = board.read_firmware_version().await?;
                 println!("Connected to board! Running version {}", version);
+                if
                 match args.operation {
-                    Operation::Stream => {
+                    Operation::Server => {
                         let s = board.stream_sensors().await?;
                         pin_mut!(s);
                         let mut view = json!({});
