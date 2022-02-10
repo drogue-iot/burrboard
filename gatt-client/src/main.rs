@@ -11,8 +11,10 @@ use tokio::time::sleep;
 
 mod board;
 mod firmware;
+mod hawkbit;
 use crate::board::{BurrBoard, Led};
 use crate::firmware::*;
+use crate::hawkbit::*;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -37,16 +39,16 @@ pub enum Mode {
 
         #[clap(long)]
         endpoint_password: String,
-        /*
-            #[clap(long)]
-            hawkbit_url: String,
-
-            #[clap(long)]
-            hawkbit_: String,
-
-            #[clap(long)]
-            hawkbit: String,
-        */
+        #[clap(long)]
+        hawkbit_url: String,
+        #[clap(long)]
+        hawkbit_tenant: String,
+        #[clap(long)]
+        hawkbit_controller: String,
+        #[clap(long)]
+        hawkbit_device_id: String,
+        #[clap(long)]
+        hawkbit_device_token: String,
     },
     Client {
         #[clap(short, long)]
@@ -199,7 +201,21 @@ async fn main() -> anyhow::Result<()> {
                         endpoint_url,
                         endpoint_user,
                         endpoint_password,
+                        hawkbit_url,
+                        hawkbit_tenant,
+                        hawkbit_controller,
+                        hawkbit_device_id,
+                        hawkbit_device_token,
                     } => {
+                        let mut hawkbit_client = HawkbitClient::new(
+                            hawkbit_url,
+                            hawkbit_tenant,
+                            hawkbit_controller,
+                            hawkbit_device_id,
+                            hawkbit_device_token,
+                        );
+                        hawkbit_client.wait_update().await;
+
                         let s = board.stream_sensors().await?;
                         pin_mut!(s);
                         let mut view = json!({});
