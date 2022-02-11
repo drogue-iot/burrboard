@@ -1,0 +1,118 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hawkbit-deploy
+spec:
+  stepTemplate:
+    env:
+      - name: "HAWKBIT_ENDPOINT"
+        valueFrom:
+          secretKeyRef:
+            name: hawkbit-secret
+            key: endpoint
+      - name: "HAWKBIT_USER"
+        valueFrom:
+          secretKeyRef:
+            name: hawkbit-secret
+            key: user
+      - name: "HAWKBIT_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: hawkbit-secret
+            key: password
+      - name: "TARGET_ID"
+        valueFrom:
+          secretKeyRef:
+            name: hawkbit-secret
+            key: targetid
+  steps:
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          cd $(workspaces.input.path) && git rev-parse --short HEAD > rev
+      name: rev-parser
+      image: 'docker.io/library/rust:1-bullseye'
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          REV=$(cat $(workspaces.input.path)/rev) &&
+          cat<<EOF >payload.json
+          [{
+             "vendor": "Drogue IoT",
+             "name": "Burrboard",
+             "description": "Burrboard firmware",
+             "type": "os",
+             "version": "${REV}"
+          }]
+          EOF &&
+          ID=$(curl -X POST -d @payload.json -H "Content-Type: application/json" -u ${HAWKBIT_USER}:${HAWKBIT_PASSWORD} ${HAWKBIT_ENDPOINT}/rest/v1/softwaremodules | jq -r .[0].id) &&
+          echo ${ID} > $(workspaces.input.path)/module_id
+      image: 'docker.io/library/rust:1-bullseye'
+      name: create-module
+      resources: {}
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          REV=$(cat $(workspaces.input.path)/rev) &&
+          ID=$(cat $(workspaces.input.path)/module_id) &&
+          curl -X POST -d @$(workspaces.input.path)/firmware/target/thumbv7em-none-eabihf/release/burrboard-firmware -H "Content-Type: application/json" -u ${HAWKBIT_USER}:${HAWKBIT_PASSWORD} ${HAWKBIT_ENDPOINT}/rest/v1/softwaremodules/${ID}/artifacts
+      image: 'docker.io/library/rust:1-bullseye'
+      name: upload-artifact
+      resources: {}
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          REV=$(cat $(workspaces.input.path)/rev) &&
+          ID=$(cat $(workspaces.input.path)/module_id) &&
+          cat<<EOF >payload.json
+          [{
+             "requiredMigrationStep": false,
+             "name": "Burrboard Distribution",
+             "description": "Burrboard Software Distribution",
+             "type": "os",
+             "version": "${REV}"
+          }]
+          EOF &&
+          DID=$(curl -X POST -d @payload.json -H "Content-Type: application/json" -u ${HAWKBIT_USER}:${HAWKBIT_PASSWORD} ${HAWKBIT_ENDPOINT}/rest/v1/distributionsets | jq -r .[0].id)
+          echo $DID > $(workspaces.input.path)/dist_id
+      image: 'docker.io/library/rust:1-bullseye'
+      name: create-distribution
+      resources: {}
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          DID=$(cat $(workspaces.input.path)/dist_id) &&
+          MID=$(cat $(workspaces.input.path)/module_id) &&
+          cat<<EOF >payload.json
+          [{
+             "id": "${MID}"
+          }]
+          EOF &&
+          curl -X POST -d @payload.json -H "Content-Type: application/json" -u ${HAWKBIT_USER}:${HAWKBIT_PASSWORD} ${HAWKBIT_ENDPOINT}/rest/v1/distributionsets/${DID}/assignedSM
+      image: 'docker.io/library/rust:1-bullseye'
+      name: assign-software-to-distribution
+      resources: {}
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          DID=$(cat $(workspaces.input.path)/dist_id) &&
+          cat<<EOF >payload.json
+          [{
+             "id": "${TARGET_ID}",
+             "type": "forced"
+          }]
+          EOF &&
+          curl -X POST -d @payload.json -H "Content-Type: application/json" -u ${HAWKBIT_USER}:${HAWKBIT_PASSWORD} ${HAWKBIT_ENDPOINT}/rest/v1/distributionsets/${DID}/assignedTargets/
+      image: 'docker.io/library/rust:1-bullseye'
+      name: deploy-firmware
+      resources: {}
+  workspaces:
+    - description: Build directory
+      mountPath: /workspace
+      name: input
