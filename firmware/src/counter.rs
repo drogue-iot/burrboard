@@ -1,8 +1,6 @@
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
 
-use crate::gatt::BurrBoardService;
-
 pub enum BoardButton {
     A,
     B,
@@ -11,17 +9,11 @@ pub enum BoardButton {
 pub struct Counter {
     presses: u32,
     button: BoardButton,
-
-    board: &'static BurrBoardService,
 }
 
 impl Counter {
-    pub fn new(button: BoardButton, board: &'static BurrBoardService) -> Self {
-        Self {
-            presses: 0,
-            button,
-            board,
-        }
+    pub fn new(button: BoardButton) -> Self {
+        Self { presses: 0, button }
     }
 }
 
@@ -55,10 +47,6 @@ impl Actor for Counter {
                     let response = match *m.message() {
                         CounterMessage::Increment => {
                             self.presses += 1;
-                            match self.button {
-                                BoardButton::A => self.board.button_a_set(self.presses),
-                                BoardButton::B => self.board.button_b_set(self.presses),
-                            };
                             info!("Presses: {}", self.presses);
                             None
                         }

@@ -91,46 +91,58 @@ async fn watchdog_task() {
 
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
-    let config = nrf_softdevice::Config {
-        clock: Some(raw::nrf_clock_lf_cfg_t {
-            source: raw::NRF_CLOCK_LF_SRC_RC as u8,
-            rc_ctiv: 4,
-            rc_temp_ctiv: 2,
-            accuracy: 7,
-        }),
-        conn_gap: Some(raw::ble_gap_conn_cfg_t {
-            conn_count: 6,
-            event_length: 6,
-        }),
-        conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 128 }),
-        gatts_attr_tab_size: Some(raw::ble_gatts_cfg_attr_tab_size_t {
-            attr_tab_size: 32768,
-        }),
-        gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
-            adv_set_count: 1,
-            periph_role_count: 3,
-            central_role_count: 0,
-            central_sec_count: 0,
-            _bitfield_1: raw::ble_gap_cfg_role_count_t::new_bitfield_1(0),
-        }),
-        gap_device_name: Some(raw::ble_gap_cfg_device_name_t {
-            p_value: b"BurrBoard" as *const u8 as _,
-            current_len: 9,
-            max_len: 9,
-            write_perm: unsafe { core::mem::zeroed() },
-            _bitfield_1: raw::ble_gap_cfg_device_name_t::new_bitfield_1(
-                raw::BLE_GATTS_VLOC_STACK as u8,
-            ),
-        }),
-        ..Default::default()
+    #[cfg(not(any(feature = "gatt", feature = "mesh")))]
+    let sd = {
+        let sd = Softdevice::enable(&Default::default());
+        s.spawn(softdevice_task(sd)).unwrap();
+        s.spawn(watchdog_task()).unwrap();
+        sd
     };
 
-    let sd = Softdevice::enable(&config);
-    s.spawn(softdevice_task(sd)).unwrap();
-    s.spawn(watchdog_task()).unwrap();
+    #[cfg(feature = "gatt")]
+    let sd = {
+        let config = nrf_softdevice::Config {
+            clock: Some(raw::nrf_clock_lf_cfg_t {
+                source: raw::NRF_CLOCK_LF_SRC_RC as u8,
+                rc_ctiv: 4,
+                rc_temp_ctiv: 2,
+                accuracy: 7,
+            }),
+            conn_gap: Some(raw::ble_gap_conn_cfg_t {
+                conn_count: 6,
+                event_length: 6,
+            }),
+            conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 128 }),
+            gatts_attr_tab_size: Some(raw::ble_gatts_cfg_attr_tab_size_t {
+                attr_tab_size: 32768,
+            }),
+            gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
+                adv_set_count: 1,
+                periph_role_count: 3,
+                central_role_count: 0,
+                central_sec_count: 0,
+                _bitfield_1: raw::ble_gap_cfg_role_count_t::new_bitfield_1(0),
+            }),
+            gap_device_name: Some(raw::ble_gap_cfg_device_name_t {
+                p_value: b"BurrBoard" as *const u8 as _,
+                current_len: 9,
+                max_len: 9,
+                write_perm: unsafe { core::mem::zeroed() },
+                _bitfield_1: raw::ble_gap_cfg_device_name_t::new_bitfield_1(
+                    raw::BLE_GATTS_VLOC_STACK as u8,
+                ),
+            }),
+            ..Default::default()
+        };
 
-    static GATT: Forever<BurrBoardServer> = Forever::new();
-    let server = GATT.put(gatt_server::register(sd).unwrap());
+        let sd = Softdevice::enable(&config);
+        s.spawn(softdevice_task(sd)).unwrap();
+        s.spawn(watchdog_task()).unwrap();
+        sd
+    };
+
+    #[cfg(feature = "mesh")]
+    {}
 
     #[cfg(feature = "log")]
     {
@@ -175,7 +187,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static BUTTON_A: ActorContext<
         Button<ButtonDriver<Input<'static, P0_27>>, ButtonPressed<Counter>>,
     > = ActorContext::new();
-    let counter_a = COUNTER_A.mount(s, Counter::new(BoardButton::A, &server.board));
+    let counter_a = COUNTER_A.mount(s, Counter::new(BoardButton::A));
     let button_a = BUTTON_A.mount(
         s,
         Button::new(
@@ -189,7 +201,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     static BUTTON_B: ActorContext<
         Button<ButtonDriver<Input<'static, P0_26>>, ButtonPressed<Counter>>,
     > = ActorContext::new();
-    let counter_b = COUNTER_B.mount(s, Counter::new(BoardButton::B, &server.board));
+    let counter_b = COUNTER_B.mount(s, Counter::new(BoardButton::B));
     let button_b = BUTTON_B.mount(
         s,
         Button::new(
@@ -210,7 +222,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         FirmwareManager::new(flash, embassy_boot_nrf::updater::new()),
     );
 
-    // Self test
+    // Bootup animation
     red.on();
     Timer::after(Duration::from_secs(1)).await;
     green.on();
@@ -224,11 +236,15 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     blue.off();
     yellow.off();
 
-    info!("Firmware started");
+    #[cfg(feature = "mesh")]
+    {}
 
     // BLE Gatt test service
     #[cfg(feature = "gatt")]
     {
+        static GATT: Forever<BurrBoardServer> = Forever::new();
+        let server = GATT.put(gatt_server::register(sd).unwrap());
+
         server.firmware.version_set(
             heapless::Vec::from_slice(FIRMWARE_REVISION.unwrap_or(FIRMWARE_VERSION).as_bytes())
                 .unwrap(),
@@ -255,6 +271,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         ))
         .unwrap();
     }
+
+    info!("Firmware started");
 }
 
 pub struct Leds {
