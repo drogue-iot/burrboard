@@ -63,7 +63,8 @@ pub type BatteryPin = P0_04;
 pub type TemperaturePin = P0_05;
 pub type LightPin = P0_03;
 
-const FIRMWARE_VERSION: &str = env!("REVISION");
+const FIRMWARE_VERSION: &str = env!("CARGO_PKG_VERSION");
+const FIRMWARE_REVISION: Option<&str> = option_env!("REVISION");
 
 // Application must run at a lower priority than softdevice
 fn config() -> Config {
@@ -228,9 +229,10 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     // BLE Gatt test service
     #[cfg(feature = "gatt")]
     {
-        server
-            .firmware
-            .version_set(heapless::Vec::from_slice(FIRMWARE_VERSION.as_bytes()).unwrap());
+        server.firmware.version_set(
+            heapless::Vec::from_slice(FIRMWARE_REVISION.unwrap_or(FIRMWARE_VERSION).as_bytes())
+                .unwrap(),
+        );
         static MONITOR: ActorContext<BurrBoardMonitor> = ActorContext::new();
         let monitor = MONITOR.mount(
             s,

@@ -19,14 +19,14 @@ cortex-m-rt = "0.7"
 
 embassy = { version = "0.1.0", default-features = false }
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "unstable-traits"]}
-drogue-device = { version = "0.1.0", default-features = false, features = ["time", "dfu"] }
+drogue-device = { version = "0.1.0", default-features = false, features = ["time", "dfu", "ble+nrf52840"] }
 embassy-boot-nrf = { version = "0.1.0", features = ["softdevice"] }
 embassy-boot = { version = "0.1.0" }
 embedded-hal = { version = "0.2", features = ["unproven"] }
 futures     = { version = "0.3.17", default-features = false, features = ["async-await"] }
 
-nrf-softdevice = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52840"] }
-nrf-softdevice-s140 = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209" }
+nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52840"] }
+nrf-softdevice-s140 = { version = "0.1.0" }
 embedded-storage = "0.3.0"
 embedded-storage-async = "0.3.0"
 
@@ -58,6 +58,8 @@ embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8b
 embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"}
 embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"}
 drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "c2231359634161d09edd4a190b97e79633cbb8c5" }
+nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209" }
+nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "ba31fc03d97facc54efb9456901abf02549a4209" }
 #drogue-device = { path = "../../drogue-iot/drogue-device/device" }
 #embassy = { path = "../../../embassy/embassy" }
 #embassy-nrf = { path = "../../../embassy/embassy-nrf" }
