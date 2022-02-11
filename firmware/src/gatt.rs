@@ -114,7 +114,7 @@ impl BurrBoardMonitor {
         Self {
             service,
             connections: Vec::new(),
-            ticker: Ticker::every(Duration::from_secs(10)),
+            ticker: Ticker::every(Duration::from_secs(1)),
             analog,
             accel,
             button_a,

@@ -3,9 +3,11 @@ use std::path::PathBuf;
 use bluer::{AdapterEvent, Address};
 use clap::{ArgEnum, Parser, Subcommand};
 use core::str::FromStr;
+use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
 use log;
 use serde_json::json;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -45,8 +47,6 @@ pub enum Mode {
         hawkbit_tenant: String,
         #[clap(long)]
         hawkbit_controller: String,
-        #[clap(long)]
-        hawkbit_device_id: String,
         #[clap(long)]
         hawkbit_device_token: String,
     },
@@ -100,6 +100,7 @@ async fn main() -> anyhow::Result<()> {
 
     let addr = Address::from_str(&args.device)?;
     let mut firmware_updated = false;
+    let mut deployment: Option<Deployment> = None;
 
     while let Some(evt) = discover.next().await {
         match evt {
@@ -170,13 +171,13 @@ async fn main() -> anyhow::Result<()> {
                                     version, &metadata.version
                                 );
                                 match metadata.data {
-                                    FirmwareData::Bytes(_) => {
+                                    FirmwareData::Http(_) => {
                                         todo!()
                                     }
                                     FirmwareData::File(path) => {
-                                        board.update_firmware(&path).await?;
+                                        board.update_firmware_from_file(&path).await?;
                                         firmware_updated = true;
-                                        adapter.remove_device(board.free().address()).await?;
+                                        adapter.remove_device(board.address()).await?;
                                         println!("Firmware is updated. Waiting for device to come back online...");
                                     }
                                 }
@@ -204,38 +205,89 @@ async fn main() -> anyhow::Result<()> {
                         hawkbit_url,
                         hawkbit_tenant,
                         hawkbit_controller,
-                        hawkbit_device_id,
                         hawkbit_device_token,
                     } => {
                         let mut hawkbit_client = HawkbitClient::new(
                             hawkbit_url,
                             hawkbit_tenant,
                             hawkbit_controller,
-                            hawkbit_device_id,
                             hawkbit_device_token,
                         );
-                        hawkbit_client.wait_update().await;
 
-                        let s = board.stream_sensors().await?;
-                        pin_mut!(s);
-                        let mut view = json!({});
-                        let client = reqwest::Client::new();
-                        while let Some(n) = s.next().await {
-                            merge(&mut view, &n);
-                            println!("{}", view);
-                            match client
-                                .post(endpoint_url)
-                                .basic_auth(endpoint_user, Some(endpoint_password))
-                                .json(&view)
-                                .send()
-                                .await
-                            {
-                                Ok(res) => {
-                                    println!("Ok response: {:?}", res);
+                        // Register with default attributes
+                        hawkbit_client.register().await?;
+
+                        // We need to finish an earlier deployment
+                        if let Some(deployment) = deployment.take() {
+                            let metadata = &deployment.metadata;
+                            if version != metadata.version {
+                                hawkbit_client.provide_feedback(&deployment, false).await?;
+                                println!(
+                                    "Error during firmware update! Device reports {}, expected {}",
+                                    version, metadata.version
+                                );
+                            } else {
+                                // Confirm that firmware is now using the latest version and mark it as bootable
+                                println!("Firmware updated successfully");
+                                board.mark_booted().await?;
+                                hawkbit_client.provide_feedback(&deployment, true).await?;
+                                println!("Device firmware marked as booted");
+                            }
+                        }
+
+                        let board = Arc::new(board);
+                        // Stream sensors
+                        let endpoint_url = endpoint_url.to_string();
+                        let endpoint_user = endpoint_user.to_string();
+                        let endpoint_password = endpoint_password.to_string();
+                        let b = board.clone();
+                        let stream_task = tokio::task::spawn(async move {
+                            let mut s = Box::pin(b.stream_sensors().await.unwrap());
+                            let client = reqwest::Client::new();
+                            let mut view = json!({});
+                            loop {
+                                if let Some(n) = s.next().await {
+                                    let previous = view.clone();
+                                    merge(&mut view, &n);
+                                    if previous != view {
+                                        match client
+                                            .post(&endpoint_url)
+                                            .basic_auth(&endpoint_user, Some(&endpoint_password))
+                                            .json(&view)
+                                            .send()
+                                            .await
+                                        {
+                                            Ok(_) => {}
+                                            Err(e) => {
+                                                println!("Error response: {:?}", e);
+                                            }
+                                        }
+                                    }
                                 }
-                                Err(e) => {
-                                    println!("Error response: {:?}", e);
-                                }
+                            }
+                        });
+
+                        // Wait for deployment
+                        let d = hawkbit_client.wait_update().await?;
+                        let metadata = &d.metadata;
+                        println!(
+                            "Updating firmware from version {} to {}",
+                            version, &metadata.version
+                        );
+
+                        match &metadata.data {
+                            FirmwareData::Http(url) => {
+                                // Download file
+                                let data = hawkbit_client.fetch_firmware(url).await?;
+                                println!("Received firmware of {} bytes", data.len());
+                                board.update_firmware(&data[..]).await?;
+                                stream_task.abort();
+                                deployment.replace(d);
+                                adapter.remove_device(board.address()).await?;
+                                println!("Firmware is updated. Waiting for device to come back online...");
+                            }
+                            FirmwareData::File(path) => {
+                                panic!("unexpected metadata");
                             }
                         }
                     }

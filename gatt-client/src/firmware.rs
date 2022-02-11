@@ -4,6 +4,7 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmwareMetadata {
     pub version: String,
+    pub size: usize,
     pub data: FirmwareData,
 }
 
@@ -42,12 +43,20 @@ impl FirmwareMetadata {
         let metadata = serde_json::from_str(&data)?;
         Ok(metadata)
     }
+
+    pub fn from_http(url: String, size: usize, version: String) -> Self {
+        Self {
+            version,
+            size,
+            data: FirmwareData::Http(url),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum FirmwareData {
     #[serde(rename = "file")]
     File(PathBuf),
-    #[serde(rename = "bytes")]
-    Bytes(Vec<u8>),
+    #[serde(rename = "http")]
+    Http(String),
 }
