@@ -20,9 +20,8 @@ cortex-m-rt = "0.7"
 embassy = { version = "0.1.0", default-features = false }
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "unstable-traits"]}
 drogue-device = { version = "0.1.0", default-features = false, features = ["time"] }
-#embassy-boot-nrf = { git = "https://github.com/lulf/embassy.git", branch = "embassy-boot", features = ["softdevice"] }
-embassy-boot-nrf = { path = "../../../embassy/embassy-boot/nrf", features = ["softdevice"] }
-embassy-boot = { path = "../../../embassy/embassy-boot/boot" }
+embassy-boot-nrf = { version = "0.1.0", features = ["softdevice"] }
+embassy-boot = { version = "0.1.0" }
 embedded-hal = { version = "0.2", features = ["unproven"] }
 futures     = { version = "0.3.17", default-features = false, features = ["async-await"] }
 
@@ -54,10 +53,12 @@ log = [
 ]
 
 [patch.crates-io]
-#embassy = { git = "https://github.com/lulf/embassy.git", branch = "embassy-boot"}
-#embassy-nrf = { git = "https://github.com/lulf/embassy.git", branch = "embassy-boot"}
-drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "c53431c07aaa351f9d37a387af2df0aec52b6b82" }
+embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488" }
+embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"}
+embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"}
+embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"}
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "c2231359634161d09edd4a190b97e79633cbb8c5" }
 #drogue-device = { path = "../../drogue-iot/drogue-device/device" }
-embassy = { path = "../../../embassy/embassy" }
-embassy-nrf = { path = "../../../embassy/embassy-nrf" }
+#embassy = { path = "../../../embassy/embassy" }
+#embassy-nrf = { path = "../../../embassy/embassy-nrf" }
 #embassy-boot-nrf = { path = "../../../embassy/embassy-boot/nrf" }
