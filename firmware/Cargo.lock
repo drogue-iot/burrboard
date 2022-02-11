@@ -309,10 +309,12 @@ source = "git+https://github.com/drogue-iot/drogue-device.git?rev=c2231359634161
 dependencies = [
  "atomic-polyfill",
  "base64",
+ "cortex-m",
  "critical-section",
  "defmt",
  "drogue-device-macros",
  "embassy",
+ "embassy-boot",
  "embedded-hal 0.2.7",
  "embedded-hal 1.0.0-alpha.6",
  "embedded-hal-async",

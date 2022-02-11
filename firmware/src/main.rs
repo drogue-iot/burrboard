@@ -7,6 +7,7 @@
 
 use drogue_device::{
     actors::button::{Button, ButtonPressed},
+    actors::dfu::*,
     drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
     traits::led::Led as _,
@@ -41,14 +42,12 @@ use panic_reset as _;
 mod accel;
 mod analog;
 mod counter;
-mod dfu;
 //mod flash;
 mod gatt;
 
 use accel::*;
 use analog::*;
 use counter::*;
-use dfu::*;
 //use flash::*;
 use gatt::*;
 

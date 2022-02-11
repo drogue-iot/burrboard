@@ -19,7 +19,7 @@ cortex-m-rt = "0.7"
 
 embassy = { version = "0.1.0", default-features = false }
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "unstable-traits"]}
-drogue-device = { version = "0.1.0", default-features = false, features = ["time"] }
+drogue-device = { version = "0.1.0", default-features = false, features = ["time", "dfu"] }
 embassy-boot-nrf = { version = "0.1.0", features = ["softdevice"] }
 embassy-boot = { version = "0.1.0" }
 embedded-hal = { version = "0.2", features = ["unproven"] }

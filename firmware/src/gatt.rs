@@ -1,12 +1,14 @@
 use crate::counter::{Counter, CounterMessage};
-use crate::dfu::{DfuCommand, FirmwareManager};
 //use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
 };
 use core::future::Future;
-use drogue_device::{Actor, Address, Inbox};
+use drogue_device::{
+    actors::dfu::{DfuCommand, FirmwareManager},
+    Actor, Address, Inbox,
+};
 use nrf_softdevice::ble::{Connection, FixedGattValue};
 
 use embassy::time::Duration;
@@ -327,7 +329,7 @@ impl Actor for BurrBoardFirmware {
                                 self.service.offset_set(0);
                                 self.dfu.request(DfuCommand::Start).unwrap().await.unwrap();
                             } else if *value == 2 {
-                                self.dfu.notify(DfuCommand::Finish(0)).unwrap();
+                                self.dfu.notify(DfuCommand::Finish).unwrap();
                             } else if *value == 3 {
                                 self.dfu.notify(DfuCommand::Booted).unwrap();
                             }
