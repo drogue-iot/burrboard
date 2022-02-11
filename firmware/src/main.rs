@@ -64,7 +64,7 @@ pub type BatteryPin = P0_04;
 pub type TemperaturePin = P0_05;
 pub type LightPin = P0_03;
 
-const FIRMWARE_VERSION: &str = env!("CARGO_PKG_VERSION");
+const FIRMWARE_VERSION: &str = env!("REVISION");
 
 // Application must run at a lower priority than softdevice
 fn config() -> Config {
