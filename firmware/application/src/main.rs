@@ -65,12 +65,22 @@ use panic_reset as _;
 mod accel;
 mod analog;
 mod counter;
+
+#[cfg(feature = "gatt")]
 mod gatt;
+
+#[cfg(feature = "mesh")]
+mod mesh;
 
 use accel::*;
 use analog::*;
 use counter::*;
+
+#[cfg(feature = "gatt")]
 use gatt::*;
+
+#[cfg(feature = "mesh")]
+use mesh::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
 pub type GreenLed = LedDriver<Output<'static, P0_30>>;
@@ -93,11 +103,6 @@ fn config() -> Config {
     config.gpiote_interrupt_priority = Priority::P2;
     config.time_interrupt_priority = Priority::P2;
     config
-}
-
-#[embassy::task]
-async fn softdevice_task(sd: &'static Softdevice) {
-    sd.run().await;
 }
 
 // Keeps our system alive
@@ -165,8 +170,9 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     #[cfg(feature = "mesh")]
     let (facilities, flash) = {
         let facilities = Nrf52BleMeshFacilities::new("Drogue IoT BLE Mesh");
+        let flash = facilities.flash();
 
-        (facilities, facilities.flash())
+        (facilities, flash)
     };
 
     #[cfg(feature = "log")]
@@ -266,16 +272,6 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             static __storage: u8;
         }
 
-        const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
-        const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
-        const VERSION_IDENTIFIER: VersionIdentifier = VersionIdentifier(0x0001);
-        const FEATURES: Features = Features {
-            relay: true,
-            proxy: false,
-            friend: false,
-            low_power: false,
-        };
-
         let bearer = facilities.bearer();
         let rng = facilities.rng();
         let storage = FlashStorage::new(unsafe { &__storage as *const u8 as usize }, flash.into());
@@ -291,17 +287,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             input_oob_action: InputOOBActions::default(),
         };
 
-        let mut composition = Composition::new(
-            COMPANY_IDENTIFIER,
-            PRODUCT_IDENTIFIER,
-            VERSION_IDENTIFIER,
-            FEATURES,
-        );
-        composition
-            .add_element(ElementDescriptor::new(Location(0x0001)).add_model(GENERIC_ONOFF_SERVER))
-            .ok();
-
-        let elements = CustomElementsHandler { composition, led };
+        let elements = BurrBoardElementsHandler::new();
 
         static FACILITIES: ActorContext<Nrf52BleMeshFacilities> = ActorContext::new();
 
@@ -309,9 +295,9 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
         static MESH: ActorContext<
             MeshNode<
-                CustomElementsHandler,
+                BurrBoardElementsHandler,
                 SoftdeviceAdvertisingBearer,
-                FlashStorage<Flash>,
+                FlashStorage<SharedFlashHandle<Flash>>,
                 SoftdeviceRng,
             >,
         > = ActorContext::new();
@@ -357,88 +343,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     info!("Firmware started");
 }
 
-pub struct Leds {
-    pub red: RedLed,
-    pub green: GreenLed,
-    pub blue: BlueLed,
-    pub yellow: YellowLed,
-}
-
 #[embassy::task]
-async fn bluetooth_task(
-    sd: &'static Softdevice,
-    server: &'static BurrBoardServer,
-    mut leds: Leds,
-    monitor: Address<BurrBoardMonitor>,
-    firmware: Address<BurrBoardFirmware>,
-) {
-    #[rustfmt::skip]
-    let adv_data = &[
-        0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
-        0x03, 0x03, 0x60, 0x18,
-        0x0a, 0x09, b'B', b'u', b'r', b'r', b'B', b'o', b'a', b'r', b'd',
-    ];
-    #[rustfmt::skip]
-    let scan_data = &[
-        0x03, 0x03, 0x09, 0x18,
-    ];
-
-    loop {
-        let config = peripheral::Config::default();
-        let adv = peripheral::ConnectableAdvertisement::ScannableUndirected {
-            adv_data,
-            scan_data,
-        };
-        let conn = unwrap!(peripheral::advertise_connectable(sd, adv, &config).await);
-
-        info!("advertising done!");
-
-        monitor.notify(MonitorEvent::Connected(conn.clone()));
-        let res = gatt_server::run(&conn, server, |e| match e {
-            BurrBoardServerEvent::Board(event) => match event {
-                BurrBoardServiceEvent::RedLedWrite(val) => {
-                    if val == 0 {
-                        leds.red.off();
-                    } else {
-                        leds.red.on();
-                    }
-                }
-                BurrBoardServiceEvent::GreenLedWrite(val) => {
-                    if val == 0 {
-                        leds.green.off();
-                    } else {
-                        leds.green.on();
-                    }
-                }
-                BurrBoardServiceEvent::BlueLedWrite(val) => {
-                    if val == 0 {
-                        leds.blue.off();
-                    } else {
-                        leds.blue.on();
-                    }
-                }
-                BurrBoardServiceEvent::YellowLedWrite(val) => {
-                    if val == 0 {
-                        leds.yellow.off();
-                    } else {
-                        leds.yellow.on();
-                    }
-                }
-                e => {
-                    monitor.notify(MonitorEvent::Event(e));
-                }
-                _ => {}
-            },
-            BurrBoardServerEvent::DeviceInfo(_) => {}
-            BurrBoardServerEvent::Firmware(e) => {
-                firmware.notify(e);
-            }
-        })
-        .await;
-        monitor.notify(MonitorEvent::Disconnected(conn));
-
-        if let Err(e) = res {
-            info!("gatt_server run exited with error: {:?}", e);
-        }
-    }
+async fn softdevice_task(sd: &'static Softdevice) {
+    sd.run().await;
 }

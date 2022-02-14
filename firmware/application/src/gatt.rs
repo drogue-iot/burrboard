@@ -349,3 +349,89 @@ impl Actor for BurrBoardFirmware {
         }
     }
 }
+
+pub struct Leds {
+    pub red: RedLed,
+    pub green: GreenLed,
+    pub blue: BlueLed,
+    pub yellow: YellowLed,
+}
+
+#[embassy::task]
+async fn bluetooth_task(
+    sd: &'static Softdevice,
+    server: &'static BurrBoardServer,
+    mut leds: Leds,
+    monitor: Address<BurrBoardMonitor>,
+    firmware: Address<BurrBoardFirmware>,
+) {
+    #[rustfmt::skip]
+    let adv_data = &[
+        0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
+        0x03, 0x03, 0x60, 0x18,
+        0x0a, 0x09, b'B', b'u', b'r', b'r', b'B', b'o', b'a', b'r', b'd',
+    ];
+    #[rustfmt::skip]
+    let scan_data = &[
+        0x03, 0x03, 0x09, 0x18,
+    ];
+
+    loop {
+        let config = peripheral::Config::default();
+        let adv = peripheral::ConnectableAdvertisement::ScannableUndirected {
+            adv_data,
+            scan_data,
+        };
+        let conn = unwrap!(peripheral::advertise_connectable(sd, adv, &config).await);
+
+        info!("advertising done!");
+
+        monitor.notify(MonitorEvent::Connected(conn.clone()));
+        let res = gatt_server::run(&conn, server, |e| match e {
+            BurrBoardServerEvent::Board(event) => match event {
+                BurrBoardServiceEvent::RedLedWrite(val) => {
+                    if val == 0 {
+                        leds.red.off();
+                    } else {
+                        leds.red.on();
+                    }
+                }
+                BurrBoardServiceEvent::GreenLedWrite(val) => {
+                    if val == 0 {
+                        leds.green.off();
+                    } else {
+                        leds.green.on();
+                    }
+                }
+                BurrBoardServiceEvent::BlueLedWrite(val) => {
+                    if val == 0 {
+                        leds.blue.off();
+                    } else {
+                        leds.blue.on();
+                    }
+                }
+                BurrBoardServiceEvent::YellowLedWrite(val) => {
+                    if val == 0 {
+                        leds.yellow.off();
+                    } else {
+                        leds.yellow.on();
+                    }
+                }
+                e => {
+                    monitor.notify(MonitorEvent::Event(e));
+                }
+                _ => {}
+            },
+            BurrBoardServerEvent::DeviceInfo(_) => {}
+            BurrBoardServerEvent::Firmware(e) => {
+                firmware.notify(e);
+            }
+        })
+        .await;
+        monitor.notify(MonitorEvent::Disconnected(conn));
+
+        if let Err(e) = res {
+            info!("gatt_server run exited with error: {:?}", e);
+        }
+    }
+}
