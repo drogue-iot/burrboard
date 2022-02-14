@@ -1,0 +1,64 @@
+[package]
+authors = [
+    "Ulf Lilleengen <lulf@redhat.com>",
+]
+edition = "2018"
+name = "burrboard-bootloader"
+version = "0.1.0"
+description = "Bootloader for Burrboard chips"
+resolver = "2"
+
+[dependencies]
+defmt = { version = "0.3", optional = true }
+defmt-rtt = { version = "0.3", optional = true }
+
+embassy = { version = "0.1.0", default-features = false }
+embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52840"] }
+embassy-boot-nrf = { version = "0.1.0", features = ["softdevice"] }
+embassy-boot = { version = "0.1.0" }
+cortex-m = { version = "0.7" }
+cortex-m-rt = { version = "0.7" }
+embedded-storage = "0.3.0"
+embedded-storage-async = "0.3.0"
+cfg-if = "1.0.0"
+
+nrf-softdevice-mbr = { version = "0.1.0", git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
+
+[features]
+defmt = [
+    "dep:defmt",
+    "embassy-boot/defmt",
+    "embassy-nrf/defmt",
+]
+debug = ["defmt-rtt"]
+
+[profile.dev]
+debug = 2
+debug-assertions = true
+incremental = false
+opt-level = 'z'
+overflow-checks = true
+
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = false
+incremental = false
+lto = 'fat'
+opt-level = 'z'
+overflow-checks = false
+
+# do not optimize proc-macro crates = faster builds from scratch
+[profile.dev.build-override]
+codegen-units = 8
+debug = false
+debug-assertions = false
+opt-level = 0
+overflow-checks = false
+
+[profile.release.build-override]
+codegen-units = 8
+debug = false
+debug-assertions = false
+opt-level = 0
+overflow-checks = false

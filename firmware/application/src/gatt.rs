@@ -1,5 +1,4 @@
 use crate::counter::{Counter, CounterMessage};
-//use crate::flash::SharedFlashHandle;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
@@ -7,6 +6,7 @@ use crate::{
 use core::future::Future;
 use drogue_device::{
     actors::dfu::{DfuCommand, FirmwareManager},
+    actors::flash::SharedFlashHandle,
     Actor, Address, Inbox,
 };
 use nrf_softdevice::ble::{Connection, FixedGattValue};
@@ -291,13 +291,13 @@ impl Actor for BurrBoardMonitor {
 
 pub struct BurrBoardFirmware {
     service: &'static FirmwareUpdateService,
-    dfu: Address<FirmwareManager<Flash>>,
+    dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
 }
 
 impl BurrBoardFirmware {
     pub fn new(
         service: &'static FirmwareUpdateService,
-        dfu: Address<FirmwareManager<Flash>>,
+        dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
     ) -> Self {
         Self { service, dfu }
     }

@@ -123,24 +123,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
-name = "burrboard-bootloader"
-version = "0.1.0"
-dependencies = [
- "cfg-if",
- "cortex-m",
- "cortex-m-rt",
- "defmt",
- "defmt-rtt",
- "embassy",
- "embassy-boot",
- "embassy-boot-nrf",
- "embassy-nrf",
- "embedded-storage",
- "embedded-storage-async",
- "nrf-softdevice-mbr",
-]
-
-[[package]]
 name = "burrboard-firmware"
 version = "0.1.0"
 dependencies = [
@@ -946,7 +928,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-mbr"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#96677c1f5a2da8aa5b43602eb5332bbaf6b6d403"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#ba31fc03d97facc54efb9456901abf02549a4209"
 
 [[package]]
 name = "nrf-softdevice-s140"
@@ -1279,9 +1261,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.79"
+version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
+checksum = "d23c1ba4cf0efd44be32017709280b32d1cea5c3f1275c3b6d9e8bc54f758085"
 dependencies = [
  "itoa",
  "ryu",

@@ -8,6 +8,7 @@
 use drogue_device::{
     actors::button::{Button, ButtonPressed},
     actors::dfu::*,
+    actors::flash::*,
     drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
     traits::led::Led as _,
@@ -24,6 +25,28 @@ use embassy_nrf::{interrupt, Peripherals};
 use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::raw;
 use nrf_softdevice::{Flash, Softdevice};
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "mesh")] {
+        use drogue_device::actors::ble::mesh::MeshNode;
+        use drogue_device::drivers::ble::mesh::bearer::nrf52::{
+            Nrf52BleMeshFacilities, SoftdeviceAdvertisingBearer, SoftdeviceRng,
+        };
+        use drogue_device::drivers::ble::mesh::composition::{
+            CompanyIdentifier, Composition, ElementDescriptor, ElementsHandler, Features, Location,
+            ProductIdentifier, VersionIdentifier,
+        };
+        use drogue_device::drivers::ble::mesh::driver::elements::ElementContext;
+        use drogue_device::drivers::ble::mesh::driver::DeviceError;
+        use drogue_device::drivers::ble::mesh::model::generic::GENERIC_ONOFF_SERVER;
+        use drogue_device::drivers::ble::mesh::pdu::access::AccessMessage;
+        use drogue_device::drivers::ble::mesh::provisioning::{
+            Algorithms, Capabilities, InputOOBActions, OOBSize, OutputOOBActions, PublicKeyType,
+            StaticOOBType,
+        };
+        use drogue_device::drivers::ble::mesh::storage::FlashStorage;
+    }
+}
 
 #[cfg(all(feature = "defmt", not(feature = "log")))]
 use panic_probe as _;
@@ -42,13 +65,11 @@ use panic_reset as _;
 mod accel;
 mod analog;
 mod counter;
-//mod flash;
 mod gatt;
 
 use accel::*;
 use analog::*;
 use counter::*;
-//use flash::*;
 use gatt::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
@@ -92,15 +113,15 @@ async fn watchdog_task() {
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     #[cfg(not(any(feature = "gatt", feature = "mesh")))]
-    let sd = {
+    let (sd, flash) = {
         let sd = Softdevice::enable(&Default::default());
         s.spawn(softdevice_task(sd)).unwrap();
         s.spawn(watchdog_task()).unwrap();
-        sd
+        (sd, Flash::take(sd))
     };
 
     #[cfg(feature = "gatt")]
-    let sd = {
+    let (sd, flash) = {
         let config = nrf_softdevice::Config {
             clock: Some(raw::nrf_clock_lf_cfg_t {
                 source: raw::NRF_CLOCK_LF_SRC_RC as u8,
@@ -138,11 +159,15 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         let sd = Softdevice::enable(&config);
         s.spawn(softdevice_task(sd)).unwrap();
         s.spawn(watchdog_task()).unwrap();
-        sd
+        (sd, Flash::take(sd))
     };
 
     #[cfg(feature = "mesh")]
-    {}
+    let (facilities, flash) = {
+        let facilities = Nrf52BleMeshFacilities::new("Drogue IoT BLE Mesh");
+
+        (facilities, facilities.flash())
+    };
 
     #[cfg(feature = "log")]
     {
@@ -211,15 +236,14 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     );
 
     // Actor for shared access to flash
-    //static FLASH: ActorContext<SharedFlash> = ActorContext::new();
-    // //FLASH.mount(s, SharedFlash::new(sd));
-    let flash = Flash::take(sd);
+    static FLASH: ActorContext<SharedFlash<Flash>> = ActorContext::new();
+    let flash = FLASH.mount(s, SharedFlash::new(flash));
 
     // Actor for DFU
-    static DFU: ActorContext<FirmwareManager<Flash>> = ActorContext::new();
+    static DFU: ActorContext<FirmwareManager<SharedFlashHandle<Flash>>> = ActorContext::new();
     let dfu = DFU.mount(
         s,
-        FirmwareManager::new(flash, embassy_boot_nrf::updater::new()),
+        FirmwareManager::new(flash.into(), embassy_boot_nrf::updater::new()),
     );
 
     // Bootup animation
@@ -237,7 +261,65 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     yellow.off();
 
     #[cfg(feature = "mesh")]
-    {}
+    {
+        extern "C" {
+            static __storage: u8;
+        }
+
+        const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
+        const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
+        const VERSION_IDENTIFIER: VersionIdentifier = VersionIdentifier(0x0001);
+        const FEATURES: Features = Features {
+            relay: true,
+            proxy: false,
+            friend: false,
+            low_power: false,
+        };
+
+        let bearer = facilities.bearer();
+        let rng = facilities.rng();
+        let storage = FlashStorage::new(unsafe { &__storage as *const u8 as usize }, flash.into());
+
+        let capabilities = Capabilities {
+            number_of_elements: 1,
+            algorithms: Algorithms::default(),
+            public_key_type: PublicKeyType::default(),
+            static_oob_type: StaticOOBType::default(),
+            output_oob_size: OOBSize::MaximumSize(4),
+            output_oob_action: OutputOOBActions::default(),
+            input_oob_size: OOBSize::MaximumSize(4),
+            input_oob_action: InputOOBActions::default(),
+        };
+
+        let mut composition = Composition::new(
+            COMPANY_IDENTIFIER,
+            PRODUCT_IDENTIFIER,
+            VERSION_IDENTIFIER,
+            FEATURES,
+        );
+        composition
+            .add_element(ElementDescriptor::new(Location(0x0001)).add_model(GENERIC_ONOFF_SERVER))
+            .ok();
+
+        let elements = CustomElementsHandler { composition, led };
+
+        static FACILITIES: ActorContext<Nrf52BleMeshFacilities> = ActorContext::new();
+
+        FACILITIES.mount(s, facilities);
+
+        static MESH: ActorContext<
+            MeshNode<
+                CustomElementsHandler,
+                SoftdeviceAdvertisingBearer,
+                FlashStorage<Flash>,
+                SoftdeviceRng,
+            >,
+        > = ActorContext::new();
+
+        let mesh_node = MeshNode::new(elements, capabilities, bearer, storage, rng);
+        //let mesh_node = MeshNode::new(capabilities, bearer, storage, rng).force_reset();
+        MESH.mount(s, mesh_node);
+    }
 
     // BLE Gatt test service
     #[cfg(feature = "gatt")]
