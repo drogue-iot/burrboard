@@ -285,7 +285,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
         let storage = FlashStorage::new(unsafe { &__storage as *const u8 as usize }, flash.into());
 
         let capabilities = Capabilities {
-            number_of_elements: 1,
+            number_of_elements: 4,
             algorithms: Algorithms::default(),
             public_key_type: PublicKeyType::default(),
             static_oob_type: StaticOOBType::default(),
@@ -295,7 +295,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             input_oob_action: InputOOBActions::default(),
         };
 
-        let elements = BurrBoardElementsHandler::new();
+        let elements = BurrBoardElementsHandler::new(leds);
 
         static FACILITIES: ActorContext<Nrf52BleMeshFacilities> = ActorContext::new();
 
