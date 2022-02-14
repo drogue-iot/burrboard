@@ -20,10 +20,8 @@ probe-rs-cli download softdevice.hex --format Hex --chip nRF52840_xxAA
 
 ## Installing bootloader
 
-Download `bootloader.hex` from https://github.com/drogue-iot/burrboard/releases/tag/firmware-0.1
-
 ```
-probe-rs-cli download bootloader.hex --base-address 0xfc000 --format Hex --chip nRF52840_xxAA
+cargo flash --manifest-path ../bootloader/Cargo.toml --release --chip nRF52840_xxAA
 ```
 
 ## Running
@@ -32,4 +30,10 @@ To run with debugger and enabling GATT service:
 
 ```
 DEFMT_LOG=info cargo run --release --features defmt,gatt
+```
+
+To run with debugger and enabling MESH service:
+
+```
+DEFMT_LOG=info cargo run --release --features defmt,mesh
 ```
