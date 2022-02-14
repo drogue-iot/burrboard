@@ -171,6 +171,7 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     let (facilities, flash) = {
         let facilities = Nrf52BleMeshFacilities::new("Drogue IoT BLE Mesh");
         let flash = facilities.flash();
+        s.spawn(watchdog_task()).unwrap();
 
         (facilities, flash)
     };
@@ -266,6 +267,13 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     blue.off();
     yellow.off();
 
+    let leds = Leds {
+        red,
+        green,
+        blue,
+        yellow,
+    };
+
     #[cfg(feature = "mesh")]
     {
         extern "C" {
@@ -325,19 +333,8 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
         static FIRMWARE: ActorContext<BurrBoardFirmware> = ActorContext::new();
         let firmware = FIRMWARE.mount(s, BurrBoardFirmware::new(&server.firmware, dfu));
-        s.spawn(bluetooth_task(
-            sd,
-            server,
-            Leds {
-                red,
-                green,
-                blue,
-                yellow,
-            },
-            monitor,
-            firmware,
-        ))
-        .unwrap();
+        s.spawn(bluetooth_task(sd, server, leds, monitor, firmware))
+            .unwrap();
     }
 
     info!("Firmware started");
@@ -346,4 +343,11 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 #[embassy::task]
 async fn softdevice_task(sd: &'static Softdevice) {
     sd.run().await;
+}
+
+pub struct Leds {
+    pub red: RedLed,
+    pub green: GreenLed,
+    pub blue: BlueLed,
+    pub yellow: YellowLed,
 }

@@ -1,4 +1,5 @@
 use crate::counter::{Counter, CounterMessage};
+use crate::Leds;
 use crate::{
     accel::{AccelValues, Accelerometer, Read as AccelRead},
     analog::{AnalogSensors, Read as AnalogRead},
@@ -7,16 +8,19 @@ use core::future::Future;
 use drogue_device::{
     actors::dfu::{DfuCommand, FirmwareManager},
     actors::flash::SharedFlashHandle,
+    traits::led::Led,
     Actor, Address, Inbox,
 };
+use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::ble::{Connection, FixedGattValue};
+use nrf_softdevice::raw;
+use nrf_softdevice::{Flash, Softdevice};
 
 use embassy::time::Duration;
 
 use embassy::time::Ticker;
 use futures::{future::select, future::Either, pin_mut, StreamExt};
 use heapless::Vec;
-use nrf_softdevice::Flash;
 
 #[nrf_softdevice::gatt_server]
 pub struct BurrBoardServer {
@@ -350,15 +354,8 @@ impl Actor for BurrBoardFirmware {
     }
 }
 
-pub struct Leds {
-    pub red: RedLed,
-    pub green: GreenLed,
-    pub blue: BlueLed,
-    pub yellow: YellowLed,
-}
-
 #[embassy::task]
-async fn bluetooth_task(
+pub async fn bluetooth_task(
     sd: &'static Softdevice,
     server: &'static BurrBoardServer,
     mut leds: Leds,
