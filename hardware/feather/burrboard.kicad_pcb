@@ -65,7 +65,7 @@
       (svguseinch true)
       (svgprecision 6)
       (excludeedgelayer false)
-      (plotframeref true)
+      (plotframeref false)
       (viasonmask false)
       (mode 1)
       (useauxorigin false)
