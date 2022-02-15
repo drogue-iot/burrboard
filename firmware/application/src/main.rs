@@ -26,6 +26,11 @@ use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::raw;
 use nrf_softdevice::{Flash, Softdevice};
 
+mod fmt;
+
+#[cfg(not(any(feature = "gatt", feature = "mesh")))]
+compile_error!("Neither 'gatt' nor 'mesh' activated. You must activate exactly one of the following features: gatt, mesh");
+
 cfg_if::cfg_if! {
     if #[cfg(feature = "mesh")] {
         use drogue_device::actors::ble::mesh::MeshNode;
@@ -45,16 +50,21 @@ cfg_if::cfg_if! {
             StaticOOBType,
         };
         use drogue_device::drivers::ble::mesh::storage::FlashStorage;
+
+        mod mesh;
+        use mesh::*;
+    } else if #[cfg(feature = "gatt")] {
+        mod gatt;
+        use gatt::*;
+
     }
 }
 
-#[cfg(all(feature = "defmt", not(feature = "log")))]
+#[cfg(feature = "panic-probe")]
 use panic_probe as _;
 
-#[cfg(all(feature = "defmt", not(feature = "log")))]
+#[cfg(feature = "defmt-rtt")]
 use defmt_rtt as _;
-
-mod fmt;
 
 #[cfg(feature = "log")]
 mod logger;
@@ -65,22 +75,12 @@ use panic_reset as _;
 mod accel;
 mod analog;
 mod counter;
-
-#[cfg(feature = "gatt")]
-mod gatt;
-
-#[cfg(feature = "mesh")]
-mod mesh;
+mod watchdog;
 
 use accel::*;
 use analog::*;
 use counter::*;
-
-#[cfg(feature = "gatt")]
-use gatt::*;
-
-#[cfg(feature = "mesh")]
-use mesh::*;
+use watchdog::*;
 
 pub type RedLed = LedDriver<Output<'static, P0_06>>;
 pub type GreenLed = LedDriver<Output<'static, P0_30>>;
@@ -105,26 +105,8 @@ fn config() -> Config {
     config
 }
 
-// Keeps our system alive
-#[embassy::task]
-async fn watchdog_task() {
-    let mut handle = unsafe { embassy_nrf::wdt::WatchdogHandle::steal(0) };
-    loop {
-        handle.pet();
-        Timer::after(Duration::from_secs(2)).await;
-    }
-}
-
 #[embassy::main(config = "config()")]
 async fn main(s: embassy::executor::Spawner, p: Peripherals) {
-    #[cfg(not(any(feature = "gatt", feature = "mesh")))]
-    let (sd, flash) = {
-        let sd = Softdevice::enable(&Default::default());
-        s.spawn(softdevice_task(sd)).unwrap();
-        s.spawn(watchdog_task()).unwrap();
-        (sd, Flash::take(sd))
-    };
-
     #[cfg(feature = "gatt")]
     let (sd, flash) = {
         let config = nrf_softdevice::Config {
@@ -163,7 +145,6 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
         let sd = Softdevice::enable(&config);
         s.spawn(softdevice_task(sd)).unwrap();
-        s.spawn(watchdog_task()).unwrap();
         (sd, Flash::take(sd))
     };
 
@@ -171,7 +152,6 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     let (facilities, flash) = {
         let facilities = Nrf52BleMeshFacilities::new("Drogue IoT BLE Mesh");
         let flash = facilities.flash();
-        s.spawn(watchdog_task()).unwrap();
 
         (facilities, flash)
     };
@@ -188,6 +168,10 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
             Default::default(),
         ));
     }
+
+    // Launch watchdog
+    static WATCHDOG: ActorContext<Watchdog> = ActorContext::new();
+    WATCHDOG.mount(s, Watchdog(Duration::from_secs(2)));
 
     // Ensure accel is ready
     Timer::after(Duration::from_millis(500)).await;
