@@ -56,7 +56,7 @@
     (solder_mask_min_width 0.0508)
     (aux_axis_origin 178.816 143.256)
     (pcbplotparams
-      (layerselection 0x003f0fc_ffffffff)
+      (layerselection 0x003f030_7ffffffe)
       (disableapertmacros false)
       (usegerberextensions true)
       (usegerberattributes true)
@@ -82,11 +82,11 @@
       (plotinvisibletext false)
       (sketchpadsonfab false)
       (subtractmaskfromsilk false)
-      (outputformat 1)
+      (outputformat 4)
       (mirror false)
-      (drillshape 0)
+      (drillshape 2)
       (scaleselection 1)
-      (outputdirectory "gerbers/")
+      (outputdirectory "assembly_drawings/")
     )
   )
 
