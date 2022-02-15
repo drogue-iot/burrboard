@@ -20,7 +20,7 @@ fn main() -> ! {
     }
 
     let mut bl = BootLoader::default();
-    let start = bl.prepare(&mut WatchdogFlash::start(Nvmc::new(p.NVMC), p.WDT, 5));
+    let start = bl.prepare(&mut WatchdogFlash::start(Nvmc::new(p.NVMC), p.WDT, 10));
     unsafe { bl.load(start) }
 }
 
