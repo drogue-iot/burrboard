@@ -9,7 +9,6 @@ use drogue_device::{
     actors::button::{Button, ButtonPressed},
     actors::dfu::*,
     actors::flash::*,
-    drivers::button::Button as ButtonDriver,
     drivers::led::Led as LedDriver,
     traits::led::Led as _,
     ActorContext, Address,
@@ -87,8 +86,8 @@ pub type GreenLed = LedDriver<Output<'static, P0_30>>;
 pub type BlueLed = LedDriver<Output<'static, P0_28>>;
 pub type YellowLed = LedDriver<Output<'static, P0_02>>;
 
-pub type ButtonA = ButtonDriver<Input<'static, P0_27>>;
-pub type ButtonB = ButtonDriver<Input<'static, P0_26>>;
+pub type ButtonA = Input<'static, P0_27>;
+pub type ButtonB = Input<'static, P0_26>;
 
 pub type BatteryPin = P0_04;
 pub type TemperaturePin = P0_05;
@@ -200,28 +199,24 @@ async fn main(s: embassy::executor::Spawner, p: Peripherals) {
 
     // Actor for button A and press counter
     static COUNTER_A: ActorContext<Counter> = ActorContext::new();
-    static BUTTON_A: ActorContext<
-        Button<ButtonDriver<Input<'static, P0_27>>, ButtonPressed<Counter>>,
-    > = ActorContext::new();
+    static BUTTON_A: ActorContext<Button<ButtonA, ButtonPressed<Counter>>> = ActorContext::new();
     let counter_a = COUNTER_A.mount(s, Counter::new(BoardButton::A));
     let button_a = BUTTON_A.mount(
         s,
         Button::new(
-            ButtonDriver::new(Input::new(p.P0_27, Pull::None)),
+            Input::new(p.P0_27, Pull::None),
             ButtonPressed(counter_a, CounterMessage::Increment),
         ),
     );
 
     // Actor for button B and press counter
     static COUNTER_B: ActorContext<Counter> = ActorContext::new();
-    static BUTTON_B: ActorContext<
-        Button<ButtonDriver<Input<'static, P0_26>>, ButtonPressed<Counter>>,
-    > = ActorContext::new();
+    static BUTTON_B: ActorContext<Button<ButtonB, ButtonPressed<Counter>>> = ActorContext::new();
     let counter_b = COUNTER_B.mount(s, Counter::new(BoardButton::B));
     let button_b = BUTTON_B.mount(
         s,
         Button::new(
-            ButtonDriver::new(Input::new(p.P0_26, Pull::None)),
+            Input::new(p.P0_26, Pull::None),
             ButtonPressed(counter_b, CounterMessage::Increment),
         ),
     );
