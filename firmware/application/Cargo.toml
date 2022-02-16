@@ -37,9 +37,7 @@ cfg-if = "1.0.0"
 
 [features]
 default = ["panic-reset"]
-gatt = []
 lsm = []
-mesh = []
 defmt = [
       "dep:defmt",
       "defmt-rtt",

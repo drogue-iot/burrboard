@@ -26,14 +26,11 @@ cargo flash --manifest-path ../bootloader/Cargo.toml --release --chip nRF52840_x
 
 ## Running
 
-To run with debugger and enabling GATT service:
+To run with debugger
 
 ```
-DEFMT_LOG=info cargo run --release --features defmt,gatt
+DEFMT_LOG=info cargo run --release --features defmt
 ```
 
-To run with debugger and enabling MESH service:
-
-```
-DEFMT_LOG=info cargo run --release --features defmt,mesh
-```
+By default, the application will boot into Mesh mode. You can enable GATT mode by hitting the
+feather user button twice within 500 ms.

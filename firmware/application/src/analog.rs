@@ -11,6 +11,10 @@ pub struct AnalogSensors {
     saadc: saadc::Saadc<'static, 3>,
 }
 
+pub type BatteryPin = P0_04;
+pub type TemperaturePin = P0_05;
+pub type LightPin = P0_03;
+
 impl AnalogSensors {
     pub fn new(saadc: SAADC, mut temp: P0_05, mut light: P0_03, mut battery: P0_04) -> Self {
         let config = saadc::Config::default();

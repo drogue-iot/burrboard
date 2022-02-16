@@ -1,5 +1,6 @@
 use core::future::Future;
 use drogue_device::actors::ble::mesh::MeshNode;
+use drogue_device::actors::flash::SharedFlashHandle;
 use drogue_device::drivers::ble::mesh::bearer::nrf52::{
     Nrf52BleMeshFacilities, SoftdeviceAdvertisingBearer, SoftdeviceRng,
 };
@@ -17,8 +18,11 @@ use drogue_device::drivers::ble::mesh::provisioning::{
     StaticOOBType,
 };
 use drogue_device::drivers::ble::mesh::storage::FlashStorage;
+use drogue_device::ActorContext;
+use embassy::executor::Spawner;
+use nrf_softdevice::{Flash, Softdevice};
 
-use crate::Leds;
+use crate::board::*;
 
 const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
 const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
@@ -91,5 +95,68 @@ impl ElementsHandler for BurrBoardElementsHandler {
             }
             Ok(())
         }
+    }
+}
+
+pub struct MeshApp {
+    sd: &'static Softdevice,
+    node: ActorContext<
+        MeshNode<
+            BurrBoardElementsHandler,
+            SoftdeviceAdvertisingBearer,
+            FlashStorage<SharedFlashHandle<Flash>>,
+            SoftdeviceRng,
+        >,
+    >,
+}
+
+impl MeshApp {
+    pub fn enable() -> (&'static Softdevice, Self) {
+        let sd = Nrf52BleMeshFacilities::new_sd("Drogue IoT BLE Mesh");
+        (
+            sd,
+            Self {
+                sd,
+                node: ActorContext::new(),
+            },
+        )
+    }
+
+    pub fn flash(&self) -> Flash {
+        Flash::take(self.sd)
+    }
+
+    pub fn mount(&'static self, s: Spawner, p: BoardPeripherals) {
+        extern "C" {
+            static __storage: u8;
+        }
+
+        let storage: FlashStorage<SharedFlashHandle<Flash>> =
+            FlashStorage::new(unsafe { &__storage as *const u8 as usize }, p.flash.into());
+
+        let bearer = SoftdeviceAdvertisingBearer::new(self.sd);
+        let rng = SoftdeviceRng::new(self.sd);
+
+        let capabilities = Capabilities {
+            number_of_elements: 4,
+            algorithms: Algorithms::default(),
+            public_key_type: PublicKeyType::default(),
+            static_oob_type: StaticOOBType::default(),
+            output_oob_size: OOBSize::MaximumSize(4),
+            output_oob_action: OutputOOBActions::default(),
+            input_oob_size: OOBSize::MaximumSize(4),
+            input_oob_action: InputOOBActions::default(),
+        };
+
+        let elements = BurrBoardElementsHandler::new(p.leds);
+
+        self.node.mount(
+            s,
+            MeshNode::new(elements, capabilities, bearer, storage, rng),
+        );
+        /*
+        let mesh_node =
+        //let mesh_node = MeshNode::new(capabilities, bearer, storage, rng).force_reset();
+        */
     }
 }
