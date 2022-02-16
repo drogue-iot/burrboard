@@ -9,6 +9,7 @@ use drogue_device::drivers::ble::mesh::composition::{
 };
 use drogue_device::drivers::ble::mesh::driver::elements::ElementContext;
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
+use drogue_device::drivers::ble::mesh::model::generic::GENERIC_BATTERY_SERVER;
 use drogue_device::drivers::ble::mesh::model::generic::GENERIC_ONOFF_SERVER;
 use drogue_device::drivers::ble::mesh::pdu::access::AccessMessage;
 use drogue_device::drivers::ble::mesh::provisioning::{
@@ -55,6 +56,9 @@ impl BurrBoardElementsHandler {
         composition
             .add_element(ElementDescriptor::new(Location(0x0004)).add_model(GENERIC_ONOFF_SERVER))
             .ok();
+        composition
+            .add_element(ElementDescriptor::new(Location(0x0005)).add_model(GENERIC_BATTERY_SERVER))
+            .ok();
         Self { leds, composition }
     }
 }
@@ -83,6 +87,7 @@ impl ElementsHandler for BurrBoardElementsHandler {
                 info!("Element 3");
             } else if element == 0x0004 {
                 info!("Element 4");
+            } else if element == 0x0005 {
             }
             Ok(())
         }
