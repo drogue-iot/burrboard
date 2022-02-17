@@ -147,8 +147,11 @@ async fn main() -> anyhow::Result<()> {
                             pin_mut!(s);
                             let mut view = json!({});
                             while let Some(n) = s.next().await {
+                                let previous = view.clone();
                                 merge(&mut view, &n);
-                                println!("{}", view);
+                                if previous != view {
+                                    println!("{}", view);
+                                }
                             }
                         }
                         if let Some(i) = report_interval {

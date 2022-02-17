@@ -8,7 +8,7 @@ MEMORY
   STORAGE                           : ORIGIN = 0x000F8000, LENGTH = 4096
   BOOTLOADER                        : ORIGIN = 0x000f9000, LENGTH = 24K
   BOOTLOADER_STATE                  : ORIGIN = 0x000ff000, LENGTH = 4K
-  RAM                               : ORIGIN = 0x20010000, LENGTH = 192K
+  RAM                               : ORIGIN = 0x2000d0d0, LENGTH = 208688
 }
 
 __bootloader_state_start = ORIGIN(BOOTLOADER_STATE);

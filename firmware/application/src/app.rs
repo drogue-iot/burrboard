@@ -1,21 +1,9 @@
-use drogue_device::{
-    actors::button::{Button, ButtonPressed},
-    actors::dfu::*,
-    actors::flash::*,
-    actors::led::Led,
-    traits::led::Led as _,
-    ActorContext, Address,
-};
+use drogue_device::traits::led::Led as _;
 use embassy::executor::Spawner;
 use embassy::time::{Duration, Timer};
-use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
-use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
 use nrf_softdevice::{raw, Flash, Softdevice};
 
-use crate::accel::*;
-use crate::analog::*;
 use crate::board::*;
-use crate::counter::*;
 use crate::gatt::*;
 use crate::mesh::*;
 
@@ -94,7 +82,6 @@ impl App {
     }
 
     pub fn switch(&'static self) -> ! {
-        let p = unsafe { embassy_nrf::pac::Peripherals::steal() };
         unsafe {
             match self.mode {
                 Mode::Gatt(_) => raw::sd_power_gpregret_clr(0, 0x1),
@@ -107,32 +94,32 @@ impl App {
     pub async fn post(&self, leds: &mut Leds) {
         match &self.mode {
             Mode::Gatt(_) => {
-                leds.red.on();
+                leds.red.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.green.on();
+                leds.green.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.blue.on();
+                leds.blue.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.yellow.on();
+                leds.yellow.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.red.off();
-                leds.green.off();
-                leds.blue.off();
-                leds.yellow.off();
+                leds.red.off().ok();
+                leds.green.off().ok();
+                leds.blue.off().ok();
+                leds.yellow.off().ok();
             }
             Mode::Mesh(_) => {
-                leds.yellow.on();
+                leds.yellow.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.blue.on();
+                leds.blue.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.green.on();
+                leds.green.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.red.on();
+                leds.red.on().ok();
                 Timer::after(Duration::from_secs(1)).await;
-                leds.red.off();
-                leds.green.off();
-                leds.blue.off();
-                leds.yellow.off();
+                leds.red.off().ok();
+                leds.green.off().ok();
+                leds.blue.off().ok();
+                leds.yellow.off().ok();
             }
         }
     }

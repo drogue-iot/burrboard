@@ -3,19 +3,19 @@ use crate::analog::*;
 use crate::app::*;
 use crate::control::*;
 use crate::counter::*;
+use crate::led::*;
 use drogue_device::{
     actors::button::{Button, ButtonPressed},
     actors::dfu::*,
     actors::flash::*,
     actors::led::Led,
-    traits::led::Led as _,
     ActorContext, Address,
 };
 use embassy::executor::Spawner;
-use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
-use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
+use embassy_nrf::gpio::{Input, Level, Output, OutputDrive, Pin, Pull};
+use embassy_nrf::peripherals::{P0_02, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::Peripherals;
-use nrf_softdevice::{Flash, Softdevice};
+use nrf_softdevice::Flash;
 
 pub type RedLed = Led<Output<'static, P0_06>>;
 pub type GreenLed = Led<Output<'static, P0_30>>;
@@ -64,10 +64,10 @@ pub struct BoardPeripherals {
 
 #[derive(Clone)]
 pub struct Leds {
-    pub red: Address<RedLed>,
-    pub green: Address<GreenLed>,
-    pub blue: Address<BlueLed>,
-    pub yellow: Address<YellowLed>,
+    pub red: StatefulLed<RedLed>,
+    pub green: StatefulLed<GreenLed>,
+    pub blue: StatefulLed<BlueLed>,
+    pub yellow: StatefulLed<YellowLed>,
 }
 
 impl BurrBoard {
@@ -111,27 +111,27 @@ impl BurrBoard {
             .mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
 
         // LEDs
-        let mut red = self.red.mount(
+        let red = self.red.mount(
             s,
             RedLed::new(Output::new(p.P0_06, Level::Low, OutputDrive::Standard)),
         );
-        let mut green = self.green.mount(
+        let green = self.green.mount(
             s,
             GreenLed::new(Output::new(p.P0_30, Level::Low, OutputDrive::Standard)),
         );
-        let mut blue = self.blue.mount(
+        let blue = self.blue.mount(
             s,
             BlueLed::new(Output::new(p.P0_28, Level::Low, OutputDrive::Standard)),
         );
 
-        let mut yellow = self.yellow.mount(
+        let yellow = self.yellow.mount(
             s,
             YellowLed::new(Output::new(p.P0_02, Level::Low, OutputDrive::Standard)),
         );
 
         // Actor for button A and press counter
-        let counter_a = self.counter_a.mount(s, Counter::new(BoardButton::A));
-        let button_a = self.button_a.mount(
+        let counter_a = self.counter_a.mount(s, Counter::new());
+        self.button_a.mount(
             s,
             Button::new(
                 Input::new(p.P0_27, Pull::None),
@@ -140,8 +140,8 @@ impl BurrBoard {
         );
 
         // Actor for button B and press counter
-        let counter_b = self.counter_b.mount(s, Counter::new(BoardButton::B));
-        let button_b = self.button_b.mount(
+        let counter_b = self.counter_b.mount(s, Counter::new());
+        self.button_b.mount(
             s,
             Button::new(
                 Input::new(p.P0_26, Pull::None),
@@ -165,10 +165,10 @@ impl BurrBoard {
 
         BoardPeripherals {
             leds: Leds {
-                red,
-                green,
-                blue,
-                yellow,
+                red: StatefulLed::new(red, false),
+                green: StatefulLed::new(green, false),
+                blue: StatefulLed::new(blue, false),
+                yellow: StatefulLed::new(yellow, false),
             },
             counter_a,
             counter_b,

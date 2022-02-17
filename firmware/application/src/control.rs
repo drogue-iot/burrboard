@@ -1,7 +1,7 @@
 use crate::app::App;
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
-use embassy::time::{Duration, Instant, Timer};
+use embassy::time::{Duration, Instant};
 use embassy_nrf::gpio::{AnyPin, Input};
 
 pub struct ControlButton {

@@ -12,8 +12,8 @@ use drogue_device::{
     Actor, ActorContext, Address, Inbox,
 };
 use embassy::executor::Spawner;
+use nrf_softdevice::ble::Connection;
 use nrf_softdevice::ble::{gatt_server, peripheral};
-use nrf_softdevice::ble::{Connection, FixedGattValue};
 use nrf_softdevice::raw;
 use nrf_softdevice::{Flash, Softdevice};
 
@@ -35,7 +35,7 @@ pub struct BurrBoardServer {
 #[nrf_softdevice::gatt_service(uuid = "1860")]
 pub struct BurrBoardService {
     #[characteristic(uuid = "2a6e", read, notify)]
-    pub temperature: i8,
+    pub temperature: i16,
     #[characteristic(uuid = "2b01", read, notify)]
     pub brightness: u16,
 
@@ -243,49 +243,49 @@ impl Actor for BurrBoardMonitor {
                             .await
                             .unwrap();
 
-                        let temperature = (analog.temperature / 100) as i8;
-                        self.service.temperature_set(temperature);
-                        self.service.brightness_set(analog.brightness);
-                        self.service.battery_level_set(analog.battery);
-                        self.service.button_a_set(button_a_presses);
-                        self.service.button_b_set(button_b_presses);
+                        self.service.temperature_set(analog.temperature).ok();
+                        self.service.brightness_set(analog.brightness).ok();
+                        self.service.battery_level_set(analog.battery).ok();
+                        self.service.button_a_set(button_a_presses).ok();
+                        self.service.button_b_set(button_b_presses).ok();
 
-                        let x: [u8; 2] = accel.x.to_le_bytes();
-                        let y: [u8; 2] = accel.y.to_le_bytes();
-                        let z: [u8; 2] = accel.z.to_le_bytes();
-                        self.service.accel_set(
-                            Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
-                        );
+                        let x: [u8; 2] = accel.x.to_be_bytes();
+                        let y: [u8; 2] = accel.y.to_be_bytes();
+                        let z: [u8; 2] = accel.z.to_be_bytes();
+                        self.service
+                            .accel_set(
+                                Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
+                            )
+                            .ok();
 
                         for c in self.connections.iter() {
                             if self.notifications.temperature {
-                                self.service.temperature_notify(&c, temperature).unwrap();
+                                self.service.temperature_notify(&c, analog.temperature).ok();
                             }
                             if self.notifications.brightness {
-                                self.service
-                                    .brightness_notify(&c, analog.brightness)
-                                    .unwrap();
+                                self.service.brightness_notify(&c, analog.brightness).ok();
                             }
                             if self.notifications.battery_level {
-                                self.service
-                                    .battery_level_notify(&c, analog.battery)
-                                    .unwrap();
+                                self.service.battery_level_notify(&c, analog.battery).ok();
                             }
                             if self.notifications.button_a {
-                                self.service.button_a_notify(&c, button_a_presses).unwrap();
+                                self.service.button_a_notify(&c, button_a_presses).ok();
                             }
                             if self.notifications.button_b {
-                                self.service.button_b_notify(&c, button_b_presses).unwrap();
+                                self.service.button_b_notify(&c, button_b_presses).ok();
                             }
 
                             if self.notifications.accel {
-                                let x: [u8; 2] = accel.x.to_le_bytes();
-                                let y: [u8; 2] = accel.y.to_le_bytes();
-                                let z: [u8; 2] = accel.z.to_le_bytes();
-                                self.service.accel_notify(
-                                    &c,
-                                    Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
-                                );
+                                let x: [u8; 2] = accel.x.to_be_bytes();
+                                let y: [u8; 2] = accel.y.to_be_bytes();
+                                let z: [u8; 2] = accel.z.to_be_bytes();
+                                self.service
+                                    .accel_notify(
+                                        &c,
+                                        Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]])
+                                            .unwrap(),
+                                    )
+                                    .ok();
                             }
                         }
                     }
@@ -332,7 +332,7 @@ impl Actor for BurrBoardFirmware {
                         FirmwareUpdateServiceEvent::ControlWrite(value) => {
                             info!("Write firmware control: {}", value);
                             if *value == 1 {
-                                self.service.offset_set(0);
+                                self.service.offset_set(0).ok();
                                 self.dfu.request(DfuCommand::Start).unwrap().await.unwrap();
                             } else if *value == 2 {
                                 self.dfu.notify(DfuCommand::Finish).unwrap();
@@ -347,7 +347,7 @@ impl Actor for BurrBoardFirmware {
                                 .unwrap()
                                 .await
                                 .unwrap();
-                            self.service.offset_set(offset + value.len() as u32);
+                            self.service.offset_set(offset + value.len() as u32).ok();
                         }
                     }
                 }
@@ -385,49 +385,49 @@ pub async fn bluetooth_task(
 
         info!("advertising done!");
 
-        monitor.notify(MonitorEvent::Connected(conn.clone()));
+        monitor.notify(MonitorEvent::Connected(conn.clone())).ok();
         let res = gatt_server::run(&conn, server, |e| match e {
             BurrBoardServerEvent::Board(event) => match event {
                 BurrBoardServiceEvent::RedLedWrite(val) => {
                     if val == 0 {
-                        leds.red.off();
+                        leds.red.off().ok();
                     } else {
-                        leds.red.on();
+                        leds.red.on().ok();
                     }
                 }
                 BurrBoardServiceEvent::GreenLedWrite(val) => {
                     if val == 0 {
-                        leds.green.off();
+                        leds.green.off().ok();
                     } else {
-                        leds.green.on();
+                        leds.green.on().ok();
                     }
                 }
                 BurrBoardServiceEvent::BlueLedWrite(val) => {
                     if val == 0 {
-                        leds.blue.off();
+                        leds.blue.off().ok();
                     } else {
-                        leds.blue.on();
+                        leds.blue.on().ok();
                     }
                 }
                 BurrBoardServiceEvent::YellowLedWrite(val) => {
                     if val == 0 {
-                        leds.yellow.off();
+                        leds.yellow.off().ok();
                     } else {
-                        leds.yellow.on();
+                        leds.yellow.on().ok();
                     }
                 }
                 e => {
-                    monitor.notify(MonitorEvent::Event(e));
+                    let _ = monitor.notify(MonitorEvent::Event(e));
                 }
                 _ => {}
             },
             BurrBoardServerEvent::DeviceInfo(_) => {}
             BurrBoardServerEvent::Firmware(e) => {
-                firmware.notify(e);
+                let _ = firmware.notify(e);
             }
         })
         .await;
-        monitor.notify(MonitorEvent::Disconnected(conn));
+        let _ = monitor.notify(MonitorEvent::Disconnected(conn));
 
         if let Err(e) = res {
             info!("gatt_server run exited with error: {:?}", e);
@@ -453,14 +453,17 @@ impl GattApp {
     }
 
     pub fn mount(&'static self, s: Spawner, sd: &'static Softdevice, p: &BoardPeripherals) {
-        self.server.firmware.version_set(
-            heapless::Vec::from_slice(
-                crate::FIRMWARE_REVISION
-                    .unwrap_or(crate::FIRMWARE_VERSION)
-                    .as_bytes(),
+        self.server
+            .firmware
+            .version_set(
+                heapless::Vec::from_slice(
+                    crate::FIRMWARE_REVISION
+                        .unwrap_or(crate::FIRMWARE_VERSION)
+                        .as_bytes(),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
         let monitor = self.monitor.mount(
             s,
             BurrBoardMonitor::new(

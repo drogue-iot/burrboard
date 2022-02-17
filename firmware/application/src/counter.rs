@@ -1,19 +1,13 @@
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
 
-pub enum BoardButton {
-    A,
-    B,
-}
-
 pub struct Counter {
     presses: u32,
-    button: BoardButton,
 }
 
 impl Counter {
-    pub fn new(button: BoardButton) -> Self {
-        Self { presses: 0, button }
+    pub fn new() -> Self {
+        Self { presses: 0 }
     }
 }
 

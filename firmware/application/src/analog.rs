@@ -1,6 +1,5 @@
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
-use embassy::time::{Duration, Timer};
 use embassy_nrf::{
     interrupt,
     peripherals::{P0_03, P0_04, P0_05, SAADC},
@@ -16,7 +15,12 @@ pub type TemperaturePin = P0_05;
 pub type LightPin = P0_03;
 
 impl AnalogSensors {
-    pub fn new(saadc: SAADC, mut temp: P0_05, mut light: P0_03, mut battery: P0_04) -> Self {
+    pub fn new(
+        saadc: SAADC,
+        mut temp: TemperaturePin,
+        mut light: LightPin,
+        mut battery: BatteryPin,
+    ) -> Self {
         let config = saadc::Config::default();
         let temp_channel = saadc::ChannelConfig::single_ended(&mut temp);
         let light_channel = saadc::ChannelConfig::single_ended(&mut light);

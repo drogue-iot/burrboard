@@ -3,27 +3,16 @@
 #![macro_use]
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
-#![allow(unused)]
 
-use drogue_device::{
-    actors::button::{Button, ButtonPressed},
-    actors::dfu::*,
-    actors::flash::*,
-    actors::led::Led,
-    traits::led::Led as _,
-    ActorContext, Address,
-};
-use embassy::time::{Duration, Timer};
+use drogue_device::ActorContext;
+use embassy::time::Duration;
 use embassy::util::Forever;
 use embassy_nrf::config::Config;
-use embassy_nrf::gpio::{AnyPin, Input, Level, NoPin, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::interrupt::Priority;
-use embassy_nrf::peripherals::{P0_02, P0_03, P0_04, P0_05, P0_06, P0_26, P0_27, P0_28, P0_30};
-use embassy_nrf::uarte;
-use embassy_nrf::{interrupt, Peripherals};
-use nrf_softdevice::ble::{gatt_server, peripheral};
-use nrf_softdevice::raw;
-use nrf_softdevice::{Flash, Softdevice};
+use embassy_nrf::Peripherals;
+
+#[cfg(feature = "log")]
+use embassy_nrf::{gpio::NoPin, interrupt, uarte};
 
 mod fmt;
 
@@ -46,14 +35,12 @@ mod board;
 mod control;
 mod counter;
 mod gatt;
+mod led;
 mod mesh;
 mod watchdog;
 
-use accel::*;
-use analog::*;
 use app::*;
 use board::*;
-use counter::*;
 use watchdog::*;
 
 const FIRMWARE_VERSION: &str = env!("CARGO_PKG_VERSION");
