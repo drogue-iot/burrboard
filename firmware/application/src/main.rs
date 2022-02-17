@@ -30,8 +30,8 @@ mod fmt;
 #[cfg(feature = "panic-probe")]
 use panic_probe as _;
 
-#[cfg(feature = "defmt-rtt")]
-use defmt_rtt as _;
+#[cfg(feature = "nrf-softdevice-defmt-rtt")]
+use nrf_softdevice_defmt_rtt as _;
 
 #[cfg(feature = "log")]
 mod logger;
@@ -71,7 +71,7 @@ fn config() -> Config {
 async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
     // First enable application
     static APP: Forever<App> = Forever::new();
-    let app = APP.put(App::enable(s));
+    let app = APP.put(App::enable(s, "BurrBoard"));
 
     #[cfg(feature = "log")]
     {
@@ -91,30 +91,14 @@ async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
     let mut ap = BOARD.mount(s, app, p);
 
     // Launch the selected application
-    app.mount(s, ap.clone());
+    app.mount(s, &ap);
 
     // Launch watchdog
     static WATCHDOG: ActorContext<Watchdog> = ActorContext::new();
     WATCHDOG.mount(s, Watchdog(Duration::from_secs(2)));
 
     // Bootup animation signalling that everything is started
-    let mut red = ap.leds.red;
-    let mut green = ap.leds.green;
-    let mut blue = ap.leds.blue;
-    let mut yellow = ap.leds.yellow;
-
-    red.on();
-    Timer::after(Duration::from_secs(1)).await;
-    green.on();
-    Timer::after(Duration::from_secs(1)).await;
-    blue.on();
-    Timer::after(Duration::from_secs(1)).await;
-    yellow.on();
-    Timer::after(Duration::from_secs(1)).await;
-    red.off();
-    green.off();
-    blue.off();
-    yellow.off();
+    app.post(&mut ap.leds).await;
 
     info!("Application started");
 }

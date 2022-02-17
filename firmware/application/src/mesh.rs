@@ -99,7 +99,6 @@ impl ElementsHandler for BurrBoardElementsHandler {
 }
 
 pub struct MeshApp {
-    sd: &'static Softdevice,
     node: ActorContext<
         MeshNode<
             BurrBoardElementsHandler,
@@ -111,22 +110,13 @@ pub struct MeshApp {
 }
 
 impl MeshApp {
-    pub fn enable() -> (&'static Softdevice, Self) {
-        let sd = Nrf52BleMeshFacilities::new_sd("Drogue IoT BLE Mesh");
-        (
-            sd,
-            Self {
-                sd,
-                node: ActorContext::new(),
-            },
-        )
+    pub fn enable() -> Self {
+        Self {
+            node: ActorContext::new(),
+        }
     }
 
-    pub fn flash(&self) -> Flash {
-        Flash::take(self.sd)
-    }
-
-    pub fn mount(&'static self, s: Spawner, p: BoardPeripherals) {
+    pub fn mount(&'static self, s: Spawner, sd: &'static Softdevice, p: &BoardPeripherals) {
         extern "C" {
             static __storage: u8;
         }
@@ -134,8 +124,8 @@ impl MeshApp {
         let storage: FlashStorage<SharedFlashHandle<Flash>> =
             FlashStorage::new(unsafe { &__storage as *const u8 as usize }, p.flash.into());
 
-        let bearer = SoftdeviceAdvertisingBearer::new(self.sd);
-        let rng = SoftdeviceRng::new(self.sd);
+        let bearer = SoftdeviceAdvertisingBearer::new(sd);
+        let rng = SoftdeviceRng::new(sd);
 
         let capabilities = Capabilities {
             number_of_elements: 4,
@@ -148,7 +138,7 @@ impl MeshApp {
             input_oob_action: InputOOBActions::default(),
         };
 
-        let elements = BurrBoardElementsHandler::new(p.leds);
+        let elements = BurrBoardElementsHandler::new(p.leds.clone());
 
         self.node.mount(
             s,

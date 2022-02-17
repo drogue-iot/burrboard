@@ -18,7 +18,7 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b613b8e1e3cf911a086f53f03bf286f52fd7a7258e4fa606f0ef220d39d8877"
 dependencies = [
- "generic-array",
+ "generic-array 0.14.5",
  "heapless",
 ]
 
@@ -44,6 +44,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aligned"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a785a543aea40f5e4e2e93bb2655d31bc21bb391fff65697150973e383f16bb"
+dependencies = [
+ "as-slice",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -54,6 +63,18 @@ name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
+
+[[package]]
+name = "as-slice"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45403b49e3954a4b8428a0ac21a4b7afadccf92bfd96273f1a58cd4812496ae0"
+dependencies = [
+ "generic-array 0.12.4",
+ "generic-array 0.13.3",
+ "generic-array 0.14.5",
+ "stable_deref_trait",
+]
 
 [[package]]
 name = "atomic-polyfill"
@@ -127,7 +148,7 @@ name = "burrboard-bootloader"
 version = "0.1.0"
 dependencies = [
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "defmt",
  "defmt-rtt",
@@ -146,10 +167,9 @@ version = "0.1.0"
 dependencies = [
  "bitflags",
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "defmt",
- "defmt-rtt",
  "drogue-device",
  "embassy",
  "embassy-boot",
@@ -163,6 +183,7 @@ dependencies = [
  "log",
  "lsm6ds33",
  "nrf-softdevice",
+ "nrf-softdevice-defmt-rtt",
  "nrf-softdevice-s140",
  "panic-probe",
  "panic-reset",
@@ -204,7 +225,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ee52072ec15386f770805afd189a01c8841be8696bed250fa2f13c4c0d6dfb7"
 dependencies = [
- "generic-array",
+ "generic-array 0.14.5",
 ]
 
 [[package]]
@@ -238,6 +259,19 @@ name = "const-oid"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4c78c047431fee22c1a7bb92e00ad095a02a983affe4d8a72e2a2c62c1b94f3"
+
+[[package]]
+name = "cortex-m"
+version = "0.6.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9075300b07c6a56263b9b582c214d0ff037b00d45ec9fde1cc711490c56f1bb9"
+dependencies = [
+ "aligned",
+ "bare-metal 0.2.5",
+ "bitfield",
+ "cortex-m 0.7.4",
+ "volatile-register",
+]
 
 [[package]]
 name = "cortex-m"
@@ -288,7 +322,7 @@ checksum = "01e191a5a6f6edad9b679777ef6b6c0f2bdd4a333f2ecb8f61c3e28109a03d70"
 dependencies = [
  "bare-metal 1.0.0",
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "riscv",
 ]
 
@@ -298,7 +332,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03c6a1d5fa1de37e071642dfa44ec552ca5b299adb128fab16138e24b548fd21"
 dependencies = [
- "generic-array",
+ "generic-array 0.14.5",
  "rand_core",
  "subtle",
  "zeroize",
@@ -311,7 +345,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1d1a86f49236c215f271d40892d5fc950490551400b02ef360692c29815c714"
 dependencies = [
  "cipher",
- "generic-array",
+ "generic-array 0.14.5",
  "subtle",
 ]
 
@@ -400,7 +434,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd2735a791158376708f9347fe8faba9667589d82427ef3aed6794a8981de3d9"
 dependencies = [
- "generic-array",
+ "generic-array 0.14.5",
 ]
 
 [[package]]
@@ -438,7 +472,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "757110fd3748162dddbea88854529888a7e9e36929058118efe06f9f88d93b64"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
  "defmt",
 ]
 
@@ -460,7 +494,7 @@ dependencies = [
  "base64",
  "ccm",
  "cmac",
- "cortex-m",
+ "cortex-m 0.7.4",
  "critical-section",
  "defmt",
  "drogue-device-macros",
@@ -505,7 +539,7 @@ dependencies = [
  "crypto-bigint",
  "der",
  "ff",
- "generic-array",
+ "generic-array 0.14.5",
  "group",
  "rand_core",
  "sec1",
@@ -520,7 +554,7 @@ source = "git+https://github.com/embassy-rs/embassy.git?rev=3d6b8bd9832d5a29cab4
 dependencies = [
  "atomic-polyfill",
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "critical-section",
  "defmt",
  "embassy-macros",
@@ -547,7 +581,7 @@ version = "0.1.0"
 source = "git+https://github.com/embassy-rs/embassy.git?rev=3d6b8bd9832d5a29cab4aa21434663e6ea6f4488#3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"
 dependencies = [
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "defmt",
  "embassy",
@@ -563,7 +597,7 @@ name = "embassy-hal-common"
 version = "0.1.0"
 source = "git+https://github.com/embassy-rs/embassy.git?rev=3d6b8bd9832d5a29cab4aa21434663e6ea6f4488#3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
  "embassy",
  "num-traits 0.2.14",
  "usb-device",
@@ -586,7 +620,7 @@ version = "0.1.0"
 source = "git+https://github.com/embassy-rs/embassy.git?rev=3d6b8bd9832d5a29cab4aa21434663e6ea6f4488#3d6b8bd9832d5a29cab4aa21434663e6ea6f4488"
 dependencies = [
  "cfg-if",
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "critical-section",
  "defmt",
@@ -759,6 +793,24 @@ dependencies = [
 
 [[package]]
 name = "generic-array"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffdf9f34f1447443d37393cc6c2b8313aebddcd96906caf34e54c68d8e57d7bd"
+dependencies = [
+ "typenum",
+]
+
+[[package]]
+name = "generic-array"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f797e67af32588215eaaab8327027ee8e71b9dd0b2b26996aedf20c030fce309"
+dependencies = [
+ "typenum",
+]
+
+[[package]]
+name = "generic-array"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd48d33ec7f05fbfa152300fdad764757cbded343c1aa1cff2fbaf4134851803"
@@ -914,7 +966,7 @@ name = "nrf-softdevice"
 version = "0.1.0"
 source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=ba31fc03d97facc54efb9456901abf02549a4209#ba31fc03d97facc54efb9456901abf02549a4209"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "critical-section",
  "defmt",
@@ -928,6 +980,17 @@ dependencies = [
  "nrf-softdevice-s140",
  "nrf52840-pac",
  "num_enum",
+]
+
+[[package]]
+name = "nrf-softdevice-defmt-rtt"
+version = "0.1.0"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?rev=ba31fc03d97facc54efb9456901abf02549a4209#ba31fc03d97facc54efb9456901abf02549a4209"
+dependencies = [
+ "cortex-m 0.6.7",
+ "critical-section",
+ "defmt",
+ "nrf-softdevice",
 ]
 
 [[package]]
@@ -960,7 +1023,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "640e88d4c108743c667f03320d0c9ab24a20f183a7a1b18bde7891ee13fd92c5"
 dependencies = [
  "bare-metal 1.0.0",
- "cortex-m",
+ "cortex-m 0.7.4",
  "critical-section",
  "usb-device",
  "vcell",
@@ -972,7 +1035,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "209c71d29ce1c0e9249b59ffff1ff5035c68b65070bf4c1315767fa4c93103ac"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
  "cortex-m-rt",
  "vcell",
 ]
@@ -1037,7 +1100,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ab1f00eac22bd18f8e5cae9555f2820b3a0c166b5b556ee3e203746ea6dcf3a"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
  "defmt",
 ]
 
@@ -1047,7 +1110,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6cf1ff2a5b1a478dd94572aa43476b6630e72071cbd016985003ad3903a3a4f5"
 dependencies = [
- "cortex-m",
+ "cortex-m 0.7.4",
 ]
 
 [[package]]
@@ -1219,7 +1282,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08da66b8b0965a5555b6bd6639e68ccba85e1e2506f5fbb089e93f8a04e1a2d1"
 dependencies = [
  "der",
- "generic-array",
+ "generic-array 0.14.5",
  "subtle",
  "zeroize",
 ]
