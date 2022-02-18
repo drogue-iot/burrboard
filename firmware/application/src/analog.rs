@@ -75,8 +75,9 @@ impl Actor for AnalogSensors {
                     let voltage = voltage / 4095 as f32;
                     let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
                     let brightness = buf[1] as u16;
-                    let battery_voltage = buf[2] as f32 * 4.5;
-                    let battery = (battery_voltage / 4095 as f32) as u8 / 100;
+
+                    let battery = buf[2] as u32;
+                    let battery = (100 * battery / 4056) as u8;
 
                     info!(
                         "Temperature: {:?}, brightness: {:?}, battery: {:?}",
@@ -85,7 +86,7 @@ impl Actor for AnalogSensors {
                     m.set_response(SensorValues {
                         temperature,
                         brightness,
-                        battery,
+                        battery: battery as u8,
                     });
                 }
             }

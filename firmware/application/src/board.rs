@@ -12,18 +12,19 @@ use drogue_device::{
     ActorContext, Address,
 };
 use embassy::executor::Spawner;
-use embassy_nrf::gpio::{Input, Level, Output, OutputDrive, Pin, Pull};
+use embassy::util::Forever;
+use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::peripherals::{P0_02, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::Peripherals;
 use nrf_softdevice::Flash;
 
-pub type RedLed = Led<Output<'static, P0_06>>;
-pub type GreenLed = Led<Output<'static, P0_30>>;
-pub type BlueLed = Led<Output<'static, P0_28>>;
-pub type YellowLed = Led<Output<'static, P0_02>>;
+pub type RedLed = Led<Output<'static, P0_30>>;
+pub type GreenLed = Led<Output<'static, P0_28>>;
+pub type BlueLed = Led<Output<'static, P0_02>>;
+pub type YellowLed = Led<Output<'static, P0_26>>;
 
-pub type ButtonA = Input<'static, P0_27>;
-pub type ButtonB = Input<'static, P0_26>;
+pub type ButtonA = Input<'static, P0_06>;
+pub type ButtonB = Input<'static, P0_27>;
 
 pub struct BurrBoard {
     accel: ActorContext<Accelerometer>,
@@ -61,6 +62,9 @@ pub struct BoardPeripherals {
 
     pub dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
 }
+
+static TEMP_EN: Forever<Output<'static, AnyPin>> = Forever::new();
+static LIGHT_EN: Forever<Output<'static, AnyPin>> = Forever::new();
 
 #[derive(Clone)]
 pub struct Leds {
@@ -105,6 +109,17 @@ impl BurrBoard {
         #[cfg(not(feature = "lsm"))]
         let accel: Option<Address<Accelerometer>> = None;
 
+        TEMP_EN.put(Output::new(
+            p.P1_08.degrade(),
+            Level::High,
+            OutputDrive::Standard,
+        ));
+        LIGHT_EN.put(Output::new(
+            p.P0_07.degrade(),
+            Level::High,
+            OutputDrive::Standard,
+        ));
+
         // Actor for all analog sensors
         let analog = self
             .analog
@@ -113,20 +128,20 @@ impl BurrBoard {
         // LEDs
         let red = self.red.mount(
             s,
-            RedLed::new(Output::new(p.P0_06, Level::Low, OutputDrive::Standard)),
+            RedLed::new(Output::new(p.P0_30, Level::Low, OutputDrive::Standard)),
         );
         let green = self.green.mount(
             s,
-            GreenLed::new(Output::new(p.P0_30, Level::Low, OutputDrive::Standard)),
+            GreenLed::new(Output::new(p.P0_28, Level::Low, OutputDrive::Standard)),
         );
         let blue = self.blue.mount(
             s,
-            BlueLed::new(Output::new(p.P0_28, Level::Low, OutputDrive::Standard)),
+            BlueLed::new(Output::new(p.P0_02, Level::Low, OutputDrive::Standard)),
         );
 
         let yellow = self.yellow.mount(
             s,
-            YellowLed::new(Output::new(p.P0_02, Level::Low, OutputDrive::Standard)),
+            YellowLed::new(Output::new(p.P0_26, Level::Low, OutputDrive::Standard)),
         );
 
         // Actor for button A and press counter
@@ -134,7 +149,7 @@ impl BurrBoard {
         self.button_a.mount(
             s,
             Button::new(
-                Input::new(p.P0_27, Pull::None),
+                Input::new(p.P0_06, Pull::None),
                 ButtonPressed(counter_a, CounterMessage::Increment),
             ),
         );
@@ -144,7 +159,7 @@ impl BurrBoard {
         self.button_b.mount(
             s,
             Button::new(
-                Input::new(p.P0_26, Pull::None),
+                Input::new(p.P0_27, Pull::None),
                 ButtonPressed(counter_b, CounterMessage::Increment),
             ),
         );

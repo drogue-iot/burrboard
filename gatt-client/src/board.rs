@@ -165,9 +165,11 @@ impl BurrBoard {
     }
 
     pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
-        let temp: u8 = self
+        let data = self
             .read_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
-            .await?[0];
+            .await?;
+        let temp: i16 = i16::from_le_bytes([data[0], data[1]]);
+
         let data = self
             .read_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
             .await?;
