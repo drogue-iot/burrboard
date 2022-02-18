@@ -207,7 +207,7 @@ impl BurrBoard {
         let t = self
             .stream_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
             .await?
-            .map(|v| json!({"temperature": v[0]}));
+            .map(|v| json!({"temperature": i16::from_le_bytes([v[0], v[1]])}));
 
         let b = self
             .stream_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
