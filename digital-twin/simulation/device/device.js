@@ -154,7 +154,7 @@ class Device {
         features[feature] = properties;
         let payload = {features};
 
-        console.log("Feature: ", feature, " payload = ", properties);
+        console.log("Feature: ", feature, " properties: ", properties, " payload: ", payload);
 
         this.client.send("state", JSON.stringify(payload), 0, false);
     }
