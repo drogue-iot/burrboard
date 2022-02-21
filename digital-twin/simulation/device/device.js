@@ -121,7 +121,7 @@ class Device {
     }
 
     connectionEstablished() {
-        this.sendLedUpdate();
+        this.sendAllLedsUpdate();
         if (this.temperature !== null) {
             this.setTemperature(this.temperature);
         }
@@ -139,8 +139,15 @@ class Device {
         }
     }
 
-    sendLedUpdate() {
-        this.updateFeature("leds", this.leds);
+    sendLedUpdate(led) {
+        this.updateFeature("led_" + led, this.leds[led-1]);
+    }
+
+    sendAllLedsUpdate() {
+        this.updateFeature("led_1", this.leds[0]);
+        this.updateFeature("led_2", this.leds[1]);
+        this.updateFeature("led_3", this.leds[2]);
+        this.updateFeature("led_4", this.leds[3]);
     }
 
     updateFeature(feature, properties) {
@@ -166,8 +173,8 @@ class Device {
     }
 
     press(button) {
-        this.counters[button] += 1;
-        this.updateFeature("buttons", this.counters);
+        let presses = (this.counters[button] += 1);
+        this.updateFeature("button_" + button.toLowerCase(), {presses});
     }
 
     commandInbox(msg) {
@@ -187,19 +194,16 @@ class Device {
 
     handleCommand(command, payload) {
         console.log("Command: ", command, " Payload: ", payload);
-        if (command === "leds") {
-            this.leds = Object.assign(
-                this.leds,
-                payload
-            );
-            for (const ledsKey in this.leds) {
-                if (LEDS.indexOf(ledsKey) === -1) {
-                    delete this.leds[ledsKey];
-                }
+        if (typeof command === "string" && command.startsWith("led_")) {
+
+            let led = parseInt(command.substring(4 /* leds_ */), 10);
+            if (!isNaN(led) && led > 0 && led <= this.leds.size ) {
+                this.leds[led-1] = payload["state"] === true;
             }
+
             console.log("New LED state: ", this.leds);
             this.onLedChange(this.leds);
-            this.sendLedUpdate();
+            this.sendLedUpdate(led);
         }
     }
 
