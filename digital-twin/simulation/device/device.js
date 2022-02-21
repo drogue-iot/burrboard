@@ -28,7 +28,7 @@ class Device {
             "B": 0,
         };
         this.onLedChange = onLedChange;
-        this.leds = Object.fromEntries(LEDS.map(led => [led, false]));
+        this.leds = [false, false, false, false];
         this.temperature = null;
         this.light = null;
 
