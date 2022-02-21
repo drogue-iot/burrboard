@@ -148,12 +148,15 @@ class Device {
             return;
         }
 
-        console.trace(feature, " = ", properties);
+
 
         let features = {};
         features[feature] = properties;
+        let payload = {features};
 
-        this.client.send("state", JSON.stringify({features}), 0, false);
+        console.log("Feature: ", feature, " payload = ", properties);
+
+        this.client.send("state", JSON.stringify(payload), 0, false);
     }
 
     pause() {
