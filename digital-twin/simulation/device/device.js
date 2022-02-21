@@ -144,10 +144,10 @@ class Device {
     }
 
     sendAllLedsUpdate() {
-        this.updateFeature("led_1", this.leds[0]);
-        this.updateFeature("led_2", this.leds[1]);
-        this.updateFeature("led_3", this.leds[2]);
-        this.updateFeature("led_4", this.leds[3]);
+        this.updateFeature("led_1", {state: this.leds[0]});
+        this.updateFeature("led_2", {state: this.leds[1]});
+        this.updateFeature("led_3", {state: this.leds[2]});
+        this.updateFeature("led_4", {state: this.leds[3]});
     }
 
     updateFeature(feature, properties) {
