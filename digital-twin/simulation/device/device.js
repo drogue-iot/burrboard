@@ -148,14 +148,12 @@ class Device {
             return;
         }
 
-        const path = "/features/" + encodeURIComponent(feature) + "/properties";
+        console.trace(feature, " = ", properties);
 
-        console.log(feature, " = ", properties);
+        let features = {};
+        features[feature] = {properties};
 
-        this.client.send("state", JSON.stringify({
-            feature,
-            properties
-        }), 0, false);
+        this.client.send("state", JSON.stringify({features}), 0, false);
     }
 
     pause() {
