@@ -1,0 +1,264 @@
+= Data formats
+
+== Device ⬌ gateway (WIP!)
+
+* Proposal: Use CBOR + CDDL
+
+[#gateway_cloud]
+== Gateway ⬌ cloud
+
+=== State updates
+
+Sent do MQTT topic `state`.
+
+The format is:
+
+[source,json]
+----
+{
+  "features": {
+    "<feature name>": <1>
+  }
+}
+----
+<1> JSON value of the feature. It may be an object too.
+
+=== Features
+
+
+|===
+|Name |Type |Description
+
+| `device`
+a|
+[source,json]
+----
+{
+  "state": "RUNNING", <1>
+  "firmwareRevision": "v1.2.3", <2>
+  "battery": 0.98, <3>
+  "reportInterval": 200 <4>
+}
+----
+<1> The state of the device
+<2> Some version string of the firmware
+<3> The battery level, in percent (0.00 to 1.00)
+<4> Report interval of the device in ms (0 is device default).
+| The overall device state.
+
+| `buttons`
+a|
+[source,json]
+----
+{
+  "a": 212, <1>
+  "b": 123 <2>
+}
+----
+<1> Counter for button "A"
+<2> Counter for button "B"
+| The number of presses for each button.
+
+| `leds`
+a|
+[source,json]
+----
+{
+  "1": true,  <1>
+  "2": false, <2>
+  "3": false, <3>
+  "4": true,  <4>
+}
+----
+<1> State of the first LED
+<2> State of the second LED
+<3> State of the third LED
+<4> State of the fourth LED
+| The state of the LEDs.
+
+| `light`
+a|
+[source,json]
+----
+{
+  "value": 1234 <1>
+}
+----
+<1> Light sensor value
+| The value of the light sensor. Has a range of 0 (dark) to 4096 (bright).
+
+| `temperature`
+a|
+[source,json]
+----
+{
+  "value": 1.23 <1>
+}
+----
+<1> Temperature sensor value
+| The value of the temperature sensor, in °C.
+
+| `accelerometer`
+a|
+[source,json]
+----
+{
+  "x": 123, <1>
+  "y": 123, <2>
+  "z": 123  <3>
+}
+----
+<1> X axis value
+<2> Y axis value
+<3> Z axis value
+| The current orientation of the device.
+
+|===
+
+=== Commands
+
+Commands to devices will be sent by making a call to the HTTP command endpoint: https://sandbox.drogue.cloud/api/#operations-Command_\&_Control-post_api_command_v1alpha1_apps\__appId\__devices\__deviceId_
+
+The endpoint either requires an API token or OAuth2 access token.
+
+This requires the following information:
+
+|===
+|Name |Location |Description
+
+| `application`
+| Path
+| The name of the application. To be defined, but fixed for the target system.
+
+| `device`
+| Path
+| The device ID. Acquired by scanning the QR code on the device.
+
+| `command`
+| Query
+| The command itself.
+
+| `payload`
+| Body
+| The JSON encoded command payload
+
+|===
+
+
+==== Set LED states
+
+[cols="h,1"]
+|===
+| Command | `leds`
+
+| Payload
+a|
+[source,json]
+----
+{
+  "1": false,
+  "2": true,
+  "3": true,
+  "4": false
+}
+----
+
+| Description | Set all LED states
+
+|===
+
+==== Set device state
+
+[cols="h,1"]
+|===
+| Command | `leds`
+
+| Payload
+a|
+[source,json]
+----
+{
+  "state": "RUNNING"
+}
+----
+
+| Description | Set the device state.
+
+|===
+
+==== Set report interval
+
+[cols="h,1"]
+|===
+| Command | `device`
+
+| Payload
+a|
+[source,json]
+----
+{
+  "reportInterval": 100
+}
+----
+
+| Description | Set report interval in ms. An invalid value (less than 1) will result in a default to be applied by the device.
+
+|===
+
+
+== Kafka stream
+
+The Kafka stream will receive the messages as described in the section "<<gateway_cloud>>". The events will be encoded
+as cloud events in binary format.
+
+The data section of the cloud event will carry the actual message. Additionally, the following headers can be used:
+
+|===
+|Extension (header)| Type | Description
+
+| `application` (`ce_application`)
+| String
+| The name of the application this device belongs to. Some setup specific, but static value (e.g. `burrboard`).
+
+| `device` (`ce_device`)
+| String
+| The ID/name of the device.
+
+| `time` (`ce_time`)
+| String, RFC 3339 timestamp
+| The time the event was received by the cloud.
+|===
+
+
+== Device state
+
+The most recent device state can be read from the MongoDB instance.
+
+One database exists with one collection of all devices. Each document reflects the current state of a device.
+
+The content is an aggregation of the device messages, shifting the properties by a static layer `properties`, to make
+room for cloud-to-device messaging.
+
+[source,json]
+----
+{
+  "deviceId": "12:34:56:78", <1>
+  "revision": 123, <2>
+  "features": {
+    "temperature": {
+      "properties": {
+        "value": 23.3
+      }
+    },
+    "accelerometer": {
+      "properties": {
+        "x": 123,
+        "y": 123,
+        "z": 123
+      }
+    }
+  }
+}
+----
+<1> The ID of the device
+<2> Ever-increasing revision counter
