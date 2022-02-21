@@ -151,7 +151,7 @@ class Device {
         console.trace(feature, " = ", properties);
 
         let features = {};
-        features[feature] = {properties};
+        features[feature] = properties;
 
         this.client.send("state", JSON.stringify({features}), 0, false);
     }
