@@ -148,8 +148,6 @@ class Device {
             return;
         }
 
-
-
         let features = {};
         features[feature] = properties;
         let payload = {features};
