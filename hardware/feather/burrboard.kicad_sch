@@ -3995,11 +3995,11 @@
   )
 
   (symbol (lib_id "Connector:Conn_01x01_Male") (at 72.39 185.674 180) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid cba8ab97-0377-43bd-bef7-6314ce99d4ae)
     (property "Reference" "J5" (id 0) (at 69.596 188.214 0))
     (property "Value" "SWDIO" (id 1) (at 76.2 185.674 0))
-    (property "Footprint" "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm" (id 2) (at 72.39 185.674 0)
+    (property "Footprint" "TestPoint:TestPoint_THTPad_D1.5mm_Drill0.7mm" (id 2) (at 72.39 185.674 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 72.39 185.674 0)
@@ -4021,7 +4021,7 @@
   )
 
   (symbol (lib_id "Connector:Conn_01x04_Male") (at 41.402 183.134 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid cbcd0d64-a8b4-4e90-93e0-a9eb5a170c87)
     (property "Reference" "J3" (id 0) (at 42.037 175.768 0))
     (property "Value" "SWD" (id 1) (at 42.037 178.308 0))
@@ -4066,11 +4066,11 @@
   )
 
   (symbol (lib_id "Connector:Conn_01x01_Male") (at 72.39 183.134 180) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid d063ba46-22f6-4e50-9d5e-95f13fbaf268)
     (property "Reference" "J4" (id 0) (at 69.596 179.832 0))
     (property "Value" "SWDCLK" (id 1) (at 76.962 183.134 0))
-    (property "Footprint" "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm" (id 2) (at 72.39 183.134 0)
+    (property "Footprint" "TestPoint:TestPoint_THTPad_D1.5mm_Drill0.7mm" (id 2) (at 72.39 183.134 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 72.39 183.134 0)
@@ -4348,10 +4348,10 @@
       (reference "J3") (unit 1) (value "SWD") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical")
     )
     (path "/d063ba46-22f6-4e50-9d5e-95f13fbaf268"
-      (reference "J4") (unit 1) (value "SWDCLK") (footprint "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm")
+      (reference "J4") (unit 1) (value "SWDCLK") (footprint "TestPoint:TestPoint_THTPad_D1.5mm_Drill0.7mm")
     )
     (path "/cba8ab97-0377-43bd-bef7-6314ce99d4ae"
-      (reference "J5") (unit 1) (value "SWDIO") (footprint "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm")
+      (reference "J5") (unit 1) (value "SWDIO") (footprint "TestPoint:TestPoint_THTPad_D1.5mm_Drill0.7mm")
     )
     (path "/666dc925-2b95-4de4-a148-45e51fb4be3f"
       (reference "Q1") (unit 1) (value "TEMT6000X01") (footprint "burrboard:Phototransistor_SMD_4x2mm_TEMT6000X01")
