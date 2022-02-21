@@ -48,35 +48,27 @@ a|
 <4> Report interval of the device in ms (0 is device default).
 | The overall device state.
 
-| `buttons`
+| `button_a`, `button_b`,
 a|
 [source,json]
 ----
 {
-  "a": 212, <1>
-  "b": 123 <2>
+  "presses": 212 <1>
 }
 ----
-<1> Counter for button "A"
-<2> Counter for button "B"
-| The number of presses for each button.
+<1> Counter for pressed of button "A"
+| The number of presses for the button.
 
-| `leds`
+| `led_1`, `led_2`, `led_3`, `led_4`
 a|
 [source,json]
 ----
 {
-  "1": true,  <1>
-  "2": false, <2>
-  "3": false, <3>
-  "4": true,  <4>
+  "state": true,  <1>
 }
 ----
-<1> State of the first LED
-<2> State of the second LED
-<3> State of the third LED
-<4> State of the fourth LED
-| The state of the LEDs.
+<1> State of the LED
+| The of one of the LEDs.
 
 | `light`
 a|
