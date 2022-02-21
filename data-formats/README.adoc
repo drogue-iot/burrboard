@@ -139,25 +139,22 @@ This requires the following information:
 |===
 
 
-==== Set LED states
+==== Set LED state
 
 [cols="h,1"]
 |===
-| Command | `leds`
+| Command | `leds_1`, `leds_2`, `leds_3`, `leds_4`
 
 | Payload
 a|
 [source,json]
 ----
 {
-  "1": false,
-  "2": true,
-  "3": true,
-  "4": false
+  "state": false
 }
 ----
 
-| Description | Set all LED states
+| Description | Set one LED state
 
 |===
 
