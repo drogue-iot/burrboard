@@ -4,9 +4,16 @@ use drogue_device::drivers::ble::mesh::composition::{
     ProductIdentifier, VersionIdentifier,
 };
 use drogue_device::drivers::ble::mesh::driver::elements::ElementContext;
+use drogue_device::drivers::ble::mesh::driver::elements::{AppElementContext, AppElementsContext};
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
-use drogue_device::drivers::ble::mesh::model::generic::GENERIC_BATTERY_SERVER;
-use drogue_device::drivers::ble::mesh::model::generic::GENERIC_ONOFF_SERVER;
+use drogue_device::drivers::ble::mesh::model::generic::battery::{
+    GenericBatteryServer, GENERIC_BATTERY_SERVER,
+};
+use drogue_device::drivers::ble::mesh::model::generic::onoff::{
+    GenericOnOffServer, GENERIC_ONOFF_SERVER,
+};
+use drogue_device::drivers::ble::mesh::model::sensor::{SensorServer, SENSOR_SERVER};
+use drogue_device::drivers::ble::mesh::model::Model;
 use drogue_device::drivers::ble::mesh::pdu::access::AccessMessage;
 use drogue_device::drivers::ble::mesh::provisioning::{
     Algorithms, Capabilities, InputOOBActions, OOBSize, OutputOOBActions, PublicKeyType,
@@ -33,8 +40,6 @@ use crate::{
     counter::*,
 };
 
-mod models;
-
 const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
 const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
 const VERSION_IDENTIFIER: VersionIdentifier = VersionIdentifier(0x0001);
@@ -47,6 +52,9 @@ const FEATURES: Features = Features {
 
 #[allow(unused)]
 pub struct BurrBoardElementsHandler {
+    onoff: GenericOnOffServer,
+    battery: GenericBatteryServer,
+    sensor: SensorServer,
     composition: Composition,
     leds: Leds,
 }
@@ -75,11 +83,15 @@ impl BurrBoardElementsHandler {
             .add_element(ElementDescriptor::new(Location(0x0005)).add_model(GENERIC_BATTERY_SERVER))
             .ok();
         composition
-            .add_element(
-                ElementDescriptor::new(Location(0x0006)).add_model(models::BURRBOARD_CLIENT),
-            )
+            .add_element(ElementDescriptor::new(Location(0x0006)).add_model(SENSOR_SERVER))
             .ok();
-        Self { leds, composition }
+        Self {
+            leds,
+            composition,
+            battery: GenericBatteryServer,
+            onoff: GenericOnOffServer,
+            sensor: SensorServer,
+        }
     }
 }
 
@@ -88,7 +100,7 @@ impl ElementsHandler for BurrBoardElementsHandler {
         &self.composition
     }
 
-    fn connect<C: ElementContext>(&self, _ctx: &C) {
+    fn connect(&self, _ctx: AppElementsContext) {
         info!("CONNECT");
     }
 
@@ -97,17 +109,38 @@ impl ElementsHandler for BurrBoardElementsHandler {
         Self: 'm,
     = impl Future<Output = Result<(), DeviceError>> + 'm;
 
-    fn dispatch(&self, element: u8, _message: AccessMessage) -> Self::DispatchFuture<'_> {
+    fn dispatch(&self, element: u8, message: AccessMessage) -> Self::DispatchFuture<'_> {
         async move {
             if element == 0x0001 {
                 info!("Element 1");
+                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                    info!("LED 1 message: {:?}", m);
+                }
             } else if element == 0x0002 {
                 info!("Element 2");
+                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                    info!("LED 2 message: {:?}", m);
+                }
             } else if element == 0x0003 {
                 info!("Element 3");
+                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                    info!("LED 3 message: {:?}", m);
+                }
             } else if element == 0x0004 {
                 info!("Element 4");
+                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                    info!("LED 4 message: {:?}", m);
+                }
             } else if element == 0x0005 {
+                info!("Element 5");
+                if let Ok(Some(m)) = self.battery.parse(message.opcode(), message.parameters()) {
+                    info!("Battery message: {:?}", m);
+                }
+            } else if element == 0x0006 {
+                info!("Element 6");
+                if let Ok(Some(m)) = self.sensor.parse(message.opcode(), message.parameters()) {
+                    info!("Sensor message: {:?}", m);
+                }
             }
             Ok(())
         }
@@ -259,6 +292,7 @@ impl Actor for BoardStatePublisher {
                         let blue_led = self.board.leds.blue.is_on();
                         let yellow_led = self.board.leds.yellow.is_on();
 
+                        /*
                         let data = models::BurrBoardState {
                             temperature: analog.temperature,
                             brightness: analog.brightness,
@@ -271,10 +305,11 @@ impl Actor for BoardStatePublisher {
                             blue_led,
                             yellow_led,
                         };
+                        */
 
                         //                        if let Some(ctx) = &self.ctx {
                         //                       } else {
-                        info!("Read sensor values: {:?}", data);
+                        //info!("Read sensor values: {:?}", data);
                         //                      }
                     }
                 }
