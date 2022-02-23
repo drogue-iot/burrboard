@@ -12,9 +12,12 @@ use drogue_device::drivers::ble::mesh::model::generic::battery::{
 use drogue_device::drivers::ble::mesh::model::generic::onoff::{
     GenericOnOffServer, GENERIC_ONOFF_SERVER,
 };
-use drogue_device::drivers::ble::mesh::model::sensor::{SensorServer, SENSOR_SERVER};
+use drogue_device::drivers::ble::mesh::model::sensor::{
+    PropertyId, RawValue, SensorConfig, SensorData, SensorMessage,
+    SensorServer as SensorServerModel, SensorStatus, SENSOR_SERVER,
+};
 use drogue_device::drivers::ble::mesh::model::Model;
-use drogue_device::drivers::ble::mesh::pdu::access::AccessMessage;
+use drogue_device::drivers::ble::mesh::pdu::{access::AccessMessage, ParseError};
 use drogue_device::drivers::ble::mesh::provisioning::{
     Algorithms, Capabilities, InputOOBActions, OOBSize, OutputOOBActions, PublicKeyType,
     StaticOOBType,
@@ -31,6 +34,7 @@ use embassy::executor::Spawner;
 use embassy::time::{Duration, Ticker};
 use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
+use heapless::Vec;
 use nrf_softdevice::{Flash, Softdevice};
 
 use crate::{
@@ -50,6 +54,8 @@ const FEATURES: Features = Features {
     low_power: false,
 };
 
+type SensorServer = SensorServerModel<BurrBoardSensors, 10, 1>;
+
 #[allow(unused)]
 pub struct BurrBoardElementsHandler {
     onoff: GenericOnOffServer,
@@ -57,10 +63,55 @@ pub struct BurrBoardElementsHandler {
     sensor: SensorServer,
     composition: Composition,
     leds: Leds,
+    publisher: Address<BoardSensorPublisher>,
+}
+
+mod prop {
+    use super::*;
+
+    pub const RED_LED: PropertyId = PropertyId(1);
+    pub const GREEN_LED: PropertyId = PropertyId(2);
+    pub const BLUE_LED: PropertyId = PropertyId(3);
+    pub const YELLOW_LED: PropertyId = PropertyId(4);
+    pub const BUTTON_A: PropertyId = PropertyId(5);
+    pub const BUTTON_B: PropertyId = PropertyId(6);
+    pub const TEMP: PropertyId = PropertyId(7);
+    pub const LIGHT: PropertyId = PropertyId(8);
+    pub const ACCEL: PropertyId = PropertyId(9);
+    pub const BATTERY: PropertyId = PropertyId(10);
+}
+
+pub struct BurrBoardSensors;
+
+impl SensorConfig for BurrBoardSensors {
+    fn value(id: PropertyId) -> usize {
+        match id {
+            prop::RED_LED => 1,
+            prop::GREEN_LED => 1,
+            prop::BLUE_LED => 1,
+            prop::YELLOW_LED => 1,
+            prop::BUTTON_A => 4,
+            prop::BUTTON_B => 4,
+            prop::TEMP => 2,
+            prop::LIGHT => 2,
+            prop::ACCEL => 6,
+            prop::BATTERY => 1,
+            _ => 0,
+        }
+    }
+    fn x_value(id: PropertyId) -> usize {
+        0
+    }
+    fn column_width(id: PropertyId) -> usize {
+        0
+    }
+    fn y_value(id: PropertyId) -> usize {
+        0
+    }
 }
 
 impl BurrBoardElementsHandler {
-    pub fn new(leds: Leds) -> Self {
+    pub fn new(leds: Leds, publisher: Address<BoardSensorPublisher>) -> Self {
         let mut composition = Composition::new(
             COMPANY_IDENTIFIER,
             PRODUCT_IDENTIFIER,
@@ -90,7 +141,8 @@ impl BurrBoardElementsHandler {
             composition,
             battery: GenericBatteryServer,
             onoff: GenericOnOffServer,
-            sensor: SensorServer,
+            sensor: SensorServer::new(),
+            publisher,
         }
     }
 }
@@ -100,8 +152,10 @@ impl ElementsHandler for BurrBoardElementsHandler {
         &self.composition
     }
 
-    fn connect(&self, _ctx: AppElementsContext) {
+    fn connect(&self, ctx: AppElementsContext) {
         info!("CONNECT");
+        let sensor_ctx = ctx.for_element_model::<SensorServer>(0);
+        let _ = self.publisher.notify(PublisherMessage::Connect(sensor_ctx));
     }
 
     type DispatchFuture<'m>
@@ -156,7 +210,7 @@ pub struct MeshApp {
             SoftdeviceRng,
         >,
     >,
-    publisher: ActorContext<BoardStatePublisher>,
+    publisher: ActorContext<BoardSensorPublisher>,
 }
 
 impl MeshApp {
@@ -189,17 +243,18 @@ impl MeshApp {
             input_oob_action: InputOOBActions::default(),
         };
 
-        let elements = BurrBoardElementsHandler::new(p.leds.clone());
+        let publisher = self.publisher.mount(
+            s,
+            BoardSensorPublisher::new(Duration::from_secs(1), p.clone()),
+        );
+
+        let elements = BurrBoardElementsHandler::new(p.leds.clone(), publisher);
 
         self.node.mount(
             s,
             MeshNode::new(elements, capabilities, bearer, storage, rng),
         );
 
-        self.publisher.mount(
-            s,
-            BoardStatePublisher::new(Duration::from_secs(1), p.clone()),
-        );
         /*
         let mesh_node =
         //let mesh_node = MeshNode::new(capabilities, bearer, storage, rng).force_reset();
@@ -207,27 +262,27 @@ impl MeshApp {
     }
 }
 
-pub struct BoardStatePublisher {
+pub struct BoardSensorPublisher {
     interval: Duration,
     board: BoardPeripherals,
-    //  ctx: Option<AppElementContext<models::BurrBoardClient>>,
+    context: Option<AppElementContext<SensorServer>>,
 }
 
-impl BoardStatePublisher {
+impl BoardSensorPublisher {
     pub fn new(interval: Duration, board: BoardPeripherals) -> Self {
         Self {
             interval,
-            //        ctx: None,
             board,
+            context: None,
         }
     }
 }
 
 pub enum PublisherMessage {
-    //Connect(AppElementContext<models::BurrBoardClient>),
+    Connect(AppElementContext<SensorServer>),
 }
 
-impl Actor for BoardStatePublisher {
+impl Actor for BoardSensorPublisher {
     type Message<'m> = PublisherMessage;
     type OnMountFuture<'m, M>
     where
@@ -254,15 +309,13 @@ impl Actor for BoardStatePublisher {
 
                 match select(next, tick).await {
                     Either::Left((m, _)) => {
-                        if let Some(m) = m {
-                            /*
-                                match m.message() {
-                                    PublisherMessage::Connect(ctx) => {
-                                        info!("connected to mesh {}", ctx.address());
-                                        //self.ctx.replace(ctx.clone());
-                                    }
+                        if let Some(mut m) = m {
+                            match m.message() {
+                                PublisherMessage::Connect(ctx) => {
+                                    info!("connected to mesh {}", ctx.address());
+                                    //self.ctx.replace(ctx.clone());
                                 }
-                            */
+                            }
                         }
                     }
                     Either::Right((_, _)) => {
@@ -292,28 +345,85 @@ impl Actor for BoardStatePublisher {
                         let blue_led = self.board.leds.blue.is_on();
                         let yellow_led = self.board.leds.yellow.is_on();
 
-                        /*
-                        let data = models::BurrBoardState {
-                            temperature: analog.temperature,
-                            brightness: analog.brightness,
-                            accel: [accel.x, accel.y, accel.z],
-                            battery: analog.battery,
-                            button_a,
-                            button_b,
-                            red_led,
-                            green_led,
-                            blue_led,
-                            yellow_led,
-                        };
-                        */
+                        if let Some(ctx) = &self.context {
+                            let t = analog.temperature.to_le_bytes();
+                            let b = analog.brightness.to_le_bytes();
+                            let accel_x = accel.x.to_le_bytes();
+                            let accel_y = accel.y.to_le_bytes();
+                            let accel_z = accel.z.to_le_bytes();
+                            let accel: [u8; 6] = [
+                                accel_x[0], accel_x[1], accel_y[0], accel_y[1], accel_z[0],
+                                accel_z[1],
+                            ];
 
-                        //                        if let Some(ctx) = &self.ctx {
-                        //                       } else {
-                        //info!("Read sensor values: {:?}", data);
-                        //                      }
+                            let battery = analog.battery.to_le_bytes();
+                            let button_a = button_a.to_le_bytes();
+                            let button_b = button_b.to_le_bytes();
+
+                            let red_led = (red_led as u8).to_le_bytes();
+                            let green_led = (green_led as u8).to_le_bytes();
+                            let blue_led = (blue_led as u8).to_le_bytes();
+                            let yellow_led = (yellow_led as u8).to_le_bytes();
+
+                            let mut values = heapless::Vec::new();
+                            values.push(SensorData::new(prop::RED_LED, &red_led)).ok();
+                            values
+                                .push(SensorData::new(prop::GREEN_LED, &green_led))
+                                .ok();
+                            values.push(SensorData::new(prop::BLUE_LED, &blue_led)).ok();
+                            values
+                                .push(SensorData::new(prop::YELLOW_LED, &yellow_led))
+                                .ok();
+
+                            values.push(SensorData::new(prop::BUTTON_A, &button_a)).ok();
+                            values.push(SensorData::new(prop::BUTTON_B, &button_b)).ok();
+                            values.push(SensorData::new(prop::TEMP, &t)).ok();
+                            values.push(SensorData::new(prop::LIGHT, &b)).ok();
+                            values.push(SensorData::new(prop::ACCEL, &accel)).ok();
+                            values.push(SensorData::new(prop::BATTERY, &battery)).ok();
+
+                            let message = SensorMessage::Status(SensorStatus::new(values));
+                            match ctx.publish(message).await {
+                                Ok(_) => {
+                                    info!("Sensor data reported successfully");
+                                }
+                                Err(e) => {
+                                    warn!("Error reporting sensor data: {:?}", e);
+                                }
+                            }
+                        } else {
+                            let data = SensorState {
+                                temperature: analog.temperature,
+                                brightness: analog.brightness,
+                                accel: [accel.x, accel.y, accel.z],
+                                battery: analog.battery,
+                                button_a,
+                                button_b,
+                                red_led,
+                                green_led,
+                                blue_led,
+                                yellow_led,
+                            };
+
+                            info!("Read sensor values: {:?}", data);
+                        }
                     }
                 }
             }
         }
     }
+}
+
+#[derive(Debug)]
+pub struct SensorState {
+    pub temperature: i16,
+    pub brightness: u16,
+    pub accel: [i16; 3],
+    pub battery: u8,
+    pub button_a: u32,
+    pub button_b: u32,
+    pub red_led: bool,
+    pub green_led: bool,
+    pub blue_led: bool,
+    pub yellow_led: bool,
 }
