@@ -168,7 +168,7 @@ impl BurrBoard {
         let data = self
             .read_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
             .await?;
-        let temp: i16 = i16::from_le_bytes([data[0], data[1]]);
+        let temp: f32 = (i16::from_le_bytes([data[0], data[1]]) as f32) / 100.0;
 
         let data = self
             .read_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
@@ -197,7 +197,11 @@ impl BurrBoard {
         let button_b = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
 
         Ok(
-            json!({ "temperature": temp, "brightness": brightness, "accel": accel, "battery": battery, "button_a": button_a, "button_b": button_b }),
+            json!({"temperature": {"value": temp}, "light": { "value": brightness }, "accelerometer": {
+                "x": accel.0,
+                "y": accel.1,
+                "z": accel.2,
+            }, "device": { "battery": (battery as f32) / 100.0 }, "button_a": { "presses": button_a } , "button_b": { "presses": button_b} }),
         )
     }
 
@@ -207,33 +211,42 @@ impl BurrBoard {
         let t = self
             .stream_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
             .await?
-            .map(|v| json!({"temperature": i16::from_le_bytes([v[0], v[1]])}));
+            .map(|v| json!({"temperature": {"value": (i16::from_le_bytes([v[0], v[1]]) as f32 / 100.0)}}));
 
         let b = self
             .stream_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
             .await?
-            .map(|v| json!({"brightness": u16::from_le_bytes([v[0], v[1]])}));
+            .map(|v| json!({"light": {"value": u16::from_le_bytes([v[0], v[1]])}}));
 
         let accel = self
             .stream_char(BOARD_SERVICE_UUID, ACCEL_CHAR_UUID)
             .await?
-        .map(|v| {
-            json!({"accel": (f32::from_le_bytes([v[0], v[1], v[2], v[3]]), f32::from_le_bytes([v[4], v[5], v[6], v[7]]), f32::from_le_bytes([v[8], v[9], v[10], v[11]]))})});
+            .map(|v| {
+                json!({"accelerometer": {
+                    "x": f32::from_le_bytes([v[0], v[1], v[2], v[3]]),
+                    "y": f32::from_le_bytes([v[4], v[5], v[6], v[7]]),
+                    "z": f32::from_le_bytes([v[8], v[9], v[10], v[11]])
+                }})
+            });
 
         let batt = self
             .stream_char(BOARD_SERVICE_UUID, BATTERY_CHAR_UUID)
             .await?
-            .map(|v| json!({"battery": v[0]}));
+            .map(|v| json!({"device": {"battery": v[0] as f32 / 100.0}}));
 
         let b_a = self
             .stream_char(BOARD_SERVICE_UUID, BUTTON_A_CHAR_UUID)
             .await?
-            .map(|v| json!({"button_a": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}));
+            .map(
+                |v| json!({"button_a": {"presses": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}}),
+            );
 
         let b_b = self
             .stream_char(BOARD_SERVICE_UUID, BUTTON_B_CHAR_UUID)
             .await?
-            .map(|v| json!({"button_b": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}));
+            .map(
+                |v| json!({"button_b": {"presses": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}}),
+            );
 
         let j = stream_select!(
             Box::pin(t),

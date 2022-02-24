@@ -41,6 +41,7 @@ pub enum Mode {
 
         #[clap(long)]
         endpoint_password: String,
+        /*
         #[clap(long)]
         hawkbit_url: String,
         #[clap(long)]
@@ -49,6 +50,7 @@ pub enum Mode {
         hawkbit_controller: String,
         #[clap(long)]
         hawkbit_device_token: String,
+        */
     },
     Client {
         #[clap(short, long)]
@@ -205,11 +207,12 @@ async fn main() -> anyhow::Result<()> {
                         endpoint_url,
                         endpoint_user,
                         endpoint_password,
-                        hawkbit_url,
-                        hawkbit_tenant,
-                        hawkbit_controller,
-                        hawkbit_device_token,
+                        //hawkbit_url,
+                        //hawkbit_tenant,
+                        //hawkbit_controller,
+                        //hawkbit_device_token,
                     } => {
+                        /*
                         let mut hawkbit_client = HawkbitClient::new(
                             hawkbit_url,
                             hawkbit_tenant,
@@ -237,6 +240,7 @@ async fn main() -> anyhow::Result<()> {
                                 println!("Device firmware marked as booted");
                             }
                         }
+                        */
 
                         let board = Arc::new(board);
                         // Stream sensors
@@ -253,10 +257,13 @@ async fn main() -> anyhow::Result<()> {
                                     let previous = view.clone();
                                     merge(&mut view, &n);
                                     if previous != view {
+                                        let payload = json!{
+                                            "features": view,
+                                        };
                                         match client
                                             .post(&endpoint_url)
                                             .basic_auth(&endpoint_user, Some(&endpoint_password))
-                                            .json(&view)
+                                            .json(&payload)
                                             .send()
                                             .await
                                         {
@@ -269,7 +276,9 @@ async fn main() -> anyhow::Result<()> {
                                 }
                             }
                         });
+                        stream_task.join().await;
 
+                        /*
                         // Wait for deployment
                         let d = hawkbit_client.wait_update().await?;
                         let metadata = &d.metadata;
@@ -293,6 +302,7 @@ async fn main() -> anyhow::Result<()> {
                                 panic!("unexpected metadata");
                             }
                         }
+                        */
                     }
                 }
             }
