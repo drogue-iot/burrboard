@@ -3,7 +3,7 @@
 const SEND_DELAY = 1000 / 30; // ms, 30Hz
 
 // const ENDPOINT = "wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt";
-const ENDPOINT = "${ENDPOINT_URL}"; // replaced but the build process
+const ENDPOINT = "${ENDPOINT_URL}"; // replaced by the build process
 
 function setField(id, value) {
     let field = document.getElementById(id);

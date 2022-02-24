@@ -5,8 +5,9 @@ ARG ENDPOINT_URL="wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-p
 ADD device.js index.html ./
 
 RUN true \
-    && mv index.html index.html.in \
-    && envsubst '${ENDPOINT_URL}' < index.html.in > index.html \
-    && rm index.html.in
+    && echo "Replacing endpoint: ${ENDPOINT_URL}" \
+    && mv device.js device.js.in \
+    && envsubst '${ENDPOINT_URL}' < device.js.in > device.js \
+    && rm device.js.in
 
 CMD nginx -g "daemon off;"
