@@ -257,8 +257,10 @@ async fn main() -> anyhow::Result<()> {
                                     let previous = view.clone();
                                     merge(&mut view, &n);
                                     if previous != view {
-                                        let payload = json!{
-                                            "features": view,
+                                        let payload = json! {
+                                            {
+                                                "features": view,
+                                            }
                                         };
                                         match client
                                             .post(&endpoint_url)
@@ -276,7 +278,7 @@ async fn main() -> anyhow::Result<()> {
                                 }
                             }
                         });
-                        stream_task.join().await;
+                        stream_task.await;
 
                         /*
                         // Wait for deployment
