@@ -97,15 +97,15 @@ a|
 [source,json]
 ----
 {
-  "x": 123, <1>
-  "y": 123, <2>
-  "z": 123  <3>
+  "x": 0.03, <1>
+  "y": 2.33, <2>
+  "z": 0.4<3>
 }
 ----
 <1> X axis value
 <2> Y axis value
 <3> Z axis value
-| The current orientation of the device.
+| Acceleration (g = m/s^2) of the device.
 
 |===
 
@@ -243,9 +243,9 @@ room for cloud-to-device messaging.
     },
     "accelerometer": {
       "properties": {
-        "x": 123,
-        "y": 123,
-        "z": 123
+        "x": 1.23,
+        "y": 0.15,
+        "z": 1.4,
       }
     }
   }
