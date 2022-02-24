@@ -1,7 +1,9 @@
 'use strict';
 
 const SEND_DELAY = 1000 / 30; // ms, 30Hz
-const LEDS = ["1", "2", "3", "4"];
+
+// const ENDPOINT = "wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt";
+const ENDPOINT = "${ENDPOINT_URL}"; // replaced but the build process
 
 function setField(id, value) {
     let field = document.getElementById(id);
@@ -34,7 +36,7 @@ class Device {
 
         this.setConnectionState("Disconnected");
 
-        this.client = new Paho.Client("wss://mqtt-endpoint-ws-browser-drogue-dev.apps.wonderful.iot-playground.org/mqtt", randomClientId());
+        this.client = new Paho.Client(ENDPOINT, randomClientId());
         this.client.onConnectionLost = (responseObject) => {
             if (responseObject.errorCode !== 0) {
                 console.log("onConnectionLost: " + responseObject.errorMessage);
