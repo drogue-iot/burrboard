@@ -1,25 +1,17 @@
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
-use embassy_nrf::{
-    interrupt,
-    peripherals::{P0_03, P0_04, P0_05, SAADC},
-    saadc,
-};
+use embassy_nrf::{interrupt, peripherals::SAADC, saadc};
 
 pub struct AnalogSensors {
     saadc: saadc::Saadc<'static, 3>,
 }
 
-pub type BatteryPin = P0_04;
-pub type TemperaturePin = P0_05;
-pub type LightPin = P0_03;
-
 impl AnalogSensors {
     pub fn new(
         saadc: SAADC,
-        mut temp: TemperaturePin,
-        mut light: LightPin,
-        mut battery: BatteryPin,
+        mut temp: impl saadc::Input,
+        mut light: impl saadc::Input,
+        mut battery: impl saadc::Input,
     ) -> Self {
         let config = saadc::Config::default();
         let temp_channel = saadc::ChannelConfig::single_ended(&mut temp);
@@ -79,9 +71,11 @@ impl Actor for AnalogSensors {
                     let battery = buf[2] as u32;
                     let battery = (100 * battery / 4056) as u8;
 
-                    info!(
+                    trace!(
                         "Temperature: {:?}, brightness: {:?}, battery: {:?}",
-                        temperature, brightness, battery
+                        temperature,
+                        brightness,
+                        battery
                     );
                     m.set_response(SensorValues {
                         temperature,

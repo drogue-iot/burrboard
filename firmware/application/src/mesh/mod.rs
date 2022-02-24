@@ -13,7 +13,7 @@ use drogue_device::drivers::ble::mesh::model::generic::onoff::{
     GenericOnOffServer, GENERIC_ONOFF_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::sensor::{
-    PropertyId, RawValue, SensorConfig, SensorData, SensorMessage,
+    PropertyId, RawValue, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
     SensorServer as SensorServerModel, SensorStatus, SENSOR_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::Model;
@@ -64,50 +64,6 @@ pub struct BurrBoardElementsHandler {
     composition: Composition,
     leds: Leds,
     publisher: Address<BoardSensorPublisher>,
-}
-
-mod prop {
-    use super::*;
-
-    pub const RED_LED: PropertyId = PropertyId(1);
-    pub const GREEN_LED: PropertyId = PropertyId(2);
-    pub const BLUE_LED: PropertyId = PropertyId(3);
-    pub const YELLOW_LED: PropertyId = PropertyId(4);
-    pub const BUTTON_A: PropertyId = PropertyId(5);
-    pub const BUTTON_B: PropertyId = PropertyId(6);
-    pub const TEMP: PropertyId = PropertyId(7);
-    pub const LIGHT: PropertyId = PropertyId(8);
-    pub const ACCEL: PropertyId = PropertyId(9);
-    pub const BATTERY: PropertyId = PropertyId(10);
-}
-
-pub struct BurrBoardSensors;
-
-impl SensorConfig for BurrBoardSensors {
-    fn value(id: PropertyId) -> usize {
-        match id {
-            prop::RED_LED => 1,
-            prop::GREEN_LED => 1,
-            prop::BLUE_LED => 1,
-            prop::YELLOW_LED => 1,
-            prop::BUTTON_A => 4,
-            prop::BUTTON_B => 4,
-            prop::TEMP => 2,
-            prop::LIGHT => 2,
-            prop::ACCEL => 6,
-            prop::BATTERY => 1,
-            _ => 0,
-        }
-    }
-    fn x_value(id: PropertyId) -> usize {
-        0
-    }
-    fn column_width(id: PropertyId) -> usize {
-        0
-    }
-    fn y_value(id: PropertyId) -> usize {
-        0
-    }
 }
 
 impl BurrBoardElementsHandler {
@@ -245,7 +201,7 @@ impl MeshApp {
 
         let publisher = self.publisher.mount(
             s,
-            BoardSensorPublisher::new(Duration::from_secs(1), p.clone()),
+            BoardSensorPublisher::new(Duration::from_millis(1000 / 10), p.clone()),
         );
 
         let elements = BurrBoardElementsHandler::new(p.leds.clone(), publisher);
@@ -345,44 +301,21 @@ impl Actor for BoardSensorPublisher {
                         let blue_led = self.board.leds.blue.is_on();
                         let yellow_led = self.board.leds.yellow.is_on();
 
+                        let data = SensorState {
+                            temperature: analog.temperature,
+                            brightness: analog.brightness,
+                            accel: (accel.x, accel.y, accel.z),
+                            battery: analog.battery,
+                            button_a,
+                            button_b,
+                            red_led,
+                            green_led,
+                            blue_led,
+                            yellow_led,
+                        };
+
                         if let Some(ctx) = &self.context {
-                            let t = analog.temperature.to_le_bytes();
-                            let b = analog.brightness.to_le_bytes();
-                            let accel_x = accel.x.to_le_bytes();
-                            let accel_y = accel.y.to_le_bytes();
-                            let accel_z = accel.z.to_le_bytes();
-                            let accel: [u8; 6] = [
-                                accel_x[0], accel_x[1], accel_y[0], accel_y[1], accel_z[0],
-                                accel_z[1],
-                            ];
-
-                            let battery = analog.battery.to_le_bytes();
-                            let button_a = button_a.to_le_bytes();
-                            let button_b = button_b.to_le_bytes();
-
-                            let red_led = (red_led as u8).to_le_bytes();
-                            let green_led = (green_led as u8).to_le_bytes();
-                            let blue_led = (blue_led as u8).to_le_bytes();
-                            let yellow_led = (yellow_led as u8).to_le_bytes();
-
-                            let mut values = heapless::Vec::new();
-                            values.push(SensorData::new(prop::RED_LED, &red_led)).ok();
-                            values
-                                .push(SensorData::new(prop::GREEN_LED, &green_led))
-                                .ok();
-                            values.push(SensorData::new(prop::BLUE_LED, &blue_led)).ok();
-                            values
-                                .push(SensorData::new(prop::YELLOW_LED, &yellow_led))
-                                .ok();
-
-                            values.push(SensorData::new(prop::BUTTON_A, &button_a)).ok();
-                            values.push(SensorData::new(prop::BUTTON_B, &button_b)).ok();
-                            values.push(SensorData::new(prop::TEMP, &t)).ok();
-                            values.push(SensorData::new(prop::LIGHT, &b)).ok();
-                            values.push(SensorData::new(prop::ACCEL, &accel)).ok();
-                            values.push(SensorData::new(prop::BATTERY, &battery)).ok();
-
-                            let message = SensorMessage::Status(SensorStatus::new(values));
+                            let message = SensorMessage::Status(SensorStatus::new(data));
                             match ctx.publish(message).await {
                                 Ok(_) => {
                                     info!("Sensor data reported successfully");
@@ -392,19 +325,6 @@ impl Actor for BoardSensorPublisher {
                                 }
                             }
                         } else {
-                            let data = SensorState {
-                                temperature: analog.temperature,
-                                brightness: analog.brightness,
-                                accel: [accel.x, accel.y, accel.z],
-                                battery: analog.battery,
-                                button_a,
-                                button_b,
-                                red_led,
-                                green_led,
-                                blue_led,
-                                yellow_led,
-                            };
-
                             info!("Read sensor values: {:?}", data);
                         }
                     }
@@ -414,16 +334,110 @@ impl Actor for BoardSensorPublisher {
     }
 }
 
+mod prop {
+    use super::*;
+
+    pub const RED_LED: PropertyId = PropertyId(1);
+    pub const GREEN_LED: PropertyId = PropertyId(2);
+    pub const BLUE_LED: PropertyId = PropertyId(3);
+    pub const YELLOW_LED: PropertyId = PropertyId(4);
+    pub const BUTTON_A: PropertyId = PropertyId(5);
+    pub const BUTTON_B: PropertyId = PropertyId(6);
+    pub const TEMPERATURE: PropertyId = PropertyId(7);
+    pub const BRIGHTNESS: PropertyId = PropertyId(8);
+    pub const ACCEL: PropertyId = PropertyId(9);
+    pub const BATTERY: PropertyId = PropertyId(10);
+}
+
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct BurrBoardSensors;
+
+impl SensorConfig for BurrBoardSensors {
+    type Data<'m> = SensorState;
+
+    const DESCRIPTORS: &'static [SensorDescriptor] = &[
+        SensorDescriptor::new(prop::RED_LED, 1),
+        SensorDescriptor::new(prop::GREEN_LED, 1),
+        SensorDescriptor::new(prop::BLUE_LED, 1),
+        SensorDescriptor::new(prop::YELLOW_LED, 1),
+        SensorDescriptor::new(prop::BUTTON_A, 4),
+        SensorDescriptor::new(prop::BUTTON_B, 4),
+        SensorDescriptor::new(prop::TEMPERATURE, 2),
+        SensorDescriptor::new(prop::BRIGHTNESS, 2),
+        SensorDescriptor::new(prop::ACCEL, 6),
+        SensorDescriptor::new(prop::BATTERY, 1),
+    ];
+}
+
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct SensorState {
-    pub temperature: i16,
-    pub brightness: u16,
-    pub accel: [i16; 3],
-    pub battery: u8,
-    pub button_a: u32,
-    pub button_b: u32,
     pub red_led: bool,
     pub green_led: bool,
     pub blue_led: bool,
     pub yellow_led: bool,
+    pub button_a: u32,
+    pub button_b: u32,
+    pub temperature: i16,
+    pub brightness: u16,
+    pub accel: (i16, i16, i16),
+    pub battery: u8,
+}
+
+impl SensorData for SensorState {
+    fn decode(&mut self, property: PropertyId, data: &[u8]) -> Result<(), ParseError> {
+        todo!()
+    }
+
+    fn encode<const N: usize>(
+        &self,
+        property: PropertyId,
+        xmit: &mut Vec<u8, N>,
+    ) -> Result<(), InsufficientBuffer> {
+        match property {
+            prop::RED_LED => {
+                xmit.push(if self.red_led { 1 } else { 0 })
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::GREEN_LED => {
+                xmit.push(if self.green_led { 1 } else { 0 })
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::BLUE_LED => {
+                xmit.push(if self.blue_led { 1 } else { 0 })
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::YELLOW_LED => {
+                xmit.push(if self.yellow_led { 1 } else { 0 })
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::BUTTON_A => {
+                xmit.extend_from_slice(&self.button_a.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::BUTTON_B => {
+                xmit.extend_from_slice(&self.button_b.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::TEMPERATURE => xmit
+                .extend_from_slice(&self.temperature.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?,
+            prop::BRIGHTNESS => xmit
+                .extend_from_slice(&self.temperature.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?,
+            prop::ACCEL => {
+                xmit.extend_from_slice(&self.accel.0.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+                xmit.extend_from_slice(&self.accel.1.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+                xmit.extend_from_slice(&self.accel.2.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::BATTERY => {
+                xmit.push(self.battery).map_err(|_| InsufficientBuffer)?;
+            }
+            _ => (),
+        }
+        Ok(())
+    }
 }

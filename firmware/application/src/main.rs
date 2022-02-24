@@ -43,6 +43,9 @@ use app::*;
 use board::*;
 use watchdog::*;
 
+#[cfg(not(any(feature = "rev2", feature = "rev3", feature = "rev3.5",)))]
+compile_error!("No board revision selected. You must activate exactly one of the following: rev2, rev3 or rev3.5");
+
 const FIRMWARE_VERSION: &str = env!("CARGO_PKG_VERSION");
 const FIRMWARE_REVISION: Option<&str> = option_env!("REVISION");
 

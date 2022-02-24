@@ -4,6 +4,7 @@ use crate::app::*;
 use crate::control::*;
 use crate::counter::*;
 use crate::led::*;
+use cfg_if::cfg_if;
 use drogue_device::{
     actors::button::{Button, ButtonPressed},
     actors::dfu::*,
@@ -14,17 +15,16 @@ use drogue_device::{
 use embassy::executor::Spawner;
 use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
-use embassy_nrf::peripherals::{P0_02, P0_06, P0_26, P0_27, P0_28, P0_30};
 use embassy_nrf::Peripherals;
 use nrf_softdevice::Flash;
 
-pub type RedLed = Led<Output<'static, P0_30>>;
-pub type GreenLed = Led<Output<'static, P0_28>>;
-pub type BlueLed = Led<Output<'static, P0_02>>;
-pub type YellowLed = Led<Output<'static, P0_26>>;
+pub type RedLed = Led<Output<'static, AnyPin>>;
+pub type GreenLed = Led<Output<'static, AnyPin>>;
+pub type BlueLed = Led<Output<'static, AnyPin>>;
+pub type YellowLed = Led<Output<'static, AnyPin>>;
 
-pub type ButtonA = Input<'static, P0_06>;
-pub type ButtonB = Input<'static, P0_27>;
+pub type ButtonA = Input<'static, AnyPin>;
+pub type ButtonB = Input<'static, AnyPin>;
 
 pub struct BurrBoard {
     accel: ActorContext<Accelerometer>,
@@ -63,9 +63,6 @@ pub struct BoardPeripherals {
     pub dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
 }
 
-static TEMP_EN: Forever<Output<'static, AnyPin>> = Forever::new();
-static LIGHT_EN: Forever<Output<'static, AnyPin>> = Forever::new();
-
 #[derive(Clone)]
 pub struct Leds {
     pub red: StatefulLed<RedLed>,
@@ -99,49 +96,108 @@ impl BurrBoard {
     }
 
     pub fn mount(&'static self, s: Spawner, app: &'static App, p: Peripherals) -> BoardPeripherals {
-        #[cfg(feature = "lsm")]
+        #[cfg(any(feature = "lsm", feature = "adxl"))]
         let accel: Option<Address<Accelerometer>> =
             if let Ok(accel) = Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11) {
                 Some(self.accel.mount(s, accel))
             } else {
                 None
             };
-        #[cfg(not(feature = "lsm"))]
+
+        #[cfg(not(any(feature = "lsm", feature = "adxl")))]
         let accel: Option<Address<Accelerometer>> = None;
 
-        TEMP_EN.put(Output::new(
-            p.P1_08.degrade(),
-            Level::High,
-            OutputDrive::Standard,
-        ));
-        LIGHT_EN.put(Output::new(
-            p.P0_07.degrade(),
-            Level::High,
-            OutputDrive::Standard,
-        ));
+        cfg_if! {
+            if #[cfg(feature = "rev2")] {
+                let red_led_pin = p.P0_06.degrade();
+                let green_led_pin = p.P0_30.degrade();
+                let blue_led_pin = p.P0_28.degrade();
+                let yellow_led_pin = p.P0_02.degrade();
+
+                let button_a_pin = p.P0_26.degrade();
+                let button_b_pin = p.P0_27.degrade();
+
+                let temp_pin = p.P0_05;
+                let light_pin = p.P0_03;
+                let batt_pin = p.P0_04;
+            } else if #[cfg(feature = "rev3")] {
+                static TEMP_EN: Forever<Output<'static, AnyPin>> = Forever::new();
+                static LIGHT_EN: Forever<Output<'static, AnyPin>> = Forever::new();
+                TEMP_EN.put(Output::new(
+                    p.P1_08.degrade(),
+                    Level::High,
+                    OutputDrive::Standard,
+                ));
+                LIGHT_EN.put(Output::new(
+                    p.P0_07.degrade(),
+                    Level::High,
+                    OutputDrive::Standard,
+                ));
+
+                let red_led_pin = p.P0_30.degrade();
+                let green_led_pin = p.P0_28.degrade();
+                let blue_led_pin = p.P0_02.degrade();
+                let yellow_led_pin = p.P0_26.degrade();
+
+                let button_a_pin = p.P0_06.degrade();
+                let button_b_pin = p.P0_27.degrade();
+
+                let temp_pin = p.P0_05;
+                let light_pin = p.P0_03;
+                let batt_pin = p.P0_04;
+            } else if #[cfg(feature = "rev3.5")] {
+                static EN: Forever<Output<'static, AnyPin>> = Forever::new();
+                EN.put(Output::new(
+                    p.P1_08.degrade(),
+                    Level::High,
+                    OutputDrive::Standard,
+                ));
+
+                let red_led_pin = p.P0_30.degrade();
+                let green_led_pin = p.P0_28.degrade();
+                let blue_led_pin = p.P0_02.degrade();
+                let yellow_led_pin = p.P0_27.degrade();
+
+                let button_a_pin = p.P0_08.degrade();
+                let button_b_pin = p.P0_06.degrade();
+
+                let temp_pin = p.P0_05;
+                let light_pin = p.P0_03;
+                let batt_pin = p.P0_04;
+            }
+        }
 
         // Actor for all analog sensors
-        let analog = self
-            .analog
-            .mount(s, AnalogSensors::new(p.SAADC, p.P0_05, p.P0_03, p.P0_04));
+        let analog = self.analog.mount(
+            s,
+            AnalogSensors::new(p.SAADC, temp_pin, light_pin, batt_pin),
+        );
 
         // LEDs
         let red = self.red.mount(
             s,
-            RedLed::new(Output::new(p.P0_30, Level::Low, OutputDrive::Standard)),
+            RedLed::new(Output::new(red_led_pin, Level::Low, OutputDrive::Standard)),
         );
         let green = self.green.mount(
             s,
-            GreenLed::new(Output::new(p.P0_28, Level::Low, OutputDrive::Standard)),
+            GreenLed::new(Output::new(
+                green_led_pin,
+                Level::Low,
+                OutputDrive::Standard,
+            )),
         );
         let blue = self.blue.mount(
             s,
-            BlueLed::new(Output::new(p.P0_02, Level::Low, OutputDrive::Standard)),
+            BlueLed::new(Output::new(blue_led_pin, Level::Low, OutputDrive::Standard)),
         );
 
         let yellow = self.yellow.mount(
             s,
-            YellowLed::new(Output::new(p.P0_26, Level::Low, OutputDrive::Standard)),
+            YellowLed::new(Output::new(
+                yellow_led_pin,
+                Level::Low,
+                OutputDrive::Standard,
+            )),
         );
 
         // Actor for button A and press counter
@@ -149,7 +205,7 @@ impl BurrBoard {
         self.button_a.mount(
             s,
             Button::new(
-                Input::new(p.P0_06, Pull::None),
+                Input::new(button_a_pin, Pull::None),
                 ButtonPressed(counter_a, CounterMessage::Increment),
             ),
         );
@@ -159,7 +215,7 @@ impl BurrBoard {
         self.button_b.mount(
             s,
             Button::new(
-                Input::new(p.P0_27, Pull::None),
+                Input::new(button_b_pin, Pull::None),
                 ButtonPressed(counter_b, CounterMessage::Increment),
             ),
         );

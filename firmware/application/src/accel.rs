@@ -1,3 +1,4 @@
+use cfg_if::cfg_if;
 use core::future::Future;
 use drogue_device::{Actor, Address, Inbox};
 use embassy_nrf::{
@@ -6,10 +7,14 @@ use embassy_nrf::{
     twim,
 };
 
+use adxl343::Adxl343;
 use lsm6ds33::Lsm6ds33;
 
 pub struct Accelerometer {
+    #[cfg(feature = "lsm")]
     lsm: Lsm6ds33<twim::Twim<'static, TWISPI0>>,
+    #[cfg(feature = "adxl")]
+    adxl: Adxl343<twim::Twim<'static, TWISPI0>>,
 }
 
 pub enum AccelError {
@@ -23,13 +28,23 @@ impl Accelerometer {
         let irq = interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0);
         let i2c = twim::Twim::new(twi, irq, sda, scl, config);
 
-        //let mut adxl = adxl343::Adxl343::new(i2c).unwrap();
-        let mut lsm = lsm6ds33::Lsm6ds33::new(i2c, 0x6A).map_err(|_| AccelError::Init)?;
-        lsm.set_accelerometer_output(lsm6ds33::AccelerometerOutput::Rate13)
-            .map_err(|_| AccelError::Init)?;
-        lsm.set_accelerometer_scale(lsm6ds33::AccelerometerScale::G04)
-            .map_err(|_| AccelError::Init)?;
-        Ok(Self { lsm })
+        #[cfg(feature = "adxl")]
+        {
+            let adxl = adxl343::Adxl343::new(i2c).map_err(|_| AccelError::Init)?;
+            return Ok(Self { adxl });
+        }
+
+        #[cfg(feature = "lsm")]
+        {
+            let mut lsm = lsm6ds33::Lsm6ds33::new(i2c, 0x6A).map_err(|_| AccelError::Init)?;
+            lsm.set_accelerometer_output(lsm6ds33::AccelerometerOutput::Rate13)
+                .map_err(|_| AccelError::Init)?;
+            lsm.set_accelerometer_scale(lsm6ds33::AccelerometerScale::G04)
+                .map_err(|_| AccelError::Init)?;
+            return Ok(Self { lsm });
+        }
+
+        Err(AccelError::Init)
     }
 }
 
@@ -62,16 +77,35 @@ impl Actor for Accelerometer {
         async move {
             loop {
                 if let Some(mut m) = inbox.next().await {
-                    let response = if let Ok((x, y, z)) = self.lsm.read_accelerometer() {
-                        info!("Accel: x: {}, y: {}, z: {}", x, y, z);
-                        let x = (x * i16::MAX as f32) as i16;
-                        let y = (y * i16::MAX as f32) as i16;
-                        let z = (z * i16::MAX as f32) as i16;
-                        Some(AccelValues { x, y, z })
-                    } else {
-                        None
-                    };
-                    m.set_response(response);
+                    cfg_if! {
+                        if #[cfg(feature = "lsm")] {
+                            let response = if let Ok((x, y, z)) = self.lsm.read_accelerometer() {
+                                trace!("Accel: x: {}, y: {}, z: {}", x, y, z);
+                                let x = (x * i16::MAX as f32) as i16;
+                                let y = (y * i16::MAX as f32) as i16;
+                                let z = (z * i16::MAX as f32) as i16;
+                                Some(AccelValues { x, y, z })
+                            } else {
+                                None
+                            };
+                            m.set_response(response);
+                        } else if #[cfg(feature = "adxl")] {
+                            use adxl343::accelerometer::RawAccelerometer;
+                            use adxl343::accelerometer::Accelerometer;
+                            let response = if let Ok(val) = self.adxl.accel_norm() {
+                                let x = val.x;
+                                let y = val.y;
+                                let z = val.z;
+                                trace!("Accel: x: {}, y: {}, z: {}", x, y, z);
+                                Some(AccelValues { x, y, z })
+                            } else {
+                                None
+                            };
+                            m.set_response(response);
+                        } else {
+                            m.set_response(Some(AccelValues {x: 0, y: 0, z: 0}))
+                        }
+                    }
                 }
             }
         }

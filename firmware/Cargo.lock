@@ -13,6 +13,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "accelerometer"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9fdb58b67792d50fc2e41763d7ebfff7a0fd479e8bf3a14d4c6c76415170486a"
+dependencies = [
+ "micromath 1.1.1",
+]
+
+[[package]]
+name = "adxl343"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fb325e5b476e84d1a271584903971ca39dd9049fa9b7a4bc00e5d5531281be9"
+dependencies = [
+ "accelerometer",
+ "bitflags",
+ "embedded-hal 0.2.7",
+]
+
+[[package]]
 name = "aead"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -165,6 +185,7 @@ dependencies = [
 name = "burrboard-firmware"
 version = "0.1.0"
 dependencies = [
+ "adxl343",
  "bitflags",
  "cfg-if",
  "cortex-m 0.7.4",
@@ -507,7 +528,7 @@ dependencies = [
  "embedded-storage-async",
  "futures",
  "heapless",
- "micromath",
+ "micromath 2.0.0",
  "nrf-softdevice",
  "nrf-softdevice-s140",
  "p256",
@@ -935,6 +956,15 @@ name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
+
+[[package]]
+name = "micromath"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
+dependencies = [
+ "generic-array 0.14.5",
+]
 
 [[package]]
 name = "micromath"
