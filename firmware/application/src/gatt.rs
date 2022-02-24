@@ -40,7 +40,7 @@ pub struct BurrBoardService {
     pub brightness: u16,
 
     #[characteristic(uuid = "2101", read, notify)]
-    pub accel: Vec<u8, 6>,
+    pub accel: Vec<u8, 12>,
 
     #[characteristic(uuid = "2a19", read, notify)]
     pub battery_level: u8,
@@ -97,7 +97,7 @@ pub struct BurrBoardMonitor {
     analog: Address<AnalogSensors>,
     button_a: Address<Counter>,
     button_b: Address<Counter>,
-    accel: Option<Address<Accelerometer>>,
+    accel: Address<Accelerometer>,
     connections: Vec<Connection, 2>,
     notifications: Notifications,
 }
@@ -115,7 +115,7 @@ impl BurrBoardMonitor {
     pub fn new(
         service: &'static BurrBoardService,
         analog: Address<AnalogSensors>,
-        accel: Option<Address<Accelerometer>>,
+        accel: Address<Accelerometer>,
         button_a: Address<Counter>,
         button_b: Address<Counter>,
     ) -> Self {
@@ -224,11 +224,7 @@ impl Actor for BurrBoardMonitor {
                         }
                     }
                     Either::Right((_, _)) => {
-                        let accel = if let Some(accel) = self.accel {
-                            accel.request(AccelRead).unwrap().await.unwrap()
-                        } else {
-                            AccelValues { x: 0, y: 0, z: 0 }
-                        };
+                        let accel = self.accel.request(AccelRead).unwrap().await.unwrap();
                         let analog = self.analog.request(AnalogRead).unwrap().await;
                         let button_a_presses = self
                             .button_a
@@ -249,9 +245,9 @@ impl Actor for BurrBoardMonitor {
                         self.service.button_a_set(button_a_presses).ok();
                         self.service.button_b_set(button_b_presses).ok();
 
-                        let x: [u8; 2] = accel.x.to_be_bytes();
-                        let y: [u8; 2] = accel.y.to_be_bytes();
-                        let z: [u8; 2] = accel.z.to_be_bytes();
+                        let x: [u8; 4] = accel.x.to_le_bytes();
+                        let y: [u8; 4] = accel.y.to_le_bytes();
+                        let z: [u8; 4] = accel.z.to_le_bytes();
                         self.service
                             .accel_set(
                                 Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
@@ -276,14 +272,17 @@ impl Actor for BurrBoardMonitor {
                             }
 
                             if self.notifications.accel {
-                                let x: [u8; 2] = accel.x.to_be_bytes();
-                                let y: [u8; 2] = accel.y.to_be_bytes();
-                                let z: [u8; 2] = accel.z.to_be_bytes();
+                                let x: [u8; 4] = accel.x.to_le_bytes();
+                                let y: [u8; 4] = accel.y.to_le_bytes();
+                                let z: [u8; 4] = accel.z.to_le_bytes();
                                 self.service
                                     .accel_notify(
                                         &c,
-                                        Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]])
-                                            .unwrap(),
+                                        Vec::from_slice(&[
+                                            x[0], x[1], x[2], x[3], y[0], y[1], y[2], y[3], z[0],
+                                            z[1], z[2], z[3],
+                                        ])
+                                        .unwrap(),
                                     )
                                     .ok();
                             }

@@ -56,7 +56,7 @@ pub struct BoardPeripherals {
 
     pub analog: Address<AnalogSensors>,
 
-    pub accel: Option<Address<Accelerometer>>,
+    pub accel: Address<Accelerometer>,
 
     pub flash: Address<SharedFlash<Flash>>,
 
@@ -96,16 +96,12 @@ impl BurrBoard {
     }
 
     pub fn mount(&'static self, s: Spawner, app: &'static App, p: Peripherals) -> BoardPeripherals {
-        #[cfg(any(feature = "lsm", feature = "adxl"))]
-        let accel: Option<Address<Accelerometer>> =
-            if let Ok(accel) = Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11) {
-                Some(self.accel.mount(s, accel))
-            } else {
-                None
-            };
-
-        #[cfg(not(any(feature = "lsm", feature = "adxl")))]
-        let accel: Option<Address<Accelerometer>> = None;
+        let accel = self.accel.mount(
+            s,
+            Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11)
+                .ok()
+                .unwrap(),
+        );
 
         cfg_if! {
             if #[cfg(feature = "rev2")] {

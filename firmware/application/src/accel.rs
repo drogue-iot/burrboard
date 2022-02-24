@@ -52,9 +52,9 @@ pub struct Read;
 
 #[derive(Clone, Copy)]
 pub struct AccelValues {
-    pub x: i16,
-    pub y: i16,
-    pub z: i16,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 impl Actor for Accelerometer {
@@ -81,9 +81,6 @@ impl Actor for Accelerometer {
                         if #[cfg(feature = "lsm")] {
                             let response = if let Ok((x, y, z)) = self.lsm.read_accelerometer() {
                                 trace!("Accel: x: {}, y: {}, z: {}", x, y, z);
-                                let x = (x * i16::MAX as f32) as i16;
-                                let y = (y * i16::MAX as f32) as i16;
-                                let z = (z * i16::MAX as f32) as i16;
                                 Some(AccelValues { x, y, z })
                             } else {
                                 None
@@ -103,7 +100,7 @@ impl Actor for Accelerometer {
                             };
                             m.set_response(response);
                         } else {
-                            m.set_response(Some(AccelValues {x: 0, y: 0, z: 0}))
+                            m.set_response(Some(AccelValues {x: 0.0, y: 0.0, z: 0.0}))
                         }
                     }
                 }

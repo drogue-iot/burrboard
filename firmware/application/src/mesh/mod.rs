@@ -275,11 +275,7 @@ impl Actor for BoardSensorPublisher {
                         }
                     }
                     Either::Right((_, _)) => {
-                        let accel = if let Some(accel) = self.board.accel {
-                            accel.request(AccelRead).unwrap().await.unwrap()
-                        } else {
-                            AccelValues { x: 0, y: 0, z: 0 }
-                        };
+                        let accel = self.board.accel.request(AccelRead).unwrap().await.unwrap();
                         let analog = self.board.analog.request(AnalogRead).unwrap().await;
                         let button_a = self
                             .board
@@ -364,7 +360,7 @@ impl SensorConfig for BurrBoardSensors {
         SensorDescriptor::new(prop::BUTTON_B, 4),
         SensorDescriptor::new(prop::TEMPERATURE, 2),
         SensorDescriptor::new(prop::BRIGHTNESS, 2),
-        SensorDescriptor::new(prop::ACCEL, 6),
+        SensorDescriptor::new(prop::ACCEL, 12),
         SensorDescriptor::new(prop::BATTERY, 1),
     ];
 }
@@ -380,7 +376,7 @@ pub struct SensorState {
     pub button_b: u32,
     pub temperature: i16,
     pub brightness: u16,
-    pub accel: (i16, i16, i16),
+    pub accel: (f32, f32, f32),
     pub battery: u8,
 }
 
