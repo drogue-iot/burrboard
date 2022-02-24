@@ -509,6 +509,7 @@ dependencies = [
 [[package]]
 name = "drogue-device"
 version = "0.1.0"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=0a4f5ec7fc4d7deb713493ec0580311174319cf1#0a4f5ec7fc4d7deb713493ec0580311174319cf1"
 dependencies = [
  "aes",
  "atomic-polyfill",
@@ -542,6 +543,7 @@ dependencies = [
 [[package]]
 name = "drogue-device-macros"
 version = "0.1.0"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=0a4f5ec7fc4d7deb713493ec0580311174319cf1#0a4f5ec7fc4d7deb713493ec0580311174319cf1"
 dependencies = [
  "cfg-if",
  "config",
@@ -724,9 +726,9 @@ dependencies = [
 
 [[package]]
 name = "fixed"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "710fb80b798972643e40dc9eff017d9d3146dc4a3d01d35cddb4bde90bd93d47"
+checksum = "4d38004fb072c44da88a322343c7c784bd1ff6f2e3f5b332050de60c5eea3e0e"
 dependencies = [
  "az",
  "bytemuck",
@@ -914,9 +916,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.118"
+version = "0.2.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06e509672465a0504304aa87f9f176f2b2b716ed8fb105ebe5c02dc6dce96a94"
+checksum = "1bf2e165bb3457c8e098ea76f3e3bc9db55f87aa90d52d0e6be741470916aaa4"
 
 [[package]]
 name = "linked-hash-map"
