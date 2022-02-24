@@ -176,10 +176,10 @@ impl BurrBoard {
         let brightness: u16 = u16::from_le_bytes([data[0], data[1]]);
 
         let data = self.read_char(BOARD_SERVICE_UUID, ACCEL_CHAR_UUID).await?;
-        let accel: (i16, i16, i16) = (
-            i16::from_le_bytes([data[0], data[1]]),
-            i16::from_le_bytes([data[2], data[3]]),
-            i16::from_le_bytes([data[4], data[5]]),
+        let accel: (f32, f32, f32) = (
+            f32::from_le_bytes([data[0], data[1], data[2], data[3]]),
+            f32::from_le_bytes([data[4], data[5], data[6], data[7]]),
+            f32::from_le_bytes([data[8], data[9], data[10], data[11]]),
         );
 
         let battery = self
@@ -217,7 +217,8 @@ impl BurrBoard {
         let accel = self
             .stream_char(BOARD_SERVICE_UUID, ACCEL_CHAR_UUID)
             .await?
-            .map(|v| json!({"accel": (i16::from_le_bytes([v[0], v[1]]), i16::from_le_bytes([v[2], v[3]]), i16::from_le_bytes([v[4], v[5]]))}));
+        .map(|v| {
+            json!({"accel": (f32::from_le_bytes([v[0], v[1], v[2], v[3]]), f32::from_le_bytes([v[4], v[5], v[6], v[7]]), f32::from_le_bytes([v[8], v[9], v[10], v[11]]))})});
 
         let batt = self
             .stream_char(BOARD_SERVICE_UUID, BATTERY_CHAR_UUID)

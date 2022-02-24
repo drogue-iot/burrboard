@@ -159,6 +159,9 @@ impl BurrBoardMonitor {
             BurrBoardServiceEvent::BrightnessCccdWrite { notifications } => {
                 self.notifications.brightness = *notifications;
             }
+            BurrBoardServiceEvent::AccelCccdWrite { notifications } => {
+                self.notifications.accel = *notifications;
+            }
             BurrBoardServiceEvent::BatteryLevelCccdWrite { notifications } => {
                 self.notifications.battery_level = *notifications;
             }
@@ -250,7 +253,11 @@ impl Actor for BurrBoardMonitor {
                         let z: [u8; 4] = accel.z.to_le_bytes();
                         self.service
                             .accel_set(
-                                Vec::from_slice(&[x[0], x[1], y[0], y[1], z[0], z[1]]).unwrap(),
+                                Vec::from_slice(&[
+                                    x[0], x[1], x[2], x[3], y[0], y[1], y[2], y[3], z[0], z[1],
+                                    z[2], z[3],
+                                ])
+                                .unwrap(),
                             )
                             .ok();
 
@@ -272,9 +279,6 @@ impl Actor for BurrBoardMonitor {
                             }
 
                             if self.notifications.accel {
-                                let x: [u8; 4] = accel.x.to_le_bytes();
-                                let y: [u8; 4] = accel.y.to_le_bytes();
-                                let z: [u8; 4] = accel.z.to_le_bytes();
                                 self.service
                                     .accel_notify(
                                         &c,
