@@ -1,5 +1,8 @@
+use anyhow::anyhow;
+use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmwareMetadata {
@@ -59,4 +62,74 @@ pub enum FirmwareData {
     File(PathBuf),
     #[serde(rename = "http")]
     Http(String),
+}
+
+pub struct Deployment {
+    pub id: String,
+    pub metadata: FirmwareMetadata,
+}
+
+pub struct FirmwareClient {
+    url: String,
+}
+
+impl FirmwareClient {
+    pub fn new(url: &str) -> Self {
+        Self {
+            url: url.to_string(),
+        }
+    }
+
+    pub async fn fetch_firmware(&self, url: &str) -> Result<Bytes, anyhow::Error> {
+        let client = reqwest::Client::new();
+        let res = client.get(url).send().await?.bytes().await?;
+        Ok(res)
+    }
+
+    pub async fn wait_update(&self, current_version: &str) -> Result<Deployment, anyhow::Error> {
+        let client = reqwest::Client::new();
+        loop {
+            let url = format!("{}/v1/poll/burrboard", self.url);
+            let res = client.get(&url).send().await;
+
+            let poll: Duration = match res {
+                Ok(res) => {
+                    let j: serde_json::Value = res.json().await.unwrap();
+                    println!("RESULT:{:?}", j);
+
+                    if let Some(current) = j.get("current") {
+                        if let Some(version) = current["version"].as_str() {
+                            if version != current_version {
+                                let size = current["size"]
+                                    .as_str()
+                                    .ok_or(anyhow!("error reading firmware size"))?
+                                    .parse::<usize>()?;
+                                let path = format! {"{}/v1/fetch/burrboard/{}", self.url, version};
+                                return Ok(Deployment {
+                                    id: version.to_string(),
+                                    metadata: FirmwareMetadata::from_http(
+                                        path,
+                                        size as usize,
+                                        version.to_string(),
+                                    ),
+                                });
+                            }
+                        }
+                    }
+
+                    if let Some(interval) = j["interval"].as_i64() {
+                        Duration::from_secs(interval as u64)
+                    } else {
+                        Duration::from_secs(5)
+                    }
+                }
+                Err(e) => {
+                    println!("ERROR FIRMWARE: {:?}", e);
+                    Duration::from_secs(5)
+                }
+            };
+            println!("Polling firmware server in {} seconds", poll.as_secs());
+            tokio::time::sleep(poll).await;
+        }
+    }
 }

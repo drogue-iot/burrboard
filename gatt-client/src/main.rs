@@ -16,7 +16,7 @@ mod firmware;
 mod hawkbit;
 use crate::board::{BurrBoard, Led};
 use crate::firmware::*;
-use crate::hawkbit::*;
+//use crate::hawkbit::*;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -41,16 +41,9 @@ pub enum Mode {
 
         #[clap(long)]
         endpoint_password: String,
-        /*
+
         #[clap(long)]
-        hawkbit_url: String,
-        #[clap(long)]
-        hawkbit_tenant: String,
-        #[clap(long)]
-        hawkbit_controller: String,
-        #[clap(long)]
-        hawkbit_device_token: String,
-        */
+        firmware_url: String,
     },
     Client {
         #[clap(short, long)]
@@ -207,27 +200,14 @@ async fn main() -> anyhow::Result<()> {
                         endpoint_url,
                         endpoint_user,
                         endpoint_password,
-                        //hawkbit_url,
-                        //hawkbit_tenant,
-                        //hawkbit_controller,
-                        //hawkbit_device_token,
+                        firmware_url,
                     } => {
-                        /*
-                        let mut hawkbit_client = HawkbitClient::new(
-                            hawkbit_url,
-                            hawkbit_tenant,
-                            hawkbit_controller,
-                            hawkbit_device_token,
-                        );
-
-                        // Register with default attributes
-                        hawkbit_client.register().await?;
+                        let mut firmware_client = FirmwareClient::new(firmware_url);
 
                         // We need to finish an earlier deployment
                         if let Some(deployment) = deployment.take() {
                             let metadata = &deployment.metadata;
                             if version != metadata.version {
-                                hawkbit_client.provide_feedback(&deployment, false).await?;
                                 println!(
                                     "Error during firmware update! Device reports {}, expected {}",
                                     version, metadata.version
@@ -236,11 +216,9 @@ async fn main() -> anyhow::Result<()> {
                                 // Confirm that firmware is now using the latest version and mark it as bootable
                                 println!("Firmware updated successfully");
                                 board.mark_booted().await?;
-                                hawkbit_client.provide_feedback(&deployment, true).await?;
                                 println!("Device firmware marked as booted");
                             }
                         }
-                        */
 
                         let board = Arc::new(board);
                         // Stream sensors
@@ -279,11 +257,9 @@ async fn main() -> anyhow::Result<()> {
                                 }
                             }
                         });
-                        stream_task.await;
 
-                        /*
                         // Wait for deployment
-                        let d = hawkbit_client.wait_update().await?;
+                        let d = firmware_client.wait_update(&version).await?;
                         let metadata = &d.metadata;
                         println!(
                             "Updating firmware from version {} to {}",
@@ -293,7 +269,7 @@ async fn main() -> anyhow::Result<()> {
                         match &metadata.data {
                             FirmwareData::Http(url) => {
                                 // Download file
-                                let data = hawkbit_client.fetch_firmware(url).await?;
+                                let data = firmware_client.fetch_firmware(url).await?;
                                 println!("Received firmware of {} bytes", data.len());
                                 board.update_firmware(&data[..]).await?;
                                 stream_task.abort();
@@ -305,7 +281,6 @@ async fn main() -> anyhow::Result<()> {
                                 panic!("unexpected metadata");
                             }
                         }
-                        */
                     }
                 }
             }
