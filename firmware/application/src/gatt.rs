@@ -100,6 +100,7 @@ pub struct BurrBoardMonitor {
     accel: Address<Accelerometer>,
     connections: Vec<Connection, 2>,
     notifications: Notifications,
+    leds: Leds,
 }
 
 pub struct Notifications {
@@ -109,6 +110,10 @@ pub struct Notifications {
     battery_level: bool,
     button_a: bool,
     button_b: bool,
+    red_led: bool,
+    green_led: bool,
+    blue_led: bool,
+    yellow_led: bool,
 }
 
 impl BurrBoardMonitor {
@@ -118,6 +123,7 @@ impl BurrBoardMonitor {
         accel: Address<Accelerometer>,
         button_a: Address<Counter>,
         button_b: Address<Counter>,
+        leds: Leds,
     ) -> Self {
         Self {
             service,
@@ -127,6 +133,7 @@ impl BurrBoardMonitor {
             accel,
             button_a,
             button_b,
+            leds,
             notifications: Notifications {
                 temperature: false,
                 brightness: false,
@@ -134,6 +141,10 @@ impl BurrBoardMonitor {
                 battery_level: false,
                 button_a: false,
                 button_b: false,
+                red_led: false,
+                green_led: false,
+                blue_led: false,
+                yellow_led: false,
             },
         }
     }
@@ -171,9 +182,50 @@ impl BurrBoardMonitor {
             BurrBoardServiceEvent::ButtonBCccdWrite { notifications } => {
                 self.notifications.button_b = *notifications;
             }
+            BurrBoardServiceEvent::RedLedCccdWrite { notifications } => {
+                self.notifications.red_led = *notifications;
+            }
+            BurrBoardServiceEvent::GreenLedCccdWrite { notifications } => {
+                self.notifications.green_led = *notifications;
+            }
+            BurrBoardServiceEvent::BlueLedCccdWrite { notifications } => {
+                self.notifications.blue_led = *notifications;
+            }
+            BurrBoardServiceEvent::YellowLedCccdWrite { notifications } => {
+                self.notifications.yellow_led = *notifications;
+            }
             BurrBoardServiceEvent::ReportIntervalWrite(period) => {
                 info!("Changing report interval to {} ms", *period);
                 self.ticker = Ticker::every(Duration::from_millis(*period as u64));
+            }
+
+            BurrBoardServiceEvent::RedLedWrite(val) => {
+                if *val == 0 {
+                    self.leds.red.off().ok();
+                } else {
+                    self.leds.red.on().ok();
+                }
+            }
+            BurrBoardServiceEvent::GreenLedWrite(val) => {
+                if *val == 0 {
+                    self.leds.green.off().ok();
+                } else {
+                    self.leds.green.on().ok();
+                }
+            }
+            BurrBoardServiceEvent::BlueLedWrite(val) => {
+                if *val == 0 {
+                    self.leds.blue.off().ok();
+                } else {
+                    self.leds.blue.on().ok();
+                }
+            }
+            BurrBoardServiceEvent::YellowLedWrite(val) => {
+                if *val == 0 {
+                    self.leds.yellow.off().ok();
+                } else {
+                    self.leds.yellow.on().ok();
+                }
             }
             _ => {}
         }
@@ -261,6 +313,16 @@ impl Actor for BurrBoardMonitor {
                             )
                             .ok();
 
+                        let red_led = self.leds.red.is_on() as u8;
+                        let green_led = self.leds.green.is_on() as u8;
+                        let blue_led = self.leds.blue.is_on() as u8;
+                        let yellow_led = self.leds.yellow.is_on() as u8;
+
+                        self.service.red_led_set(red_led).ok();
+                        self.service.green_led_set(green_led).ok();
+                        self.service.blue_led_set(blue_led).ok();
+                        self.service.yellow_led_set(yellow_led).ok();
+
                         for c in self.connections.iter() {
                             if self.notifications.temperature {
                                 self.service.temperature_notify(&c, analog.temperature).ok();
@@ -289,6 +351,22 @@ impl Actor for BurrBoardMonitor {
                                         .unwrap(),
                                     )
                                     .ok();
+                            }
+
+                            if self.notifications.red_led {
+                                self.service.red_led_notify(&c, red_led).ok();
+                            }
+
+                            if self.notifications.green_led {
+                                self.service.green_led_notify(&c, green_led).ok();
+                            }
+
+                            if self.notifications.blue_led {
+                                self.service.blue_led_notify(&c, blue_led).ok();
+                            }
+
+                            if self.notifications.yellow_led {
+                                self.service.yellow_led_notify(&c, yellow_led).ok();
                             }
                         }
                     }
@@ -363,7 +441,6 @@ impl Actor for BurrBoardFirmware {
 pub async fn bluetooth_task(
     sd: &'static Softdevice,
     server: &'static BurrBoardServer,
-    mut leds: Leds,
     monitor: Address<BurrBoardMonitor>,
     firmware: Address<BurrBoardFirmware>,
 ) {
@@ -390,40 +467,9 @@ pub async fn bluetooth_task(
 
         monitor.notify(MonitorEvent::Connected(conn.clone())).ok();
         let res = gatt_server::run(&conn, server, |e| match e {
-            BurrBoardServerEvent::Board(event) => match event {
-                BurrBoardServiceEvent::RedLedWrite(val) => {
-                    if val == 0 {
-                        leds.red.off().ok();
-                    } else {
-                        leds.red.on().ok();
-                    }
-                }
-                BurrBoardServiceEvent::GreenLedWrite(val) => {
-                    if val == 0 {
-                        leds.green.off().ok();
-                    } else {
-                        leds.green.on().ok();
-                    }
-                }
-                BurrBoardServiceEvent::BlueLedWrite(val) => {
-                    if val == 0 {
-                        leds.blue.off().ok();
-                    } else {
-                        leds.blue.on().ok();
-                    }
-                }
-                BurrBoardServiceEvent::YellowLedWrite(val) => {
-                    if val == 0 {
-                        leds.yellow.off().ok();
-                    } else {
-                        leds.yellow.on().ok();
-                    }
-                }
-                e => {
-                    let _ = monitor.notify(MonitorEvent::Event(e));
-                }
-                _ => {}
-            },
+            BurrBoardServerEvent::Board(e) => {
+                let _ = monitor.notify(MonitorEvent::Event(e));
+            }
             BurrBoardServerEvent::DeviceInfo(_) => {}
             BurrBoardServerEvent::Firmware(e) => {
                 let _ = firmware.notify(e);
@@ -475,19 +521,14 @@ impl GattApp {
                 p.accel,
                 p.counter_a,
                 p.counter_b,
+                p.leds.clone(),
             ),
         );
 
         let firmware = self
             .firmware
             .mount(s, BurrBoardFirmware::new(&self.server.firmware, p.dfu));
-        s.spawn(bluetooth_task(
-            sd,
-            &self.server,
-            p.leds.clone(),
-            monitor,
-            firmware,
-        ))
-        .unwrap();
+        s.spawn(bluetooth_task(sd, &self.server, monitor, firmware))
+            .unwrap();
     }
 }

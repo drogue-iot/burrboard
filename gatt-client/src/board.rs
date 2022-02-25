@@ -211,10 +211,10 @@ impl BurrBoard {
 
         Ok(
             json!({"temperature": {"value": temp}, "light": { "value": brightness },
-                   "led_1": { "state": red_led != 0 },
-                   "led_2": { "state": green_led != 0 },
-                   "led_3": { "state": blue_led != 0 },
-                   "led_4": { "state": yellow_led != 0 },
+                   "led_1": { "state": red_led[0] != 0 },
+                   "led_2": { "state": green_led[0] != 0 },
+                   "led_3": { "state": blue_led[0] != 0 },
+                   "led_4": { "state": yellow_led[0] != 0 },
                    "accelerometer": {
                 "x": accel.0,
                 "y": accel.1,
@@ -292,7 +292,11 @@ impl BurrBoard {
             Box::pin(accel),
             Box::pin(batt),
             Box::pin(b_a),
-            Box::pin(b_b)
+            Box::pin(b_b),
+            Box::pin(red_led),
+            Box::pin(green_led),
+            Box::pin(blue_led),
+            Box::pin(yellow_led),
         );
         Ok(Box::pin(j))
     }
