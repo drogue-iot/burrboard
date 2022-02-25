@@ -51,13 +51,13 @@ pub struct BurrBoardService {
     #[characteristic(uuid = "2aec", read, notify)]
     pub button_b: u32,
 
-    #[characteristic(uuid = "2ae2", write)]
+    #[characteristic(uuid = "2ae2", write, read, notify)]
     pub red_led: u8,
-    #[characteristic(uuid = "2ae3", write)]
+    #[characteristic(uuid = "2ae3", write, read, notify)]
     pub green_led: u8,
-    #[characteristic(uuid = "2ae4", write)]
+    #[characteristic(uuid = "2ae4", write, read, notify)]
     pub blue_led: u8,
-    #[characteristic(uuid = "2ae5", write)]
+    #[characteristic(uuid = "2ae5", write, read, notify)]
     pub yellow_led: u8,
 
     #[characteristic(uuid = "1b25", read, write)]

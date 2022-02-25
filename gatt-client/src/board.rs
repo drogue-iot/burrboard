@@ -196,8 +196,26 @@ impl BurrBoard {
             .await?;
         let button_b = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
 
+        let red_led = self
+            .read_char(BOARD_SERVICE_UUID, RED_LED_CHAR_UUID)
+            .await?;
+        let green_led = self
+            .read_char(BOARD_SERVICE_UUID, GREEN_LED_CHAR_UUID)
+            .await?;
+        let blue_led = self
+            .read_char(BOARD_SERVICE_UUID, BLUE_LED_CHAR_UUID)
+            .await?;
+        let yellow_led = self
+            .read_char(BOARD_SERVICE_UUID, YELLOW_LED_CHAR_UUID)
+            .await?;
+
         Ok(
-            json!({"temperature": {"value": temp}, "light": { "value": brightness }, "accelerometer": {
+            json!({"temperature": {"value": temp}, "light": { "value": brightness },
+                   "led_1": { "state": red_led != 0 },
+                   "led_2": { "state": green_led != 0 },
+                   "led_3": { "state": blue_led != 0 },
+                   "led_4": { "state": yellow_led != 0 },
+                   "accelerometer": {
                 "x": accel.0,
                 "y": accel.1,
                 "z": accel.2,
@@ -247,6 +265,26 @@ impl BurrBoard {
             .map(
                 |v| json!({"button_b": {"presses": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}}),
             );
+
+        let red_led = self
+            .stream_char(BOARD_SERVICE_UUID, RED_LED_CHAR_UUID)
+            .await?
+            .map(|v| json!({"led_1": {"state": v[0] != 0 }}));
+
+        let green_led = self
+            .stream_char(BOARD_SERVICE_UUID, GREEN_LED_CHAR_UUID)
+            .await?
+            .map(|v| json!({"led_2": {"state": v[0] != 0 }}));
+
+        let blue_led = self
+            .stream_char(BOARD_SERVICE_UUID, BLUE_LED_CHAR_UUID)
+            .await?
+            .map(|v| json!({"led_3": {"state": v[0] != 0 }}));
+
+        let yellow_led = self
+            .stream_char(BOARD_SERVICE_UUID, YELLOW_LED_CHAR_UUID)
+            .await?
+            .map(|v| json!({"led_4": {"state": v[0] != 0 }}));
 
         let j = stream_select!(
             Box::pin(t),
