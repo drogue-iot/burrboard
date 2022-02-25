@@ -35,29 +35,15 @@ pub struct BurrBoardServer {
 #[nrf_softdevice::gatt_service(uuid = "1860")]
 pub struct BurrBoardService {
     #[characteristic(uuid = "2a6e", read, notify)]
-    pub temperature: i16,
-    #[characteristic(uuid = "2b01", read, notify)]
-    pub brightness: u16,
+    pub sensors: Vec<u8, 26>,
 
-    #[characteristic(uuid = "2101", read, notify)]
-    pub accel: Vec<u8, 12>,
-
-    #[characteristic(uuid = "2a19", read, notify)]
-    pub battery_level: u8,
-
-    #[characteristic(uuid = "2aeb", read, notify)]
-    pub button_a: u32,
-
-    #[characteristic(uuid = "2aec", read, notify)]
-    pub button_b: u32,
-
-    #[characteristic(uuid = "2ae2", write, read, notify)]
+    #[characteristic(uuid = "2ae2", read, write)]
     pub red_led: u8,
-    #[characteristic(uuid = "2ae3", write, read, notify)]
+    #[characteristic(uuid = "2ae3", read, write)]
     pub green_led: u8,
-    #[characteristic(uuid = "2ae4", write, read, notify)]
+    #[characteristic(uuid = "2ae4", read, write)]
     pub blue_led: u8,
-    #[characteristic(uuid = "2ae5", write, read, notify)]
+    #[characteristic(uuid = "2ae5", read, write)]
     pub yellow_led: u8,
 
     #[characteristic(uuid = "1b25", read, write)]
@@ -99,21 +85,8 @@ pub struct BurrBoardMonitor {
     button_b: Address<Counter>,
     accel: Address<Accelerometer>,
     connections: Vec<Connection, 2>,
-    notifications: Notifications,
+    notifications: bool,
     leds: Leds,
-}
-
-pub struct Notifications {
-    temperature: bool,
-    brightness: bool,
-    accel: bool,
-    battery_level: bool,
-    button_a: bool,
-    button_b: bool,
-    red_led: bool,
-    green_led: bool,
-    blue_led: bool,
-    yellow_led: bool,
 }
 
 impl BurrBoardMonitor {
@@ -134,18 +107,7 @@ impl BurrBoardMonitor {
             button_a,
             button_b,
             leds,
-            notifications: Notifications {
-                temperature: false,
-                brightness: false,
-                accel: false,
-                battery_level: false,
-                button_a: false,
-                button_b: false,
-                red_led: false,
-                green_led: false,
-                blue_led: false,
-                yellow_led: false,
-            },
+            notifications: false,
         }
     }
 
@@ -164,35 +126,8 @@ impl BurrBoardMonitor {
 
     pub fn handle_event(&mut self, event: &BurrBoardServiceEvent) {
         match event {
-            BurrBoardServiceEvent::TemperatureCccdWrite { notifications } => {
-                self.notifications.temperature = *notifications;
-            }
-            BurrBoardServiceEvent::BrightnessCccdWrite { notifications } => {
-                self.notifications.brightness = *notifications;
-            }
-            BurrBoardServiceEvent::AccelCccdWrite { notifications } => {
-                self.notifications.accel = *notifications;
-            }
-            BurrBoardServiceEvent::BatteryLevelCccdWrite { notifications } => {
-                self.notifications.battery_level = *notifications;
-            }
-            BurrBoardServiceEvent::ButtonACccdWrite { notifications } => {
-                self.notifications.button_a = *notifications;
-            }
-            BurrBoardServiceEvent::ButtonBCccdWrite { notifications } => {
-                self.notifications.button_b = *notifications;
-            }
-            BurrBoardServiceEvent::RedLedCccdWrite { notifications } => {
-                self.notifications.red_led = *notifications;
-            }
-            BurrBoardServiceEvent::GreenLedCccdWrite { notifications } => {
-                self.notifications.green_led = *notifications;
-            }
-            BurrBoardServiceEvent::BlueLedCccdWrite { notifications } => {
-                self.notifications.blue_led = *notifications;
-            }
-            BurrBoardServiceEvent::YellowLedCccdWrite { notifications } => {
-                self.notifications.yellow_led = *notifications;
+            BurrBoardServiceEvent::SensorsCccdWrite { notifications } => {
+                self.notifications = *notifications;
             }
             BurrBoardServiceEvent::ReportIntervalWrite(period) => {
                 info!("Changing report interval to {} ms", *period);
@@ -279,8 +214,15 @@ impl Actor for BurrBoardMonitor {
                         }
                     }
                     Either::Right((_, _)) => {
-                        let accel = self.accel.request(AccelRead).unwrap().await.unwrap();
+                        let mut data: Vec<u8, 26> = Vec::new();
                         let analog = self.analog.request(AnalogRead).unwrap().await;
+
+                        data.extend_from_slice(&analog.temperature.to_le_bytes())
+                            .ok();
+                        data.extend_from_slice(&analog.brightness.to_le_bytes())
+                            .ok();
+                        data.push(analog.battery).ok();
+
                         let button_a_presses = self
                             .button_a
                             .request(CounterMessage::Read)
@@ -294,79 +236,26 @@ impl Actor for BurrBoardMonitor {
                             .await
                             .unwrap();
 
-                        self.service.temperature_set(analog.temperature).ok();
-                        self.service.brightness_set(analog.brightness).ok();
-                        self.service.battery_level_set(analog.battery).ok();
-                        self.service.button_a_set(button_a_presses).ok();
-                        self.service.button_b_set(button_b_presses).ok();
+                        data.extend_from_slice(&button_a_presses.to_le_bytes()).ok();
+                        data.extend_from_slice(&button_b_presses.to_le_bytes()).ok();
 
-                        let x: [u8; 4] = accel.x.to_le_bytes();
-                        let y: [u8; 4] = accel.y.to_le_bytes();
-                        let z: [u8; 4] = accel.z.to_le_bytes();
-                        self.service
-                            .accel_set(
-                                Vec::from_slice(&[
-                                    x[0], x[1], x[2], x[3], y[0], y[1], y[2], y[3], z[0], z[1],
-                                    z[2], z[3],
-                                ])
-                                .unwrap(),
-                            )
-                            .ok();
+                        let accel = self.accel.request(AccelRead).unwrap().await.unwrap();
+                        data.extend_from_slice(&accel.x.to_le_bytes()).ok();
+                        data.extend_from_slice(&accel.y.to_le_bytes()).ok();
+                        data.extend_from_slice(&accel.z.to_le_bytes()).ok();
 
-                        let red_led = self.leds.red.is_on() as u8;
-                        let green_led = self.leds.green.is_on() as u8;
-                        let blue_led = self.leds.blue.is_on() as u8;
-                        let yellow_led = self.leds.yellow.is_on() as u8;
+                        let leds = self.leds.red.is_on() as u8;
+                        let leds = leds | (self.leds.green.is_on() as u8) << 1;
+                        let leds = leds | (self.leds.blue.is_on() as u8) << 2;
+                        let leds = leds | (self.leds.yellow.is_on() as u8) << 3;
 
-                        self.service.red_led_set(red_led).ok();
-                        self.service.green_led_set(green_led).ok();
-                        self.service.blue_led_set(blue_led).ok();
-                        self.service.yellow_led_set(yellow_led).ok();
+                        data.push(leds).ok();
+
+                        self.service.sensors_set(data.clone()).ok();
 
                         for c in self.connections.iter() {
-                            if self.notifications.temperature {
-                                self.service.temperature_notify(&c, analog.temperature).ok();
-                            }
-                            if self.notifications.brightness {
-                                self.service.brightness_notify(&c, analog.brightness).ok();
-                            }
-                            if self.notifications.battery_level {
-                                self.service.battery_level_notify(&c, analog.battery).ok();
-                            }
-                            if self.notifications.button_a {
-                                self.service.button_a_notify(&c, button_a_presses).ok();
-                            }
-                            if self.notifications.button_b {
-                                self.service.button_b_notify(&c, button_b_presses).ok();
-                            }
-
-                            if self.notifications.accel {
-                                self.service
-                                    .accel_notify(
-                                        &c,
-                                        Vec::from_slice(&[
-                                            x[0], x[1], x[2], x[3], y[0], y[1], y[2], y[3], z[0],
-                                            z[1], z[2], z[3],
-                                        ])
-                                        .unwrap(),
-                                    )
-                                    .ok();
-                            }
-
-                            if self.notifications.red_led {
-                                self.service.red_led_notify(&c, red_led).ok();
-                            }
-
-                            if self.notifications.green_led {
-                                self.service.green_led_notify(&c, green_led).ok();
-                            }
-
-                            if self.notifications.blue_led {
-                                self.service.blue_led_notify(&c, blue_led).ok();
-                            }
-
-                            if self.notifications.yellow_led {
-                                self.service.yellow_led_notify(&c, yellow_led).ok();
+                            if self.notifications {
+                                self.service.sensors_notify(&c, data.clone()).ok();
                             }
                         }
                     }

@@ -30,7 +30,8 @@ impl Accelerometer {
 
         #[cfg(feature = "adxl")]
         {
-            let adxl = adxl343::Adxl343::new(i2c).map_err(|_| AccelError::Init)?;
+            // Data rate 100Hz by default
+            let mut adxl = adxl343::Adxl343::new(i2c).map_err(|_| AccelError::Init)?;
             return Ok(Self { adxl });
         }
 

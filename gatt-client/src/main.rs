@@ -262,6 +262,7 @@ async fn main() -> anyhow::Result<()> {
                                                 "features": view,
                                             }
                                         };
+                                        //println!("{}", payload);
                                         match client
                                             .post(&endpoint_url)
                                             .basic_auth(&endpoint_user, Some(&endpoint_password))

@@ -17,12 +17,7 @@ pub struct BurrBoard {
 
 const BOARD_SERVICE_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000186000001000800000805f9b34fb);
 
-const TEMPERATURE_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002a6e00001000800000805f9b34fb);
-const BRIGHTNESS_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002b0100001000800000805f9b34fb);
-const ACCEL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000210100001000800000805f9b34fb);
-const BATTERY_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002a1900001000800000805f9b34fb);
-const BUTTON_A_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002aeb00001000800000805f9b34fb);
-const BUTTON_B_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002aec00001000800000805f9b34fb);
+const SENSORS_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002a6e00001000800000805f9b34fb);
 
 const INTERVAL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00001b2500001000800000805f9b34fb);
 
@@ -166,139 +161,56 @@ impl BurrBoard {
 
     pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
         let data = self
-            .read_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
+            .read_char(BOARD_SERVICE_UUID, SENSORS_CHAR_UUID)
             .await?;
+        Ok(Self::data_to_json(&data))
+    }
+
+    fn data_to_json(data: &[u8]) -> serde_json::Value {
+        assert_eq!(data.len(), 26);
+
         let temp: f32 = (i16::from_le_bytes([data[0], data[1]]) as f32) / 100.0;
+        let brightness: u16 = u16::from_le_bytes([data[2], data[3]]);
 
-        let data = self
-            .read_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
-            .await?;
-        let brightness: u16 = u16::from_le_bytes([data[0], data[1]]);
+        let battery: u8 = data[4];
 
-        let data = self.read_char(BOARD_SERVICE_UUID, ACCEL_CHAR_UUID).await?;
+        let button_a = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
+        let button_b = u32::from_le_bytes([data[9], data[10], data[11], data[12]]);
+
         let accel: (f32, f32, f32) = (
-            f32::from_le_bytes([data[0], data[1], data[2], data[3]]),
-            f32::from_le_bytes([data[4], data[5], data[6], data[7]]),
-            f32::from_le_bytes([data[8], data[9], data[10], data[11]]),
+            f32::from_le_bytes([data[13], data[14], data[15], data[16]]),
+            f32::from_le_bytes([data[17], data[18], data[19], data[20]]),
+            f32::from_le_bytes([data[21], data[22], data[23], data[24]]),
         );
 
-        let battery = self
-            .read_char(BOARD_SERVICE_UUID, BATTERY_CHAR_UUID)
-            .await?[0];
+        let leds = data[25];
 
-        let data = self
-            .read_char(BOARD_SERVICE_UUID, BUTTON_A_CHAR_UUID)
-            .await?;
-        let button_a = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        let red_led = (leds & 0x1) != 0;
+        let green_led = ((leds >> 1) & 0x1) != 0;
+        let blue_led = ((leds >> 2) & 0x1) != 0;
+        let yellow_led = ((leds >> 3) & 0x1) != 0;
 
-        let data = self
-            .read_char(BOARD_SERVICE_UUID, BUTTON_B_CHAR_UUID)
-            .await?;
-        let button_b = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
-
-        let red_led = self
-            .read_char(BOARD_SERVICE_UUID, RED_LED_CHAR_UUID)
-            .await?;
-        let green_led = self
-            .read_char(BOARD_SERVICE_UUID, GREEN_LED_CHAR_UUID)
-            .await?;
-        let blue_led = self
-            .read_char(BOARD_SERVICE_UUID, BLUE_LED_CHAR_UUID)
-            .await?;
-        let yellow_led = self
-            .read_char(BOARD_SERVICE_UUID, YELLOW_LED_CHAR_UUID)
-            .await?;
-
-        Ok(
-            json!({"temperature": {"value": temp}, "light": { "value": brightness },
-                   "led_1": { "state": red_led[0] != 0 },
-                   "led_2": { "state": green_led[0] != 0 },
-                   "led_3": { "state": blue_led[0] != 0 },
-                   "led_4": { "state": yellow_led[0] != 0 },
-                   "accelerometer": {
-                "x": accel.0,
-                "y": accel.1,
-                "z": accel.2,
-            }, "device": { "battery": (battery as f32) / 100.0 }, "button_a": { "presses": button_a } , "button_b": { "presses": button_b} }),
-        )
+        json!({"temperature": {"value": temp}, "light": { "value": brightness },
+                "led_1": { "state": red_led },
+                "led_2": { "state": green_led },
+                "led_3": { "state": blue_led },
+                "led_4": { "state": yellow_led },
+                "accelerometer": {
+            "x": accel.0,
+            "y": accel.1,
+            "z": accel.2,
+                }, "device": { "battery": (battery as f32) / 100.0 }, "button_a": { "presses": button_a } , "button_b": { "presses": button_b} })
     }
 
     pub async fn stream_sensors(
         &self,
     ) -> Result<Pin<Box<impl Stream<Item = serde_json::Value>>>, anyhow::Error> {
-        let t = self
-            .stream_char(BOARD_SERVICE_UUID, TEMPERATURE_CHAR_UUID)
+        let sensors = self
+            .stream_char(BOARD_SERVICE_UUID, SENSORS_CHAR_UUID)
             .await?
-            .map(|v| json!({"temperature": {"value": (i16::from_le_bytes([v[0], v[1]]) as f32 / 100.0)}}));
+            .map(|data| Self::data_to_json(&data));
 
-        let b = self
-            .stream_char(BOARD_SERVICE_UUID, BRIGHTNESS_CHAR_UUID)
-            .await?
-            .map(|v| json!({"light": {"value": u16::from_le_bytes([v[0], v[1]])}}));
-
-        let accel = self
-            .stream_char(BOARD_SERVICE_UUID, ACCEL_CHAR_UUID)
-            .await?
-            .map(|v| {
-                json!({"accelerometer": {
-                    "x": f32::from_le_bytes([v[0], v[1], v[2], v[3]]),
-                    "y": f32::from_le_bytes([v[4], v[5], v[6], v[7]]),
-                    "z": f32::from_le_bytes([v[8], v[9], v[10], v[11]])
-                }})
-            });
-
-        let batt = self
-            .stream_char(BOARD_SERVICE_UUID, BATTERY_CHAR_UUID)
-            .await?
-            .map(|v| json!({"device": {"battery": v[0] as f32 / 100.0}}));
-
-        let b_a = self
-            .stream_char(BOARD_SERVICE_UUID, BUTTON_A_CHAR_UUID)
-            .await?
-            .map(
-                |v| json!({"button_a": {"presses": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}}),
-            );
-
-        let b_b = self
-            .stream_char(BOARD_SERVICE_UUID, BUTTON_B_CHAR_UUID)
-            .await?
-            .map(
-                |v| json!({"button_b": {"presses": u32::from_le_bytes([v[0], v[1], v[2], v[3]])}}),
-            );
-
-        let red_led = self
-            .stream_char(BOARD_SERVICE_UUID, RED_LED_CHAR_UUID)
-            .await?
-            .map(|v| json!({"led_1": {"state": v[0] != 0 }}));
-
-        let green_led = self
-            .stream_char(BOARD_SERVICE_UUID, GREEN_LED_CHAR_UUID)
-            .await?
-            .map(|v| json!({"led_2": {"state": v[0] != 0 }}));
-
-        let blue_led = self
-            .stream_char(BOARD_SERVICE_UUID, BLUE_LED_CHAR_UUID)
-            .await?
-            .map(|v| json!({"led_3": {"state": v[0] != 0 }}));
-
-        let yellow_led = self
-            .stream_char(BOARD_SERVICE_UUID, YELLOW_LED_CHAR_UUID)
-            .await?
-            .map(|v| json!({"led_4": {"state": v[0] != 0 }}));
-
-        let j = stream_select!(
-            Box::pin(t),
-            Box::pin(b),
-            Box::pin(accel),
-            Box::pin(batt),
-            Box::pin(b_a),
-            Box::pin(b_b),
-            Box::pin(red_led),
-            Box::pin(green_led),
-            Box::pin(blue_led),
-            Box::pin(yellow_led),
-        );
-        Ok(Box::pin(j))
+        Ok(Box::pin(sensors))
     }
 
     async fn read_char(&self, service: uuid::Uuid, c: uuid::Uuid) -> bluer::Result<Vec<u8>> {
