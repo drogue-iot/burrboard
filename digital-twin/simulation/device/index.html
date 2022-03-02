@@ -168,7 +168,7 @@
         }
     }
 
-    let device = new Device( (leds) =>{
+    let device = new Device((leds) => {
       console.log("LEDS - ", leds);
         for (const led in leds) {
             setLed(led, leds[led]);

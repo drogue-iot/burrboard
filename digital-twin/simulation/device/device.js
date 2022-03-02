@@ -23,6 +23,7 @@ function randomClientId() {
 class Device {
 
     constructor(onLedChange) {
+        this.sendTimer = null;
         this.lastSend = new Date();
         this.paused = false;
         this.counters = {
@@ -33,6 +34,7 @@ class Device {
         this.leds = [false, false, false, false];
         this.temperature = null;
         this.light = null;
+        this.accel = null;
 
         this.setConnectionState("Disconnected");
 
@@ -123,47 +125,75 @@ class Device {
     }
 
     connectionEstablished() {
-        this.sendAllLedsUpdate();
-        if (this.temperature !== null) {
-            this.setTemperature(this.temperature);
-        }
-        if (this.light !== null) {
-            this.setLight(this.light);
-        }
+        this.sendState();
     }
 
     sendAccelUpdate(data) {
+        this.accel = data;
+        this.sendState();
+    }
+
+    // Send the current state
+    sendState() {
+
+        let payload = {
+            features: {
+                temperature: {
+                    value: this.temperature
+                },
+                light: {
+                    value: this.light
+                },
+                button_a: {
+                    presses: this.counters.A,
+                },
+                button_b: {
+                    presses: this.counters.B,
+                },
+                led_1: {
+                    state: this.leds[0],
+                },
+                led_2: {
+                    state: this.leds[1],
+                },
+                led_3: {
+                    state: this.leds[2],
+                },
+                led_4: {
+                    state: this.leds[3],
+                },
+                accelerometer: self.accel,
+            }
+        };
+
         const now = Date.now();
+        if (this.client.isConnected() && !this.paused) {
+            if (now - this.lastSend > SEND_DELAY) {
 
-        if (this.client.isConnected() && !this.paused && ((now - this.lastSend > SEND_DELAY))) {
-            this.lastSend = now;
-            this.updateFeature("accelerometer", data);
+                // if we have a send timer pending
+                if (this.sendTimer) {
+                    // clear timeout, reset
+                    window.clearTimeout(this.sendTimer);
+                    this.sendTimer = null;
+                }
+
+                this.sendTimer = null;
+                this.lastSend = now;
+                const json = JSON.stringify(payload);
+                console.log("Sending state: ", payload, " JSON: ", json);
+                this.client.send("state", json, 0, false);
+
+            } else {
+                // too soon ...
+                if (!this.sendTimer) {
+                    // ... schedule sending, as we currently have no send pending
+                    this.sendTimer = window.setTimeout(() => {
+                        this.sendState();
+                    });
+                }
+            }
         }
-    }
 
-    sendLedUpdate(led) {
-        this.updateFeature("led_" + led, this.leds[led-1]);
-    }
-
-    sendAllLedsUpdate() {
-        this.updateFeature("led_1", {state: this.leds[0]});
-        this.updateFeature("led_2", {state: this.leds[1]});
-        this.updateFeature("led_3", {state: this.leds[2]});
-        this.updateFeature("led_4", {state: this.leds[3]});
-    }
-
-    updateFeature(feature, properties) {
-        if (!this.client.isConnected()) {
-            return;
-        }
-
-        let features = {};
-        features[feature] = properties;
-        let payload = {features};
-
-        console.log("Feature: ", feature, " properties: ", properties, " payload: ", payload);
-
-        this.client.send("state", JSON.stringify(payload), 0, false);
     }
 
     pause() {
@@ -172,11 +202,12 @@ class Device {
 
     resume() {
         this.paused = false;
+        this.sendState();
     }
 
     press(button) {
-        let presses = (this.counters[button] += 1);
-        this.updateFeature("button_" + button.toLowerCase(), {presses});
+        this.counters[button] += 1;
+        this.sendState();
     }
 
     commandInbox(msg) {
@@ -199,24 +230,24 @@ class Device {
         if (typeof command === "string" && command.startsWith("led_")) {
 
             let led = parseInt(command.substring(4 /* leds_ */), 10);
-            if (!isNaN(led) && led > 0 && led <= this.leds.size ) {
-                this.leds[led-1] = payload["state"] === true;
+            if (!isNaN(led) && led > 0 && led <= this.leds.size) {
+                this.leds[led - 1] = payload["state"] === true;
             }
 
             console.log("New LED state: ", this.leds);
             this.onLedChange(this.leds);
-            this.sendLedUpdate(led);
+            this.sendState();
         }
     }
 
     setTemperature(value) {
         this.temperature = value;
-        this.updateFeature("temperature", {"value": value});
+        this.sendState();
     }
 
     setLight(value) {
         this.light = value;
-        this.updateFeature("light", {"value": value});
+        this.sendState();
     }
 
 }
