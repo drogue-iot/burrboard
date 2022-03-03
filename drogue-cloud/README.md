@@ -9,6 +9,20 @@ Setup without digital twin.
 drg create application burrboard
 ```
 
+Configure it like this:
+
+```yaml
+spec:
+  publish:
+    rules:
+      - when:
+          isChannel: state
+        then:
+          enrich:
+            method: POST
+            url: https://ai-sensor-ai-sensor.apps.summit-demo-dev.28ts.p1.openshiftapps.com/predictions
+```
+
 ## Creating devices (for the simulator)
 
 Requires drg >= 0.8.1 (alpha1)
@@ -23,6 +37,9 @@ Create a list of devices:
 ```shell
 for i in $(seq -w 1 10); do
   drg create device -a burrboard device$i
+done
+
+for i in $(seq -w 1 10); do
   drg set password -a burrboard foobar$i device$i
 done
 ```
