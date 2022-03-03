@@ -5,6 +5,8 @@ nRF feather express, and the nRF52840 DK.
 
 ## Prerequisites
 
+Make sure you have the latest versions of these:
+
 * `probe-run`
 * `probe-rs-cli`
 * `cargo-flash`
@@ -29,7 +31,7 @@ cargo flash --manifest-path ../bootloader/Cargo.toml --release --chip nRF52840_x
 To run with debugger
 
 ```
-DEFMT_LOG=info cargo run --release --features defmt,rev3
+DEFMT_LOG=info cargo run --release --features defmt,rev3.5
 ```
 
 By default, the application will boot into Mesh mode. You can enable GATT mode by hitting the
