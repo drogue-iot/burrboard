@@ -6,8 +6,8 @@
 
   (title_block
     (title "Drogue IoT BurrBoard")
-    (date "2022-01-26")
-    (rev "v3.0")
+    (date "2022-03-04")
+    (rev "v3.5")
     (company "Red Hat")
     (comment 2 "https://apache.org/licenses/LICENSE-2.0")
     (comment 3 "License: Apache 2.0")
@@ -1765,7 +1765,6 @@
       )
     )
   )
-
 
   (junction (at 64.008 102.616) (diameter 0) (color 0 0 0 0)
     (uuid 0a2588dd-ff9e-4076-aca8-67f53d693bb4)

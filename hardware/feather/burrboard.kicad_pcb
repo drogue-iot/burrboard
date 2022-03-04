@@ -7,8 +7,8 @@
   (paper "A4")
   (title_block
     (title "Drogue IoT BurrBoard")
-    (date "2022-01-26")
-    (rev "v3.0")
+    (date "2022-03-04")
+    (rev "v3.5")
     (company "Red Hat")
     (comment 2 "https://apache.org/licenses/LICENSE-2.0")
     (comment 3 "License: Apache 2.0")
