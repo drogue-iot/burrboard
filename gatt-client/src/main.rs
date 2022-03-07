@@ -4,7 +4,6 @@ use bluer::{AdapterEvent, Address};
 use clap::{Parser, Subcommand};
 use core::str::FromStr;
 use futures::{pin_mut, StreamExt};
-use log;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;

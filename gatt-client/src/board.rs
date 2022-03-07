@@ -7,7 +7,7 @@ use futures::{Stream, StreamExt};
 use serde_json::json;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::Path;
 use std::str::FromStr;
 
 pub struct BurrBoard {
@@ -119,7 +119,7 @@ impl BurrBoard {
         let mut offset: u32 = 0;
 
         for chunk in firmware.chunks(64) {
-            buf[0..chunk.len()].copy_from_slice(&chunk);
+            buf[0..chunk.len()].copy_from_slice(chunk);
             if chunk.len() < buf.len() {
                 buf[chunk.len()..].fill(0);
             }
@@ -148,7 +148,7 @@ impl BurrBoard {
         Ok(())
     }
 
-    pub async fn update_firmware_from_file(&self, firmware: &PathBuf) -> Result<(), anyhow::Error> {
+    pub async fn update_firmware_from_file(&self, firmware: &Path) -> Result<(), anyhow::Error> {
         println!("Updating firmware from file {:?}", firmware);
         let mut f = File::open(firmware)?;
 
@@ -254,7 +254,7 @@ impl BurrBoard {
                 return Ok(Some(c));
             }
         }
-        return Ok(None);
+        Ok(None)
     }
 
     async fn find_service(&self, service: uuid::Uuid) -> bluer::Result<Option<Service>> {
@@ -264,6 +264,6 @@ impl BurrBoard {
                 return Ok(Some(s));
             }
         }
-        return Ok(None);
+        Ok(None)
     }
 }

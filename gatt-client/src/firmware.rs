@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -41,7 +41,7 @@ impl From<serde_json::Error> for FirmwareError {
 impl serde::ser::StdError for FirmwareError {}
 
 impl FirmwareMetadata {
-    pub fn from_file(path: &PathBuf) -> Result<Self, FirmwareError> {
+    pub fn from_file(path: &Path) -> Result<Self, FirmwareError> {
         let data = std::fs::read_to_string(path)?;
         let metadata = serde_json::from_str(&data)?;
         Ok(metadata)
