@@ -43,7 +43,7 @@ pub enum Mode {
         endpoint_password: String,
 
         #[clap(long)]
-        firmware_url: String,
+        firmware_url: Option<String>,
     },
     Client {
         #[clap(short, long)]
@@ -202,7 +202,7 @@ async fn main() -> anyhow::Result<()> {
                         endpoint_password,
                         firmware_url,
                     } => {
-                        let mut firmware_client = FirmwareClient::new(firmware_url);
+                        let firmware_client = firmware_url.as_deref().map(FirmwareClient::new);
 
                         // We need to finish an earlier deployment
                         if let Some(deployment) = deployment.take() {
@@ -259,26 +259,28 @@ async fn main() -> anyhow::Result<()> {
                         });
 
                         // Wait for deployment
-                        let d = firmware_client.wait_update(&version).await?;
-                        let metadata = &d.metadata;
-                        println!(
-                            "Updating firmware from version {} to {}",
-                            version, &metadata.version
-                        );
+                        if let Some(firmware_client) = firmware_client {
+                            let d = firmware_client.wait_update(&version).await?;
+                            let metadata = &d.metadata;
+                            println!(
+                                "Updating firmware from version {} to {}",
+                                version, &metadata.version
+                            );
 
-                        match &metadata.data {
-                            FirmwareData::Http(url) => {
-                                // Download file
-                                let data = firmware_client.fetch_firmware(url).await?;
-                                println!("Received firmware of {} bytes", data.len());
-                                board.update_firmware(&data[..]).await?;
-                                stream_task.abort();
-                                deployment.replace(d);
-                                adapter.remove_device(board.address()).await?;
-                                println!("Firmware is updated. Waiting for device to come back online...");
-                            }
-                            FirmwareData::File(path) => {
-                                panic!("unexpected metadata");
+                            match &metadata.data {
+                                FirmwareData::Http(url) => {
+                                    // Download file
+                                    let data = firmware_client.fetch_firmware(url).await?;
+                                    println!("Received firmware of {} bytes", data.len());
+                                    board.update_firmware(&data[..]).await?;
+                                    stream_task.abort();
+                                    deployment.replace(d);
+                                    adapter.remove_device(board.address()).await?;
+                                    println!("Firmware is updated. Waiting for device to come back online...");
+                                }
+                                FirmwareData::File(path) => {
+                                    panic!("unexpected metadata");
+                                }
                             }
                         }
                     }
