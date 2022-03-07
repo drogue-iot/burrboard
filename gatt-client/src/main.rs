@@ -26,8 +26,8 @@ struct Args {
     #[clap(short, long)]
     device: String,
 
-    #[clap(short, long)]
-    verbosity: Option<usize>,
+    #[clap(short, long, parse(from_occurrences))]
+    verbose: usize,
 }
 
 #[derive(Debug, Subcommand, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -82,10 +82,7 @@ fn merge(a: &mut serde_json::Value, b: &serde_json::Value) {
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    stderrlog::new()
-        .verbosity(args.verbosity.unwrap_or(0))
-        .init()
-        .unwrap();
+    stderrlog::new().verbosity(args.verbose).init().unwrap();
 
     let session = bluer::Session::new().await?;
     let adapter = session.default_adapter().await?;
@@ -227,6 +224,7 @@ async fn main() -> anyhow::Result<()> {
                         let endpoint_password = endpoint_password.to_string();
                         let b = board.clone();
                         let stream_task = tokio::task::spawn(async move {
+                            log::info!("Running data stream for '{a}'");
                             let mut s = Box::pin(b.stream_sensors().await.unwrap());
                             let client = reqwest::Client::new();
                             let mut view = json!({});
@@ -248,9 +246,16 @@ async fn main() -> anyhow::Result<()> {
                                             .send()
                                             .await
                                         {
+                                            Ok(resp) if !resp.status().is_success() => {
+                                                println!(
+                                                    "Error response {}: {}",
+                                                    resp.status(),
+                                                    resp.text().await.unwrap_or_default()
+                                                );
+                                            }
                                             Ok(_) => {}
                                             Err(e) => {
-                                                println!("Error response: {:?}", e);
+                                                println!("Request error: {:?}", e);
                                             }
                                         }
                                     }
