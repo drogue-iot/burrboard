@@ -209,6 +209,8 @@ dependencies = [
  "nrf-usbd",
  "panic-probe",
  "panic-reset",
+ "postcard",
+ "serde 1.0.136",
  "usb-device",
  "usbd-serial",
 ]
