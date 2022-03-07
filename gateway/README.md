@@ -1,4 +1,4 @@
-# Drogue BLE Mesha Gateway
+# Drogue BLE Mesh Gateway
 
 ## Getting started
 
