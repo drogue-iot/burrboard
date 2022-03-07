@@ -6,7 +6,7 @@ use crate::counter::*;
 use crate::led::*;
 use cfg_if::cfg_if;
 use drogue_device::{
-    actors::button::{Button, ButtonPressed},
+    actors::button::{Button, ButtonEventDispatcher},
     actors::dfu::*,
     actors::flash::*,
     actors::led::Led,
@@ -36,10 +36,10 @@ pub struct BurrBoard {
     yellow: ActorContext<YellowLed>,
 
     counter_a: ActorContext<Counter>,
-    button_a: ActorContext<Button<ButtonA, ButtonPressed<Counter>>>,
+    button_a: ActorContext<Button<ButtonA, ButtonEventDispatcher<Counter>>>,
 
     counter_b: ActorContext<Counter>,
-    button_b: ActorContext<Button<ButtonB, ButtonPressed<Counter>>>,
+    button_b: ActorContext<Button<ButtonB, ButtonEventDispatcher<Counter>>>,
 
     flash: ActorContext<SharedFlash<Flash>>,
     dfu: ActorContext<FirmwareManager<SharedFlashHandle<Flash>>>,
@@ -103,8 +103,8 @@ impl BurrBoard {
                 let blue_led_pin = p.P0_28.degrade();
                 let yellow_led_pin = p.P0_02.degrade();
 
-                let button_a_pin = p.P0_26.degrade();
-                let button_b_pin = p.P0_27.degrade();
+                let button_a_pin = p.P0_27.degrade();
+                let button_b_pin = p.P0_26.degrade();
 
                 let temp_pin = p.P0_05;
                 let light_pin = p.P0_03;
@@ -203,20 +203,14 @@ impl BurrBoard {
         let counter_a = self.counter_a.mount(s, Counter::new());
         self.button_a.mount(
             s,
-            Button::new(
-                Input::new(button_a_pin, Pull::None),
-                ButtonPressed(counter_a, CounterMessage::Increment),
-            ),
+            Button::new(Input::new(button_a_pin, Pull::None), counter_a.into()),
         );
 
         // Actor for button B and press counter
         let counter_b = self.counter_b.mount(s, Counter::new());
         self.button_b.mount(
             s,
-            Button::new(
-                Input::new(button_b_pin, Pull::None),
-                ButtonPressed(counter_b, CounterMessage::Increment),
-            ),
+            Button::new(Input::new(button_b_pin, Pull::None), counter_b.into()),
         );
 
         // Actor for shared access to flash

@@ -277,14 +277,14 @@ impl Actor for BoardSensorPublisher {
                     Either::Right((_, _)) => {
                         let accel = self.board.accel.request(AccelRead).unwrap().await.unwrap();
                         let analog = self.board.analog.request(AnalogRead).unwrap().await;
-                        let button_a = self
+                        let (button_a, counter_a) = self
                             .board
                             .counter_a
                             .request(CounterMessage::Read)
                             .unwrap()
                             .await
                             .unwrap();
-                        let button_b = self
+                        let (button_b, counter_b) = self
                             .board
                             .counter_b
                             .request(CounterMessage::Read)
@@ -304,6 +304,8 @@ impl Actor for BoardSensorPublisher {
                             battery: analog.battery,
                             button_a,
                             button_b,
+                            counter_a,
+                            counter_b,
                             red_led,
                             green_led,
                             blue_led,
@@ -339,10 +341,12 @@ mod prop {
     pub const YELLOW_LED: PropertyId = PropertyId(4);
     pub const BUTTON_A: PropertyId = PropertyId(5);
     pub const BUTTON_B: PropertyId = PropertyId(6);
-    pub const TEMPERATURE: PropertyId = PropertyId(7);
-    pub const BRIGHTNESS: PropertyId = PropertyId(8);
-    pub const ACCEL: PropertyId = PropertyId(9);
-    pub const BATTERY: PropertyId = PropertyId(10);
+    pub const COUNTER_A: PropertyId = PropertyId(7);
+    pub const COUNTER_B: PropertyId = PropertyId(8);
+    pub const TEMPERATURE: PropertyId = PropertyId(9);
+    pub const BRIGHTNESS: PropertyId = PropertyId(10);
+    pub const ACCEL: PropertyId = PropertyId(11);
+    pub const BATTERY: PropertyId = PropertyId(12);
 }
 
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -356,8 +360,10 @@ impl SensorConfig for BurrBoardSensors {
         SensorDescriptor::new(prop::GREEN_LED, 1),
         SensorDescriptor::new(prop::BLUE_LED, 1),
         SensorDescriptor::new(prop::YELLOW_LED, 1),
-        SensorDescriptor::new(prop::BUTTON_A, 4),
-        SensorDescriptor::new(prop::BUTTON_B, 4),
+        SensorDescriptor::new(prop::BUTTON_A, 1),
+        SensorDescriptor::new(prop::BUTTON_B, 1),
+        SensorDescriptor::new(prop::COUNTER_A, 4),
+        SensorDescriptor::new(prop::COUNTER_B, 4),
         SensorDescriptor::new(prop::TEMPERATURE, 2),
         SensorDescriptor::new(prop::BRIGHTNESS, 2),
         SensorDescriptor::new(prop::ACCEL, 12),
@@ -372,8 +378,10 @@ pub struct SensorState {
     pub green_led: bool,
     pub blue_led: bool,
     pub yellow_led: bool,
-    pub button_a: u32,
-    pub button_b: u32,
+    pub button_a: bool,
+    pub button_b: bool,
+    pub counter_a: u32,
+    pub counter_b: u32,
     pub temperature: i16,
     pub brightness: u16,
     pub accel: (f32, f32, f32),
@@ -408,11 +416,19 @@ impl SensorData for SensorState {
                     .map_err(|_| InsufficientBuffer)?;
             }
             prop::BUTTON_A => {
-                xmit.extend_from_slice(&self.button_a.to_le_bytes())
+                xmit.push(if self.button_a { 1 } else { 0 })
                     .map_err(|_| InsufficientBuffer)?;
             }
             prop::BUTTON_B => {
-                xmit.extend_from_slice(&self.button_b.to_le_bytes())
+                xmit.push(if self.button_a { 1 } else { 0 })
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::COUNTER_A => {
+                xmit.extend_from_slice(&self.counter_a.to_le_bytes())
+                    .map_err(|_| InsufficientBuffer)?;
+            }
+            prop::COUNTER_B => {
+                xmit.extend_from_slice(&self.counter_b.to_le_bytes())
                     .map_err(|_| InsufficientBuffer)?;
             }
             prop::TEMPERATURE => xmit
