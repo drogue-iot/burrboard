@@ -43,6 +43,7 @@ rev3 = []
 "rev3.5" = ["adxl"]
 lsm = []
 adxl = []
+gatt_first = []
 defmt = [
       "dep:defmt",
       "nrf-softdevice-defmt-rtt",

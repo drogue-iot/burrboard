@@ -57,7 +57,7 @@ impl App {
 
         let p = unsafe { embassy_nrf::pac::Peripherals::steal() };
         let val = p.POWER.gpregret.read().bits();
-        let mode = if val & 0x1 == 1 {
+        let mode = if val & 0x1 == if cfg!(feature = "gatt_first") { 0 } else { 1 } {
             info!("Running in GATT mode");
             let app = GattApp::enable(sd);
             Mode::Gatt(app)
