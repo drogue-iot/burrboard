@@ -54,9 +54,11 @@ a|
 ----
 {
   "presses": 212 <1>
+  "state": false <2>
 }
 ----
 <1> Counter for pressed of button "A"
+<2> Current state of button "A" (true means currently pressed, false means currently not pressed)
 | The number of presses for the button.
 
 | `led_1`, `led_2`, `led_3`, `led_4`

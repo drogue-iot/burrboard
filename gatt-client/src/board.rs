@@ -167,23 +167,26 @@ impl BurrBoard {
     }
 
     fn data_to_json(data: &[u8]) -> serde_json::Value {
-        assert_eq!(data.len(), 26);
+        assert_eq!(data.len(), 27);
 
         let temp: f32 = (i16::from_le_bytes([data[0], data[1]]) as f32) / 100.0;
         let brightness: u16 = u16::from_le_bytes([data[2], data[3]]);
 
         let battery: u8 = data[4];
 
-        let button_a = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
-        let button_b = u32::from_le_bytes([data[9], data[10], data[11], data[12]]);
+        let counter_a = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
+        let counter_b = u32::from_le_bytes([data[9], data[10], data[11], data[12]]);
+        let buttons = data[13];
+        let button_a = (buttons & 0x1) != 0;
+        let button_b = ((buttons >> 1) & 0x1) != 0;
 
         let accel: (f32, f32, f32) = (
-            f32::from_le_bytes([data[13], data[14], data[15], data[16]]),
-            f32::from_le_bytes([data[17], data[18], data[19], data[20]]),
-            f32::from_le_bytes([data[21], data[22], data[23], data[24]]),
+            f32::from_le_bytes([data[14], data[15], data[16], data[17]]),
+            f32::from_le_bytes([data[18], data[19], data[20], data[21]]),
+            f32::from_le_bytes([data[22], data[23], data[24], data[25]]),
         );
 
-        let leds = data[25];
+        let leds = data[26];
 
         let red_led = (leds & 0x1) != 0;
         let green_led = ((leds >> 1) & 0x1) != 0;
@@ -199,7 +202,7 @@ impl BurrBoard {
             "x": accel.0,
             "y": accel.1,
             "z": accel.2,
-                }, "device": { "battery": (battery as f32) / 100.0 }, "button_a": { "presses": button_a } , "button_b": { "presses": button_b} })
+                }, "device": { "battery": (battery as f32) / 100.0 }, "button_a": { "presses": counter_a, "state": button_a  } , "button_b": { "presses": counter_b, "state": button_b} })
     }
 
     pub async fn stream_sensors(
