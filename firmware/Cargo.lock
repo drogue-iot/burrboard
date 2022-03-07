@@ -509,7 +509,7 @@ dependencies = [
 [[package]]
 name = "drogue-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/drogue-device.git?rev=0a4f5ec7fc4d7deb713493ec0580311174319cf1#0a4f5ec7fc4d7deb713493ec0580311174319cf1"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=14cb3e8ef4730cab24723db7ae208f0f870d4bfe#14cb3e8ef4730cab24723db7ae208f0f870d4bfe"
 dependencies = [
  "aes",
  "atomic-polyfill",
@@ -543,7 +543,7 @@ dependencies = [
 [[package]]
 name = "drogue-device-macros"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/drogue-device.git?rev=0a4f5ec7fc4d7deb713493ec0580311174319cf1#0a4f5ec7fc4d7deb713493ec0580311174319cf1"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=14cb3e8ef4730cab24723db7ae208f0f870d4bfe#14cb3e8ef4730cab24723db7ae208f0f870d4bfe"
 dependencies = [
  "cfg-if",
  "config",

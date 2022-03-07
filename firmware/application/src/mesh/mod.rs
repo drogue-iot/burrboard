@@ -16,7 +16,7 @@ use drogue_device::drivers::ble::mesh::model::sensor::{
     PropertyId, RawValue, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
     SensorServer as SensorServerModel, SensorStatus, SENSOR_SERVER,
 };
-use drogue_device::drivers::ble::mesh::model::Model;
+use drogue_device::drivers::ble::mesh::model::{Model, ModelIdentifier};
 use drogue_device::drivers::ble::mesh::pdu::{access::AccessMessage, ParseError};
 use drogue_device::drivers::ble::mesh::provisioning::{
     Algorithms, Capabilities, InputOOBActions, OOBSize, OutputOOBActions, PublicKeyType,
@@ -58,9 +58,6 @@ type SensorServer = SensorServerModel<BurrBoardSensors, 10, 1>;
 
 #[allow(unused)]
 pub struct BurrBoardElementsHandler {
-    onoff: GenericOnOffServer,
-    battery: GenericBatteryServer,
-    sensor: SensorServer,
     composition: Composition,
     leds: Leds,
     publisher: Address<BoardSensorPublisher>,
@@ -95,9 +92,6 @@ impl BurrBoardElementsHandler {
         Self {
             leds,
             composition,
-            battery: GenericBatteryServer,
-            onoff: GenericOnOffServer,
-            sensor: SensorServer::new(),
             publisher,
         }
     }
@@ -119,36 +113,51 @@ impl ElementsHandler for BurrBoardElementsHandler {
         Self: 'm,
     = impl Future<Output = Result<(), DeviceError>> + 'm;
 
-    fn dispatch(&self, element: u8, message: AccessMessage) -> Self::DispatchFuture<'_> {
+    fn dispatch<'m>(
+        &'m self,
+        element: u8,
+        _: &'m ModelIdentifier,
+        message: &'m AccessMessage,
+    ) -> Self::DispatchFuture<'_> {
         async move {
             if element == 0x0001 {
                 info!("Element 1");
-                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) =
+                    GenericOnOffServer::parse(message.opcode(), message.parameters())
+                {
                     info!("LED 1 message: {:?}", m);
                 }
             } else if element == 0x0002 {
                 info!("Element 2");
-                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) =
+                    GenericOnOffServer::parse(message.opcode(), message.parameters())
+                {
                     info!("LED 2 message: {:?}", m);
                 }
             } else if element == 0x0003 {
                 info!("Element 3");
-                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) =
+                    GenericOnOffServer::parse(message.opcode(), message.parameters())
+                {
                     info!("LED 3 message: {:?}", m);
                 }
             } else if element == 0x0004 {
                 info!("Element 4");
-                if let Ok(Some(m)) = self.onoff.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) =
+                    GenericOnOffServer::parse(message.opcode(), message.parameters())
+                {
                     info!("LED 4 message: {:?}", m);
                 }
             } else if element == 0x0005 {
                 info!("Element 5");
-                if let Ok(Some(m)) = self.battery.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) =
+                    GenericBatteryServer::parse(message.opcode(), message.parameters())
+                {
                     info!("Battery message: {:?}", m);
                 }
             } else if element == 0x0006 {
                 info!("Element 6");
-                if let Ok(Some(m)) = self.sensor.parse(message.opcode(), message.parameters()) {
+                if let Ok(Some(m)) = SensorServer::parse(message.opcode(), message.parameters()) {
                     info!("Sensor message: {:?}", m);
                 }
             }
