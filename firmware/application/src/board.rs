@@ -96,13 +96,6 @@ impl BurrBoard {
     }
 
     pub fn mount(&'static self, s: Spawner, app: &'static App, p: Peripherals) -> BoardPeripherals {
-        let accel = self.accel.mount(
-            s,
-            Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11)
-                .ok()
-                .unwrap(),
-        );
-
         cfg_if! {
             if #[cfg(feature = "rev2")] {
                 let red_led_pin = p.P0_06.degrade();
@@ -149,6 +142,9 @@ impl BurrBoard {
                     OutputDrive::Standard,
                 ));
 
+                // Needed to ensure accelerometer can be initialized
+                embassy::time::block_for(embassy::time::Duration::from_millis(500));
+
                 let red_led_pin = p.P0_30.degrade();
                 let green_led_pin = p.P0_28.degrade();
                 let blue_led_pin = p.P0_02.degrade();
@@ -162,6 +158,13 @@ impl BurrBoard {
                 let batt_pin = p.P0_04;
             }
         }
+
+        let accel = self.accel.mount(
+            s,
+            Accelerometer::new(p.TWISPI0, p.P0_12, p.P0_11)
+                .ok()
+                .unwrap(),
+        );
 
         // Actor for all analog sensors
         let analog = self.analog.mount(
