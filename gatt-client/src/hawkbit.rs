@@ -1,4 +1,4 @@
-use crate::firmware::FirmwareMetadata;
+use crate::firmware::{Deployment, FirmwareMetadata};
 use bytes::Bytes;
 use serde_json::json;
 use std::time::Duration;
@@ -8,11 +8,6 @@ pub struct HawkbitClient {
     tenant: String,
     controller: String,
     token: String,
-}
-
-pub struct Deployment {
-    pub id: String,
-    pub metadata: FirmwareMetadata,
 }
 
 impl HawkbitClient {

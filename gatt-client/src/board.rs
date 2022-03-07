@@ -2,9 +2,8 @@ use bluer::{
     gatt::remote::{Characteristic, Service},
     Device,
 };
-use bytes::Bytes;
 use core::pin::Pin;
-use futures::{stream, stream_select, Stream, StreamExt};
+use futures::{Stream, StreamExt};
 use serde_json::json;
 use std::fs::File;
 use std::io::Read;

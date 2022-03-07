@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
 use bluer::{AdapterEvent, Address};
-use clap::{ArgEnum, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use core::str::FromStr;
-use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
 use log;
 use serde_json::json;
@@ -13,10 +12,13 @@ use tokio::time::sleep;
 
 mod board;
 mod firmware;
+#[cfg(feature = "hawkbit")]
 mod hawkbit;
+
 use crate::board::{BurrBoard, Led};
 use crate::firmware::*;
-//use crate::hawkbit::*;
+#[cfg(feature = "hawkbit")]
+use crate::hawkbit::*;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -283,7 +285,7 @@ async fn main() -> anyhow::Result<()> {
                                     adapter.remove_device(board.address()).await?;
                                     println!("Firmware is updated. Waiting for device to come back online...");
                                 }
-                                FirmwareData::File(path) => {
+                                FirmwareData::File(_path) => {
                                     panic!("unexpected metadata");
                                 }
                             }
