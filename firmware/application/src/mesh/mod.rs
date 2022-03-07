@@ -201,7 +201,7 @@ impl MeshApp {
 
         let publisher = self.publisher.mount(
             s,
-            BoardSensorPublisher::new(Duration::from_millis(1000 / 10), p.clone()),
+            BoardSensorPublisher::new(Duration::from_millis(1000), p.clone()),
         );
 
         let elements = BurrBoardElementsHandler::new(p.leds.clone(), publisher);
