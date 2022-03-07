@@ -3,10 +3,12 @@ use std::path::PathBuf;
 use bluer::{AdapterEvent, Address};
 use clap::{Parser, Subcommand};
 use core::str::FromStr;
+use futures::lock::Mutex;
 use futures::{pin_mut, StreamExt};
 use serde_json::json;
+use std::process::exit;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 mod board;
@@ -29,6 +31,9 @@ struct Args {
 
     #[clap(short, long, parse(from_occurrences))]
     verbose: usize,
+
+    #[clap(short, long, parse(try_from_str=humantime::parse_duration))]
+    timeout: Option<Duration>,
 }
 
 #[derive(Debug, Subcommand, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -95,6 +100,23 @@ async fn main() -> anyhow::Result<()> {
     let mut firmware_updated = false;
     let mut deployment: Option<Deployment> = None;
 
+    let last_event = Arc::new(Mutex::new(Instant::now()));
+
+    if let Some(timeout) = args.timeout {
+        let last_event = last_event.clone();
+
+        tokio::task::spawn(async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(1)).await;
+
+                if Instant::now() - *last_event.lock().await > timeout {
+                    log::error!("Reached timeout ({timeout:?}) with no events, exiting ...");
+                    exit(1);
+                }
+            }
+        });
+    }
+
     while let Some(evt) = discover.next().await {
         match evt {
             AdapterEvent::DeviceAdded(a) if a == addr => {
@@ -111,7 +133,7 @@ async fn main() -> anyhow::Result<()> {
                                 println!("Connect error: {}", &err);
                                 retries -= 1;
                             }
-                            Err(err) => return Err(err)?,
+                            Err(err) => return Err(err.into()),
                         }
                     }
                     println!("Connected");
@@ -224,6 +246,7 @@ async fn main() -> anyhow::Result<()> {
                         let endpoint_user = endpoint_user.to_string();
                         let endpoint_password = endpoint_password.to_string();
                         let b = board.clone();
+                        let last_event = last_event.clone();
                         let stream_task = tokio::task::spawn(async move {
                             log::info!("Running data stream for '{a}'");
                             let mut s = Box::pin(b.stream_sensors().await.unwrap());
@@ -231,6 +254,8 @@ async fn main() -> anyhow::Result<()> {
                             let mut view = json!({});
                             loop {
                                 if let Some(n) = s.next().await {
+                                    *last_event.lock().await = Instant::now();
+
                                     let previous = view.clone();
                                     merge(&mut view, &n);
                                     if previous != view {
