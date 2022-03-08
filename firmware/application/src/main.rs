@@ -82,7 +82,7 @@ async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
     let mut ap = BOARD.mount(s, app, p);
 
     // Launch the selected application
-    app.mount(s, &ap);
+    //    app.mount(s, &ap);
 
     // Launch watchdog
     static WATCHDOG: ActorContext<Watchdog> = ActorContext::new();

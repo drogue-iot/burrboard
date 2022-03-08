@@ -1,4 +1,6 @@
+use burrboard_dfu::*;
 use core::future::Future;
+use core::str::FromStr;
 use drogue_device::{
     actors::{
         dfu::{DfuCommand, DfuResponse, FirmwareManager},
@@ -17,30 +19,14 @@ use embassy_nrf::{
 use futures::pin_mut;
 use nrf_softdevice::Flash;
 use nrf_usbd::Usbd;
-use postcard::{from_bytes, to_slice};
-use serde::{Deserialize, Serialize};
 use usb_device::bus::UsbBusAllocator;
 use usb_device::device::{UsbDevice, UsbDeviceBuilder, UsbVidPid};
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
-pub enum Command {
-    Start,
-    Write,
-    Finish,
-    Booted,
-}
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
-pub enum Error {
-    Protocol,
-    Actor,
-    Flash,
-}
 
 pub struct SerialUpdater<'a> {
     bus: &'a UsbBusAllocator<Usbd<UsbBus<'a, USBD>>>,
     tx: &'a mut [u8],
     rx: &'a mut [u8],
+    version: &'a str,
     dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
 }
 
@@ -51,7 +37,13 @@ impl<'a> SerialUpdater<'a> {
         rx: &'a mut [u8],
         dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
     ) -> Self {
-        Self { bus, tx, rx, dfu }
+        Self {
+            bus,
+            tx,
+            rx,
+            dfu,
+            version: crate::FIRMWARE_REVISION.unwrap_or(crate::FIRMWARE_VERSION),
+        }
     }
 }
 
@@ -90,84 +82,71 @@ impl<'a> Actor for SerialUpdater<'a> {
             let mut buf: [u8; 128] = [0; 128];
             let (mut reader, mut writer) = usb.as_ref().take_serial_0();
 
+            info!("Starting serial updater");
             loop {
-                let c = reader.read_byte().await.unwrap();
-                let command: Command = from_bytes(&[c]).unwrap();
-                let response = match command {
-                    Command::Start => {
-                        if let Ok(f) = self.dfu.request(DfuCommand::Start) {
-                            if let DfuResponse::Ok = f.await {
-                                Ok(())
+                info!("Awaiting next frame");
+                let response: Option<Frame> = if let Ok(frame) = Frame::decode(&mut reader).await {
+                    info!("Received frame: {:?}", frame);
+                    match frame {
+                        Frame::Data(data) => Some(Frame::Response(
+                            if let Ok(f) = self.dfu.request(DfuCommand::WriteBlock(&data)) {
+                                if let DfuResponse::Ok = f.await {
+                                    Response::Ok
+                                } else {
+                                    Response::Err(Error::Flash)
+                                }
                             } else {
-                                Err(Error::Flash)
-                            }
-                        } else {
-                            Err(Error::Actor)
-                        }
-                    }
-                    Command::Write => {
-                        if let Ok(_) = reader.read_exact(&mut buf[..4]).await {
-                            let mut length: usize =
-                                u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]) as usize;
-
-                            let mut result = Ok(());
-                            while length > 0 {
-                                let to_copy: usize = core::cmp::min(length as usize, 128);
-
-                                if let Ok(_) = reader.read_exact(&mut buf[..to_copy]).await {
-                                    if let Ok(f) =
-                                        self.dfu.request(DfuCommand::WriteBlock(&buf[..to_copy]))
-                                    {
-                                        if let DfuResponse::Ok = f.await {
-                                        } else {
-                                            result = Err(Error::Flash);
-                                            break;
-                                        }
+                                Response::Err(Error::Actor)
+                            },
+                        )),
+                        Frame::Command(command) => Some(Frame::Response(match command {
+                            Command::Start => {
+                                if let Ok(f) = self.dfu.request(DfuCommand::Start) {
+                                    if let DfuResponse::Ok = f.await {
+                                        Response::Ok
                                     } else {
-                                        result = Err(Error::Actor);
-                                        break;
+                                        Response::Err(Error::Flash)
                                     }
                                 } else {
-                                    result = Err(Error::Protocol);
-                                    break;
+                                    Response::Err(Error::Actor)
                                 }
-                                // Write to flash
-                                length -= to_copy;
                             }
-                            result
-                        } else {
-                            Err(Error::Protocol)
-                        }
-                    }
-                    Command::Finish => {
-                        if let Ok(_) = self.dfu.notify(DfuCommand::Finish) {
-                            Ok(())
-                        } else {
-                            Err(Error::Flash)
-                        }
-                    }
-                    Command::Booted => {
-                        if let Ok(_) = self.dfu.notify(DfuCommand::Booted) {
-                            Ok(())
-                        } else {
-                            Err(Error::Flash)
-                        }
-                    }
-                };
-
-                if let Ok(data) = to_slice(&response, &mut buf) {
-                    if let Err(_) = writer.write_all(&data).await {
-                        warn!("Error sending command response");
+                            Command::Finish => {
+                                if let Ok(_) = self.dfu.notify(DfuCommand::Finish) {
+                                    Response::Ok
+                                } else {
+                                    Response::Err(Error::Flash)
+                                }
+                            }
+                            Command::Booted => {
+                                if let Ok(_) = self.dfu.notify(DfuCommand::Booted) {
+                                    Response::Ok
+                                } else {
+                                    Response::Err(Error::Flash)
+                                }
+                            }
+                            Command::Version => {
+                                info!("Command version response: {}", self.version);
+                                loop {}
+                                Response::OkVersion(
+                                    heapless::String::from_str(self.version).unwrap(),
+                                )
+                            }
+                        })),
+                        Frame::Response(_) => None,
                     }
                 } else {
-                    warn!("Error serializing command response");
+                    info!("Error receiving frame");
+                    None
+                };
+
+                if let Some(f) = response {
+                    info!("Sending response {:?}", f);
+                    if let Err(_) = f.encode(&mut writer).await {
+                        warn!("Error sending command response");
+                    }
                 }
             }
         }
     }
 }
-/*
-
-
-    info!("usb initialized!");
-*/

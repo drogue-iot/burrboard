@@ -2,6 +2,7 @@
 members = [
     "application",
     "bootloader",
+    "dfu",
 ]
 resolver = "2"
 
