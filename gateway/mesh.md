@@ -89,5 +89,6 @@ Received composion:
 
 [config: Target = 00aa]# <b>bind 00aa 0 1000</b>
 [config: Target = 00aa]# <b>bind 00ab 0 1001</b>
-[config: Target = 00aa]# <b>bind 00ac 0 1100</b>
+[config: Target = 00aa]# <b>bind 00aa 0 1100</b>
+[config: Target = 00aa]# <b>bind 00ab 0 1102</b>
 </code></pre>
