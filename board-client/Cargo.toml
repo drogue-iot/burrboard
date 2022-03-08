@@ -1,0 +1,22 @@
+[package]
+name = "board-client"
+version = "0.1.0"
+edition = "2021"
+description = "Board client tool to flash firmware using drogue device serial DFU protocol"
+
+
+[dependencies]
+serial = "0.4"
+anyhow = "1.0"
+log = "0.4.11"
+stderrlog = "0.4"
+clap = { version = "3.0", features = ["derive"] }
+burrboard-dfu = { path = "../firmware/dfu", features = ["std"] }
+postcard = { version = "0.7", features = ["alloc"] }
+tokio = { version = "1", features = ["full"] }
+tokio-serial = "5.4.2"
+futures = "0.3"
+embassy = { version = "0.1", features = ["std"] }
+
+[patch.crates-io]
+embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "3d6b8bd9832d5a29cab4aa21434663e6ea6f4488" }
