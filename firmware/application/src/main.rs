@@ -37,7 +37,7 @@ mod counter;
 mod gatt;
 mod led;
 mod mesh;
-//mod usb;
+mod usb;
 mod watchdog;
 
 use app::*;
