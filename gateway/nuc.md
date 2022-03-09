@@ -13,3 +13,14 @@
   $ ./bluez/test/test-mesh
 
 ```
+
+If `mesh-cfgclient` silently fails, `mkdir ~/.config` and retry.
+
+To view the mesh daemon logs: `journalctl -u bluetooth-mesh -f`
+
+To add `--debug` to the `ExecStart` command:
+
+```
+  $ systemctl edit bluetooth-mesh.service
+  $ systemctl restart bluetooth-mesh
+```
