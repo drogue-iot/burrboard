@@ -3,8 +3,8 @@ use crate::app::*;
 use crate::control::*;
 use crate::counter::*;
 use crate::led::*;
-use crate::usb::*;
-use crate::{accel::*, usb::SerialUpdater};
+//use crate::usb::*;
+use crate::accel::*;
 use cfg_if::cfg_if;
 use drogue_device::{
     actors::button::{Button, ButtonEventDispatcher},
@@ -16,12 +16,12 @@ use drogue_device::{
 use embassy::executor::Spawner;
 use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
-use embassy_nrf::peripherals::USBD;
-use embassy_nrf::usb::UsbBus;
 use embassy_nrf::Peripherals;
 use nrf_softdevice::Flash;
-use nrf_usbd::Usbd;
-use usb_device::bus::UsbBusAllocator;
+//use embassy_nrf::peripherals::USBD;
+//use embassy_nrf::usb::UsbBus;
+//use nrf_usbd::Usbd;
+//use usb_device::bus::UsbBusAllocator;
 
 pub type RedLed = Led<Output<'static, AnyPin>>;
 pub type GreenLed = Led<Output<'static, AnyPin>>;
@@ -48,8 +48,7 @@ pub struct BurrBoard {
 
     flash: ActorContext<SharedFlash<Flash>>,
     dfu: ActorContext<FirmwareManager<SharedFlashHandle<Flash>>>,
-    usb: ActorContext<SerialUpdater<'static>>,
-
+    //usb: ActorContext<SerialUpdater<'static>>,
     control: ActorContext<ControlButton>,
 }
 
@@ -96,8 +95,7 @@ impl BurrBoard {
 
             flash: ActorContext::new(),
             dfu: ActorContext::new(),
-            usb: ActorContext::new(),
-
+            //usb: ActorContext::new(),
             control: ActorContext::new(),
         }
     }
@@ -234,6 +232,7 @@ impl BurrBoard {
             ControlButton::new(app, Input::new(p.P1_02.degrade(), Pull::Up)),
         );
 
+        /*
         const USB_SZ: usize = 1024;
         static mut USB_TX: [u8; USB_SZ] = [0; USB_SZ];
         static mut USB_RX: [u8; USB_SZ] = [0; USB_SZ];
@@ -242,6 +241,7 @@ impl BurrBoard {
         self.usb.mount(s, unsafe {
             SerialUpdater::new(bus, &mut USB_TX, &mut USB_RX, dfu)
         });
+        */
 
         BoardPeripherals {
             leds: Leds {
