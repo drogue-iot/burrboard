@@ -99,6 +99,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
+name = "board-client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "burrboard-dfu",
+ "clap",
+ "embassy",
+ "futures",
+ "log",
+ "postcard",
+ "serial",
+ "stderrlog",
+ "tokio",
+ "tokio-serial",
+]
+
+[[package]]
 name = "burrboard-dfu"
 version = "0.1.0"
 dependencies = [
@@ -268,23 +285,6 @@ name = "defmt-parser"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d1ce010e1a51aef925c98f12ed81a4e0e96ce0185a87c33f1b3b9c8f20749c7"
-
-[[package]]
-name = "dfutool"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "burrboard-dfu",
- "clap",
- "embassy",
- "futures",
- "log",
- "postcard",
- "serial",
- "stderrlog",
- "tokio",
- "tokio-serial",
-]
 
 [[package]]
 name = "embassy"

@@ -91,7 +91,7 @@ impl Frame {
         reader.read_exact(&mut v[..l]).map_err(|_| ())?;
 
         println!("Read {} bytes", l);
-        let f: Frame = from_bytes_cobs(&v[..]).map_err(|e| {
+        let f: Frame = from_bytes_cobs(&mut v[..]).map_err(|e| {
             println!("Error: {:?}", e);
             ()
         })?;
