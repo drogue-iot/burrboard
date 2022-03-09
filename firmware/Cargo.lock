@@ -182,11 +182,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "burrboard-dfu"
+version = "0.1.0"
+dependencies = [
+ "defmt",
+ "embassy",
+ "heapless",
+ "postcard",
+ "serde 1.0.136",
+]
+
+[[package]]
 name = "burrboard-firmware"
 version = "0.1.0"
 dependencies = [
  "adxl343",
  "bitflags",
+ "burrboard-dfu",
  "cfg-if",
  "cortex-m 0.7.4",
  "cortex-m-rt",
@@ -509,7 +521,7 @@ dependencies = [
 [[package]]
 name = "drogue-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/drogue-device.git?rev=14cb3e8ef4730cab24723db7ae208f0f870d4bfe#14cb3e8ef4730cab24723db7ae208f0f870d4bfe"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=48a5070704cc09c6ccb916226c40f16f87ce6a9d#48a5070704cc09c6ccb916226c40f16f87ce6a9d"
 dependencies = [
  "aes",
  "atomic-polyfill",
@@ -543,7 +555,7 @@ dependencies = [
 [[package]]
 name = "drogue-device-macros"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/drogue-device.git?rev=14cb3e8ef4730cab24723db7ae208f0f870d4bfe#14cb3e8ef4730cab24723db7ae208f0f870d4bfe"
+source = "git+https://github.com/drogue-iot/drogue-device.git?rev=48a5070704cc09c6ccb916226c40f16f87ce6a9d#48a5070704cc09c6ccb916226c40f16f87ce6a9d"
 dependencies = [
  "cfg-if",
  "config",
@@ -1190,6 +1202,7 @@ version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a25c0b0ae06fcffe600ad392aabfa535696c8973f2253d9ac83171924c58a858"
 dependencies = [
+ "defmt",
  "heapless",
  "postcard-cobs",
  "serde 1.0.136",
