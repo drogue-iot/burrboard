@@ -58,3 +58,10 @@ websocat wss://ws-integration.sandbox.drogue.cloud/ble-demo -H="Authorization: B
 ```
 echo '{"state":"ON"}' | http POST https://api.sandbox.drogue.cloud/api/command/v1alpha1/apps/ble-demo/devices/00aa command==set-state "Authorization:Bearer $(drg whoami -t)"
 ```
+
+## To run gateway on NUC running Fedora
+
+To run the gateway on a NUC installed with F35, [this](nuc.md) should
+get you pretty close. It's handy to have `test-mesh` around -- from
+the bluez source tree -- on which all the python scripts are based...
+
