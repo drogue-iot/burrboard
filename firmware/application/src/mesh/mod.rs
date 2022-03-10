@@ -278,7 +278,7 @@ impl Actor for BoardSensorPublisher {
                             match m.message() {
                                 PublisherMessage::Connect(ctx) => {
                                     info!("connected to mesh {}", ctx.address());
-                                    self.ctx.replace(ctx.clone());
+                                    self.context.replace(ctx.clone());
                                 }
                             }
                         }
@@ -359,6 +359,7 @@ mod prop {
 }
 
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[derive(Clone)]
 pub struct BurrBoardSensors;
 
 impl SensorConfig for BurrBoardSensors {
