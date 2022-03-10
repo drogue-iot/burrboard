@@ -824,25 +824,21 @@ class BurrBoardSensorServer(SensorServer):
 					temp8 = self.get_byte(data, index, length)
 					sensor_data['temp8'] = temp8 * 0.5
 				elif (property == 0x0001):
-					sensor_data['led_1'] = self.get_byte(data, index, length)
-				elif (property == 0x0002):
-					sensor_data['led_2'] = self.get_byte(data, index, length)
-				elif (property == 0x0003):
-					sensor_data['led_3'] = self.get_byte(data, index, length)
-				elif (property == 0x0004):
-					sensor_data['led_4'] = self.get_byte(data, index, length)
-				elif (property == 0x0005):
-					sensor_data['button_1'] = self.get_byte(data, index, length)
-				elif (property == 0x0006):
-					sensor_data['button_2'] = self.get_byte(data, index, length)
+                    data = self.get_byte(data, index, length)
+                    sensor_data['button_1'] = (data & 0x1) != 0
+                    sensor_data['button_2'] = (data & 0x2) != 0
+                    sensor_data['led_1'] = (data & 0x4) != 0
+                    sensor_data['led_2'] = (data & 0x8) != 0
+                    sensor_data['led_3'] = (data & 0xF) != 0
+                    sensor_data['led_4'] = (data & 0x80) != 0
 				elif (property == 0x0007):
-					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x0008):
-					sensor_data['counter_2'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['counter_2'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x0009):
-					sensor_data['temperature'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big', signed=True)
+					sensor_data['temperature'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little', signed=True)
 				elif (property == 0x000A):
-					sensor_data['brightness'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['brightness'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x000B):
 					acc_data = numpy.frombuffer(self.get_bytes(data, index, length), dtype=numpy.float32)
 					acc = {}
