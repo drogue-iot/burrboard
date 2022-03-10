@@ -33,7 +33,7 @@ def main():
 
 	blemesh.log.info('Register OnOff Server model on element 0')
 	first_ele.add_model(blemesh.OnOffServer(0x1000))
-	first_ele.add_model(blemesh.SensorServer(0x1100))
+	first_ele.add_model(blemesh.BurrBoardSensorServer(0x1100))
 
 	blemesh.log.info('Register Vendor model on element 0')
 	first_ele.add_model(blemesh.SampleVendor(0x0001))

@@ -703,7 +703,13 @@ class Sensor(Model):
 		else:
 			raise Exception("Unsupported format")
 
-	def parse_value(self, data):
+	def create_sensor_data(self):
+		temp = uniform(18.0, 23.0)
+		log.info('Publish: temperature=' + str(int(temp*2)/2))
+		property = self.pack_property(0, 1, 0x004f)
+		return struct.pack('>BHB', 0x52, property, int(temp*2))
+
+	def parse_sensor_data(self, data):
 		datalen = len(data)
 		opcode = bytes(data[0:1])[0]
 		if (opcode == 0x52):
@@ -726,7 +732,7 @@ class SensorClient(Sensor):
 		self.cmd_ops = { 0x52 } # status
 
 	def process_message(self, source, dest, key, data):
-		sensor_value = self.parse_value(data)
+		sensor_value = self.parse_sensor_data(data)
 		if sensor_value != None:
 			log.info('Sensor value=' + str(sensor_value))
 
@@ -749,20 +755,109 @@ class SensorServer(ServerModel, Sensor):
 		self.t_timer = ModTimer()
 
 	def process_message(self, source, dest, key, data):
-		sensor_value = self.parse_value(data)
+		sensor_value = self.parse_sensor_data(data)
 		if sensor_value != None:
 			log.info('Sensor value=' + str(sensor_value))
 
-	def create_sensor_data(self, temp):
-		property = self.pack_property(0, 1, 0x004f)
-		return struct.pack('>BHB', 0x52, property, int(temp*2))
-
 	def publish(self):
-		temp = uniform(18.0, 23.0)
-		log.info('Publish: temperature=' + str(int(temp*2)/2))
-		data = self.create_sensor_data(temp)
+		data = self.create_sensor_data()
 		self.send_publication(data)
 
+class BurrBoardSensorServer(SensorServer):
+	def create_sensor_data(self):
+		log.info('Publishing sensor data')
+		#TODO randomize values
+
+		#opcode
+		data = struct.pack(">B", 0x52)
+		#led1
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0001), 0x00)
+		#led2
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0002), 0x01)
+		#led3
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0003), 0x01)
+		#led4
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0004), 0x00)
+		#button1
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0005), 0x00)
+		#button2
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0006), 0x01)
+		#counter1
+		data += struct.pack(">H", self.pack_property(0, 4, 0x0007))
+		data += (25).to_bytes(4, byteorder="big")
+		#counter2
+		data += struct.pack(">H", self.pack_property(0, 4, 0x0008))
+		data += (32).to_bytes(4, byteorder="big")
+		#temp
+		data += struct.pack(">H", self.pack_property(0, 2, 0x0009))
+		data += (19).to_bytes(2, byteorder="big", signed=True)
+		#brightness
+		data += struct.pack(">H", self.pack_property(0, 2, 0x000A))
+		data += (75).to_bytes(2, byteorder="big")
+		#accel
+		x=numpy.float32(0.33)
+		y=numpy.float32(0.55)
+		z=numpy.float32(0.66)
+		data += struct.pack(">H", self.pack_property(0, 12, 0x000B))
+		data+=x.tobytes()
+		data+=y.tobytes()
+		data+=z.tobytes()
+		#battery
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x000C), 0x23)
+		return data
+
+	def get_bytes(self, data, index, length):
+		return bytes(data[index+2:index+2+length])
+
+	def get_byte(self, data, index, length):
+		return bytes(data[index+2:index+2+length])[0]
+
+	def parse_sensor_data(self, data):
+		datalen = len(data)
+		opcode = bytes(data[0:1])[0]
+		if (opcode == 0x52):
+			index = 1
+			sensor_data = {}
+			while index < datalen:
+				property, length = self.unpack_property(bytes(data[index:]))
+				if (property == 0x004F):
+					temp8 = self.get_byte(data, index, length)
+					sensor_data['temp8'] = temp8 * 0.5
+				elif (property == 0x0001):
+					sensor_data['led_1'] = self.get_byte(data, index, length)
+				elif (property == 0x0002):
+					sensor_data['led_2'] = self.get_byte(data, index, length)
+				elif (property == 0x0003):
+					sensor_data['led_3'] = self.get_byte(data, index, length)
+				elif (property == 0x0004):
+					sensor_data['led_4'] = self.get_byte(data, index, length)
+				elif (property == 0x0005):
+					sensor_data['button_1'] = self.get_byte(data, index, length)
+				elif (property == 0x0006):
+					sensor_data['button_2'] = self.get_byte(data, index, length)
+				elif (property == 0x0007):
+					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+				elif (property == 0x0008):
+					sensor_data['counter_2'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+				elif (property == 0x0009):
+					sensor_data['temperature'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big', signed=True)
+				elif (property == 0x000A):
+					sensor_data['brightness'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+				elif (property == 0x000B):
+					acc_data = numpy.frombuffer(self.get_bytes(data, index, length), dtype=numpy.float32)
+					acc = {}
+					acc['x'] = str(acc_data[0])
+					acc['y'] = str(acc_data[1])
+					acc['z'] = str(acc_data[2])
+					sensor_data['accelerometer'] = acc
+				elif (property == 0x000C):
+					sensor_data['battery'] = self.get_byte(data, index, length)
+				else:
+					log.warn("Unkown property: " + str(property))
+				index += 2+length
+
+			return sensor_data
+		return None
 
 ########################
 # Sample Vendor Model

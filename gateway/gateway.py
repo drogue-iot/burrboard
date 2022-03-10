@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import blemesh
+import json
 try:
   from gi.repository import GLib
 except ImportError:
@@ -70,15 +71,15 @@ class GatewayOnOffServer(blemesh.ServerModel):
 ########################
 # Sensor Server Model
 ########################
-class GatewaySensorServer(blemesh.SensorServer):
+class GatewaySensorServer(blemesh.BurrBoardSensorServer):
 	def process_message(self, source, dest, key, data):
-		sensor_value = self.parse_value(data)
-		if sensor_value != None:
+		sensor_data = self.parse_sensor_data(data)
+		if sensor_data != None and len(sensor_data) != 0:
 			device = '%04x' % source
 			topic = "ble_gateway/" + device
-			blemesh.log.info("Sending state '" + str(sensor_value) + "' from device '" + device + "' to MQTT topic '" + topic + "'")
+			blemesh.log.info("Sending state '" + json.dumps(sensor_data) + "' from device '" + device + "' to MQTT topic '" + topic + "'")
 			#TODO Handle failures
-			client.publish(topic, "{temp:" + str(sensor_value) + "}")
+			client.publish(topic, json.dumps(sensor_data))
 
 
 def on_connect(client, userdata, flags, rc):
