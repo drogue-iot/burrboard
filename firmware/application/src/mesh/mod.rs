@@ -278,7 +278,7 @@ impl Actor for BoardSensorPublisher {
                             match m.message() {
                                 PublisherMessage::Connect(ctx) => {
                                     info!("connected to mesh {}", ctx.address());
-                                    //self.ctx.replace(ctx.clone());
+                                    self.ctx.replace(ctx.clone());
                                 }
                             }
                         }
