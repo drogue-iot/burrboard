@@ -5,7 +5,7 @@ use drogue_device::{
 };
 
 pub struct Counter {
-    presses: u32,
+    presses: u16,
     pressed: bool,
 }
 
@@ -37,7 +37,7 @@ impl FromButtonEvent<CounterMessage> for Counter {
 
 impl Actor for Counter {
     type Message<'m> = CounterMessage;
-    type Response = Option<(bool, u32)>;
+    type Response = Option<(bool, u16)>;
 
     type OnMountFuture<'m, M>
     where

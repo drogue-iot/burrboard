@@ -239,21 +239,19 @@ impl Actor for BurrBoardMonitor {
                         data.extend_from_slice(&counter_a.to_le_bytes()).ok();
                         data.extend_from_slice(&counter_b.to_le_bytes()).ok();
 
-                        let buttons = button_a as u8;
-                        let buttons = buttons | (button_b as u8) << 1;
-                        data.push(buttons).ok();
-
                         let accel = self.accel.request(AccelRead).unwrap().await.unwrap();
                         data.extend_from_slice(&accel.x.to_le_bytes()).ok();
                         data.extend_from_slice(&accel.y.to_le_bytes()).ok();
                         data.extend_from_slice(&accel.z.to_le_bytes()).ok();
 
-                        let leds = self.leds.red.is_on() as u8;
-                        let leds = leds | (self.leds.green.is_on() as u8) << 1;
-                        let leds = leds | (self.leds.blue.is_on() as u8) << 2;
-                        let leds = leds | (self.leds.yellow.is_on() as u8) << 3;
+                        let buttons_leds = button_a as u8;
+                        let buttons_leds = buttons_leds | (button_b as u8) << 1;
+                        let buttons_leds = buttons_leds | (self.leds.red.is_on() as u8) << 2;
+                        let buttons_leds = buttons_leds | (self.leds.green.is_on() as u8) << 3;
+                        let buttons_leds = buttons_leds | (self.leds.blue.is_on() as u8) << 4;
+                        let buttons_leds = buttons_leds | (self.leds.yellow.is_on() as u8) << 5;
 
-                        data.push(leds).ok();
+                        data.push(buttons_leds).ok();
 
                         self.service.sensors_set(data.clone()).ok();
 

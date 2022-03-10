@@ -356,12 +356,8 @@ impl Actor for BoardSensorPublisher {
 mod prop {
     use super::*;
 
-    pub const RED_LED: PropertyId = PropertyId(1);
-    pub const GREEN_LED: PropertyId = PropertyId(2);
-    pub const BLUE_LED: PropertyId = PropertyId(3);
-    pub const YELLOW_LED: PropertyId = PropertyId(4);
-    pub const BUTTON_A: PropertyId = PropertyId(5);
-    pub const BUTTON_B: PropertyId = PropertyId(6);
+    // States represents button_a, button_b, led_1, led_2, led_3, led_4 states as bits
+    pub const STATES: PropertyId = PropertyId(1);
     pub const COUNTER_A: PropertyId = PropertyId(7);
     pub const COUNTER_B: PropertyId = PropertyId(8);
     pub const TEMPERATURE: PropertyId = PropertyId(9);
@@ -378,14 +374,9 @@ impl SensorConfig for BurrBoardSensors {
     type Data<'m> = SensorState;
 
     const DESCRIPTORS: &'static [SensorDescriptor] = &[
-        SensorDescriptor::new(prop::RED_LED, 1),
-        SensorDescriptor::new(prop::GREEN_LED, 1),
-        SensorDescriptor::new(prop::BLUE_LED, 1),
-        SensorDescriptor::new(prop::YELLOW_LED, 1),
-        SensorDescriptor::new(prop::BUTTON_A, 1),
-        SensorDescriptor::new(prop::BUTTON_B, 1),
-        SensorDescriptor::new(prop::COUNTER_A, 4),
-        SensorDescriptor::new(prop::COUNTER_B, 4),
+        SensorDescriptor::new(prop::STATES, 1),
+        SensorDescriptor::new(prop::COUNTER_A, 2),
+        SensorDescriptor::new(prop::COUNTER_B, 2),
         SensorDescriptor::new(prop::TEMPERATURE, 2),
         SensorDescriptor::new(prop::BRIGHTNESS, 2),
         SensorDescriptor::new(prop::ACCEL, 12),
@@ -402,8 +393,8 @@ pub struct SensorState {
     pub yellow_led: bool,
     pub button_a: bool,
     pub button_b: bool,
-    pub counter_a: u32,
-    pub counter_b: u32,
+    pub counter_a: u16,
+    pub counter_b: u16,
     pub temperature: i16,
     pub brightness: u16,
     pub accel: (f32, f32, f32),
@@ -421,29 +412,14 @@ impl SensorData for SensorState {
         xmit: &mut Vec<u8, N>,
     ) -> Result<(), InsufficientBuffer> {
         match property {
-            prop::RED_LED => {
-                xmit.push(if self.red_led { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
-            }
-            prop::GREEN_LED => {
-                xmit.push(if self.green_led { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
-            }
-            prop::BLUE_LED => {
-                xmit.push(if self.blue_led { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
-            }
-            prop::YELLOW_LED => {
-                xmit.push(if self.yellow_led { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
-            }
-            prop::BUTTON_A => {
-                xmit.push(if self.button_a { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
-            }
-            prop::BUTTON_B => {
-                xmit.push(if self.button_a { 1 } else { 0 })
-                    .map_err(|_| InsufficientBuffer)?;
+            prop::STATES => {
+                let buttons_leds = self.button_a as u8;
+                let buttons_leds = buttons_leds | (self.button_b as u8) << 1;
+                let buttons_leds = buttons_leds | (self.red_led as u8) << 2;
+                let buttons_leds = buttons_leds | (self.green_led as u8) << 3;
+                let buttons_leds = buttons_leds | (self.blue_led as u8) << 4;
+                let buttons_leds = buttons_leds | (self.yellow_led as u8) << 5;
+                xmit.push(buttons_leds).map_err(|_| InsufficientBuffer)?;
             }
             prop::COUNTER_A => {
                 xmit.extend_from_slice(&self.counter_a.to_le_bytes())
