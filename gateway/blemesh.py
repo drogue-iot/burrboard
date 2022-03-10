@@ -541,10 +541,30 @@ class Model():
 				ret += label + ', '
 		return ret
 
+class ServerModel(Model):
+	def t_track(self):
+			self.t_timer.cancel()
+			self.tid = None
+			self.last_src = 0x0000
+			self.last_dst = 0x0000
+
+	def set_publication(self, period):
+
+		self.pub_period = period
+		if period == 0:
+			self.pub_timer.cancel()
+			return
+
+		# We do not handle ms in this example
+		if period < 1000:
+			return
+
+		self.pub_timer.start(period/1000, self.publish)
+
 ########################
 # On Off Server Model
 ########################
-class OnOffServer(Model):
+class OnOffServer(ServerModel):
 	def __init__(self, model_id):
 		Model.__init__(self, model_id)
 		self.tid = None
@@ -604,25 +624,6 @@ class OnOffServer(Model):
 		rsp_data = struct.pack('>HB', 0x8204, self.state)
 		self.send_message(source, key, rsp_data)
 
-	def t_track(self):
-			self.t_timer.cancel()
-			self.tid = None
-			self.last_src = 0x0000
-			self.last_dst = 0x0000
-
-	def set_publication(self, period):
-
-		self.pub_period = period
-		if period == 0:
-			self.pub_timer.cancel()
-			return
-
-		# We do not handle ms in this example
-		if period < 1000:
-			return
-
-		self.pub_timer.start(period/1000, self.publish)
-
 	def publish(self):
 		log.info('Publish: state=' + get_state_str(self.state))
 		data = struct.pack('>HB', 0x8204, self.state)
@@ -680,10 +681,44 @@ class OnOffClient(Model):
 
 		log.info('Got state ' + get_state_str(state) + ' from ' + ('%04x' % source))
 
+class Sensor(Model):
+	def pack_property(self, format, length, property):
+		length_bits = '{:04b}'.format(length)
+		property_bits = '{:011b}'.format(property)
+
+		data = ''.join([str(format), length_bits, property_bits])
+		return int(data, 2)
+
+	def unpack_property(self, data):
+		format_length_byte = bytes(data[0:1])[0]
+		sensor_data_format = (format_length_byte >> 7)
+		# only Format A is supported
+		if (sensor_data_format == 0):
+			sensor_value_length = ((format_length_byte & 0b01111000) >> 3)
+
+			id1 = format_length_byte & 0b00000111
+			id2 = bytes(data[1:2])[0]
+			property_id = (id1 << 8) | id2
+			return (property_id, sensor_value_length)
+		else:
+			raise Exception("Unsupported format")
+
+	def parse_value(self, data):
+		datalen = len(data)
+		opcode = bytes(data[0:1])[0]
+		if (opcode == 0x52):
+			index = 1
+			property, length = self.unpack_property(bytes(data[index:]))
+			if (property == 0x004F):
+				sensor_value = bytes(data[3:4])[0]
+				sensor_value = sensor_value * 0.5
+				return sensor_value
+		return None
+
 ########################
 # Sensor Client Model
 ########################
-class SensorClient(Model):
+class SensorClient(Sensor):
 	def __init__(self, model_id):
 		Model.__init__(self, model_id)
 		self.tid = 0
@@ -691,28 +726,14 @@ class SensorClient(Model):
 		self.cmd_ops = { 0x52 } # status
 
 	def process_message(self, source, dest, key, data):
-		global message_dispatcher
-		datalen = len(data)
-		opcode = bytes(data[0:1])[0]
-		if (opcode == 0x52):
-			format_length_byte = bytes(data[1:2])[0]
-			sensor_data_format = (format_length_byte >> 7)
-			# only Format A is supported
-			if (sensor_data_format == 0):
-				sensor_value_length = ((format_length_byte & 0b01111000) >> 3)
-				id1 = format_length_byte & 0b00000111
-				id2 = bytes(data[2:3])[0]
-				property_id = (id1 << 8) | id2
-				# only temperature data is supported
-				if (property_id == 0x004F):
-					sensor_value = bytes(data[3:4])[0]
-					sensor_value = sensor_value * 0.5
-					log.info('SensorClient opcode=' + str(hex(opcode)) + ' value=' + str(sensor_value))
+		sensor_value = self.parse_value(data)
+		if sensor_value != None:
+			log.info('Sensor value=' + str(sensor_value))
 
 ########################
 # Sensor Server Model
 ########################
-class SensorServer(Model):
+class SensorServer(ServerModel, Sensor):
 	def __init__(self, model_id):
 		Model.__init__(self, model_id)
 		self.tid = None
@@ -724,50 +745,17 @@ class SensorServer(Model):
 				 0x8204 } # status
 
 		self.state = 0
-		#log.info("OnOff Server: " + get_state_str(self.state))
 		self.pub_timer = ModTimer()
 		self.t_timer = ModTimer()
 
 	def process_message(self, source, dest, key, data):
-		global message_dispatcher
-		datalen = len(data)
-		opcode = bytes(data[0:1])[0]
-		if (opcode == 0x52):
-			format_length_byte = bytes(data[1:2])[0]
-			sensor_data_format = (format_length_byte >> 7)
-			# only Format A is supported
-			if (sensor_data_format == 0):
-				sensor_value_length = ((format_length_byte & 0b01111000) >> 3)
-				id1 = format_length_byte & 0b00000111
-				id2 = bytes(data[2:3])[0]
-				property_id = (id1 << 8) | id2
-				# only temperature data is supported
-				if (property_id == 0x004F):
-					sensor_value = bytes(data[3:4])[0]
-					sensor_value = sensor_value * 0.5
-					log.info('Sensor value=' + str(sensor_value))
-
-	def t_track(self):
-			self.t_timer.cancel()
-			self.tid = None
-			self.last_src = 0x0000
-			self.last_dst = 0x0000
-
-	def set_publication(self, period):
-
-		self.pub_period = period
-		if period == 0:
-			self.pub_timer.cancel()
-			return
-
-		# We do not handle ms in this example
-		if period < 1000:
-			return
-
-		self.pub_timer.start(period/1000, self.publish)
+		sensor_value = self.parse_value(data)
+		if sensor_value != None:
+			log.info('Sensor value=' + str(sensor_value))
 
 	def create_sensor_data(self, temp):
-		return struct.pack('>BBBB', 0x52, 0x08, 0x4f, int(temp*2))
+		property = self.pack_property(0, 1, 0x004f)
+		return struct.pack('>BHB', 0x52, property, int(temp*2))
 
 	def publish(self):
 		temp = uniform(18.0, 23.0)
