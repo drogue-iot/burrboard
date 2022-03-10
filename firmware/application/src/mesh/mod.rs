@@ -3,7 +3,7 @@ use drogue_device::drivers::ble::mesh::composition::{
     CompanyIdentifier, Composition, ElementDescriptor, ElementsHandler, Features, Location,
     ProductIdentifier, VersionIdentifier,
 };
-use drogue_device::drivers::ble::mesh::driver::elements::ElementContext;
+use drogue_device::drivers::ble::mesh::config::ConfigurationModel;
 use drogue_device::drivers::ble::mesh::driver::elements::{AppElementContext, AppElementsContext};
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
 use drogue_device::drivers::ble::mesh::model::generic::battery::{
@@ -103,9 +103,14 @@ impl ElementsHandler for BurrBoardElementsHandler {
     }
 
     fn connect(&self, ctx: AppElementsContext) {
-        info!("CONNECT");
         let sensor_ctx = ctx.for_element_model::<SensorServer>(0);
         let _ = self.publisher.notify(PublisherMessage::Connect(sensor_ctx));
+    }
+
+    fn configure(&self, config: &ConfigurationModel) {
+        if let Some(period) = config.publish_period_duration() {
+            let _ = self.publisher.notify(PublisherMessage::SetPeriod(period));
+        }
     }
 
     type DispatchFuture<'m>
@@ -228,7 +233,7 @@ impl MeshApp {
 }
 
 pub struct BoardSensorPublisher {
-    interval: Duration,
+    ticker: Ticker,
     board: BoardPeripherals,
     context: Option<AppElementContext<SensorServer>>,
 }
@@ -236,7 +241,7 @@ pub struct BoardSensorPublisher {
 impl BoardSensorPublisher {
     pub fn new(interval: Duration, board: BoardPeripherals) -> Self {
         Self {
-            interval,
+            ticker: Ticker::every(interval),
             board,
             context: None,
         }
@@ -245,6 +250,7 @@ impl BoardSensorPublisher {
 
 pub enum PublisherMessage {
     Connect(AppElementContext<SensorServer>),
+    SetPeriod(Duration),
 }
 
 impl Actor for BoardSensorPublisher {
@@ -264,10 +270,9 @@ impl Actor for BoardSensorPublisher {
         M: Inbox<Self> + 'm,
     {
         async move {
-            let mut ticker = Ticker::every(self.interval);
             loop {
                 let next = inbox.next();
-                let tick = ticker.next();
+                let tick = self.ticker.next();
 
                 pin_mut!(next);
                 pin_mut!(tick);
@@ -277,8 +282,15 @@ impl Actor for BoardSensorPublisher {
                         if let Some(mut m) = m {
                             match m.message() {
                                 PublisherMessage::Connect(ctx) => {
-                                    info!("connected to mesh {}", ctx.address());
+                                    info!("Connected to mesh {}", ctx.address());
                                     self.context.replace(ctx.clone());
+                                }
+                                PublisherMessage::SetPeriod(period) => {
+                                    info!(
+                                        "Adjusting publish period to {} millis",
+                                        period.as_millis()
+                                    );
+                                    self.ticker = Ticker::every(*period);
                                 }
                             }
                         }
@@ -325,7 +337,7 @@ impl Actor for BoardSensorPublisher {
                             let message = SensorMessage::Status(SensorStatus::new(data));
                             match ctx.publish(message).await {
                                 Ok(_) => {
-                                    info!("Sensor data reported successfully");
+                                    info!("Published sensor data");
                                 }
                                 Err(e) => {
                                     warn!("Error reporting sensor data: {:?}", e);
