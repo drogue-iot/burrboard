@@ -7,7 +7,7 @@
   $ cargo install drg
   $ cargo install --features=ssl websocat
   $ git clone https://github.com/bluez/bluez.git
-  $ pip install numpy dbus-python termcolor
+  $ pip install numpy dbus-python termcolor paho-mqtt
   $ sudo service bluetooth stop
   $ sudo service bluetooth-mesh start
   $ ./bluez/test/test-mesh
