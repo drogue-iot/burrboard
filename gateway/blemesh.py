@@ -773,10 +773,10 @@ class BurrBoardSensorServer(SensorServer):
 		#buttons_leds_state
 		data += struct.pack(">HB", self.pack_property(0, 1, 0x0001), 0x1A)
 		#counter1
-		data += struct.pack(">H", self.pack_property(0, 4, 0x0007))
+		data += struct.pack(">H", self.pack_property(0, 2, 0x0007))
 		data += (25).to_bytes(2, byteorder="little")
 		#counter2
-		data += struct.pack(">H", self.pack_property(0, 4, 0x0008))
+		data += struct.pack(">H", self.pack_property(0, 2, 0x0008))
 		data += (32).to_bytes(2, byteorder="little")
 		#temp
 		data += struct.pack(">H", self.pack_property(0, 2, 0x0009))
