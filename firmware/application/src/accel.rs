@@ -85,7 +85,7 @@ impl Actor for Accelerometer {
                                 Some(AccelValues { x, y, z })
                             } else {
                                 None
-                            };
+                            }
                             m.set_response(response);
                         } else if #[cfg(feature = "adxl")] {
                             use adxl343::accelerometer::RawAccelerometer;
