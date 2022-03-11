@@ -38,7 +38,7 @@ sub-add 00ac c002 1100
 * Now you can start gateway
 
 ```
-TOKEN=159d79164ebff7f1 DROGUE_DEVICE=device1@app DROGUE_PASSWORD=pass ./gateway.py
+TOKEN=159d79164ebff7f1 DROGUE_APPLICATION=app DROGUE_DEVICE=device1 DROGUE_PASSWORD=pass ./gateway.py
 ```
 You should use proper Drogue cloud device device and password. The default values are set according to the example above (e.g. `gateway@ble-demo`)
 
@@ -68,4 +68,5 @@ echo '{"state":"ON"}' | http POST https://api.sandbox.drogue.cloud/api/command/v
 To run the gateway on a NUC installed with F35, [this](nuc.md) should
 get you pretty close. It's handy to have `test-mesh` around -- from
 the bluez source tree -- on which all the python scripts are based...
+
 
