@@ -101,7 +101,7 @@ impl BurrBoard {
     }
 
     pub async fn update_firmware(&self, firmware: &[u8]) -> Result<(), anyhow::Error> {
-        let mut buf = [0; 64];
+        let mut buf = [0; 16];
 
         // Trigger DFU process
         self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
@@ -118,7 +118,7 @@ impl BurrBoard {
         );
         let mut offset: u32 = 0;
 
-        for chunk in firmware.chunks(64) {
+        for chunk in firmware.chunks(16) {
             buf[0..chunk.len()].copy_from_slice(chunk);
             if chunk.len() < buf.len() {
                 buf[chunk.len()..].fill(0);
