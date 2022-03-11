@@ -83,9 +83,10 @@ class GatewaySensorServer(blemesh.BurrBoardSensorServer):
 		if sensor_data != None and len(sensor_data) != 0:
 			device = '%04x' % source
 			topic = self.name + "/" + device
-			blemesh.log.info("Sending state '" + json.dumps(sensor_data) + "' from device '" + device + "' to MQTT topic '" + topic + "'")
+			payload = json.dumps(featurize(sensor_data))
+			blemesh.log.info("Sending state '" + payload + "' from device '" + device + "' to MQTT topic '" + topic + "'")
 			#TODO Handle failures
-			client.publish(topic, json.dumps(sensor_data))
+			client.publish(topic, payload)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -127,6 +128,37 @@ def on_message(client, userdata, msg):
 
 	if state != -1:
 		blemesh.app.elements[1].models[0].set_state(device, 0, state)
+
+def featurize(data):
+  return {
+    "features":
+    {
+      "device":
+      {
+	"state": "TODO",
+	"firmwareRevision": "TODO",
+	"reportInterval": "TODO",
+	"battery": data['battery']/100
+      },
+      "button_a":
+      {
+	"presses": data['counter_1'],
+	"state": data['button_1']
+      },
+      "button_b":
+      {
+	"presses": data['counter_2'],
+	"state": data['button_2']
+      },
+      "led_1": { "state": data['led_1'] },
+      "led_2": { "state": data['led_2'] },
+      "led_3": { "state": data['led_3'] },
+      "led_4": { "state": data['led_4'] },
+      "light": { "value": data['brightness'] },
+      "temperature": { "value": data['temperature'] },
+      "accelerometer": data["accelerometer"]
+    }
+  }
 
 def main():
 	global client
