@@ -771,7 +771,7 @@ class BurrBoardSensorServer(SensorServer):
 		#opcode
 		data = struct.pack(">B", 0x52)
 		#buttons_leds_state
-		data += struct.pack(">B", 0x1A)
+		data += struct.pack(">HB", self.pack_property(0, 1, 0x0001), 0x1A)
 		#counter1
 		data += struct.pack(">H", self.pack_property(0, 4, 0x0007))
 		data += (25).to_bytes(2, byteorder="little")
@@ -814,13 +814,13 @@ class BurrBoardSensorServer(SensorServer):
 					temp8 = self.get_byte(data, index, length)
 					sensor_data['temp8'] = temp8 * 0.5
 				elif (property == 0x0001):
-					data = self.get_byte(data, index, length)
-					sensor_data['button_1'] = (data & 0x1) != 0
-					sensor_data['button_2'] = (data & 0x2) != 0
-					sensor_data['led_1'] = (data & 0x4) != 0
-					sensor_data['led_2'] = (data & 0x8) != 0
-					sensor_data['led_3'] = (data & 0x10) != 0
-					sensor_data['led_4'] = (data & 0x20) != 0
+					led_data = self.get_byte(data, index, length)
+					sensor_data['button_1'] = (led_data & 0x1) != 0
+					sensor_data['button_2'] = (led_data & 0x2) != 0
+					sensor_data['led_1'] = (led_data & 0x4) != 0
+					sensor_data['led_2'] = (led_data & 0x8) != 0
+					sensor_data['led_3'] = (led_data & 0x10) != 0
+					sensor_data['led_4'] = (led_data & 0x20) != 0
 				elif (property == 0x0007):
 					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x0008):
