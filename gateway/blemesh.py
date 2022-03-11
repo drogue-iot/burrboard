@@ -770,30 +770,20 @@ class BurrBoardSensorServer(SensorServer):
 
 		#opcode
 		data = struct.pack(">B", 0x52)
-		#led1
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0001), 0x00)
-		#led2
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0002), 0x01)
-		#led3
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0003), 0x01)
-		#led4
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0004), 0x00)
-		#button1
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0005), 0x00)
-		#button2
-		data += struct.pack(">HB", self.pack_property(0, 1, 0x0006), 0x01)
+		#buttons_leds_state
+		data += struct.pack(">B", 0x1A)
 		#counter1
 		data += struct.pack(">H", self.pack_property(0, 4, 0x0007))
-		data += (25).to_bytes(4, byteorder="big")
+		data += (25).to_bytes(2, byteorder="little")
 		#counter2
 		data += struct.pack(">H", self.pack_property(0, 4, 0x0008))
-		data += (32).to_bytes(4, byteorder="big")
+		data += (32).to_bytes(2, byteorder="little")
 		#temp
 		data += struct.pack(">H", self.pack_property(0, 2, 0x0009))
-		data += (19).to_bytes(2, byteorder="big", signed=True)
+		data += (19).to_bytes(2, byteorder="little", signed=True)
 		#brightness
 		data += struct.pack(">H", self.pack_property(0, 2, 0x000A))
-		data += (75).to_bytes(2, byteorder="big")
+		data += (75).to_bytes(2, byteorder="little")
 		#accel
 		x=numpy.float32(0.33)
 		y=numpy.float32(0.55)
@@ -824,25 +814,21 @@ class BurrBoardSensorServer(SensorServer):
 					temp8 = self.get_byte(data, index, length)
 					sensor_data['temp8'] = temp8 * 0.5
 				elif (property == 0x0001):
-					sensor_data['led_1'] = self.get_byte(data, index, length)
-				elif (property == 0x0002):
-					sensor_data['led_2'] = self.get_byte(data, index, length)
-				elif (property == 0x0003):
-					sensor_data['led_3'] = self.get_byte(data, index, length)
-				elif (property == 0x0004):
-					sensor_data['led_4'] = self.get_byte(data, index, length)
-				elif (property == 0x0005):
-					sensor_data['button_1'] = self.get_byte(data, index, length)
-				elif (property == 0x0006):
-					sensor_data['button_2'] = self.get_byte(data, index, length)
+					data = self.get_byte(data, index, length)
+					sensor_data['button_1'] = (data & 0x1) != 0
+					sensor_data['button_2'] = (data & 0x2) != 0
+					sensor_data['led_1'] = (data & 0x4) != 0
+					sensor_data['led_2'] = (data & 0x8) != 0
+					sensor_data['led_3'] = (data & 0x10) != 0
+					sensor_data['led_4'] = (data & 0x20) != 0
 				elif (property == 0x0007):
-					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['counter_1'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x0008):
-					sensor_data['counter_2'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['counter_2'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x0009):
-					sensor_data['temperature'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big', signed=True)
+					sensor_data['temperature'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little', signed=True)
 				elif (property == 0x000A):
-					sensor_data['brightness'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='big')
+					sensor_data['brightness'] = int.from_bytes(self.get_bytes(data, index, length), byteorder='little')
 				elif (property == 0x000B):
 					acc_data = numpy.frombuffer(self.get_bytes(data, index, length), dtype=numpy.float32)
 					acc = {}

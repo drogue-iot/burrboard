@@ -166,31 +166,30 @@ impl BurrBoard {
     }
 
     fn data_to_json(data: &[u8]) -> serde_json::Value {
-        assert_eq!(data.len(), 27);
+        assert_eq!(data.len(), 22);
 
         let temp: f32 = (i16::from_le_bytes([data[0], data[1]]) as f32) / 100.0;
         let brightness: u16 = u16::from_le_bytes([data[2], data[3]]);
 
         let battery: u8 = data[4];
 
-        let counter_a = u32::from_le_bytes([data[5], data[6], data[7], data[8]]);
-        let counter_b = u32::from_le_bytes([data[9], data[10], data[11], data[12]]);
-        let buttons = data[13];
-        let button_a = (buttons & 0x1) != 0;
-        let button_b = ((buttons >> 1) & 0x1) != 0;
+        let counter_a = u16::from_le_bytes([data[5], data[6]]);
+        let counter_b = u16::from_le_bytes([data[7], data[8]]);
 
         let accel: (f32, f32, f32) = (
-            f32::from_le_bytes([data[14], data[15], data[16], data[17]]),
-            f32::from_le_bytes([data[18], data[19], data[20], data[21]]),
-            f32::from_le_bytes([data[22], data[23], data[24], data[25]]),
+            f32::from_le_bytes([data[9], data[10], data[11], data[12]]),
+            f32::from_le_bytes([data[13], data[14], data[15], data[16]]),
+            f32::from_le_bytes([data[17], data[18], data[19], data[20]]),
         );
 
-        let leds = data[26];
+        let buttons_leds = data[21];
+        let button_a = (buttons_leds & 0x1) != 0;
+        let button_b = ((buttons_leds >> 1) & 0x1) != 0;
 
-        let red_led = (leds & 0x1) != 0;
-        let green_led = ((leds >> 1) & 0x1) != 0;
-        let blue_led = ((leds >> 2) & 0x1) != 0;
-        let yellow_led = ((leds >> 3) & 0x1) != 0;
+        let red_led = ((buttons_leds >> 2) & 0x1) != 0;
+        let green_led = ((buttons_leds >> 3) & 0x1) != 0;
+        let blue_led = ((buttons_leds >> 4) & 0x1) != 0;
+        let yellow_led = ((buttons_leds >> 5) & 0x1) != 0;
 
         json!({"temperature": {"value": temp}, "light": { "value": brightness },
                 "led_1": { "state": red_led },

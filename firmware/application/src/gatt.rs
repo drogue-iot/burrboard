@@ -35,7 +35,7 @@ pub struct BurrBoardServer {
 #[nrf_softdevice::gatt_service(uuid = "1860")]
 pub struct BurrBoardService {
     #[characteristic(uuid = "2a6e", read, notify)]
-    pub sensors: Vec<u8, 27>,
+    pub sensors: Vec<u8, 22>,
 
     #[characteristic(uuid = "2ae2", read, write)]
     pub red_led: u8,
@@ -214,7 +214,7 @@ impl Actor for BurrBoardMonitor {
                         }
                     }
                     Either::Right((_, _)) => {
-                        let mut data: Vec<u8, 27> = Vec::new();
+                        let mut data: Vec<u8, 22> = Vec::new();
                         let analog = self.analog.request(AnalogRead).unwrap().await;
 
                         data.extend_from_slice(&analog.temperature.to_le_bytes())
@@ -239,21 +239,19 @@ impl Actor for BurrBoardMonitor {
                         data.extend_from_slice(&counter_a.to_le_bytes()).ok();
                         data.extend_from_slice(&counter_b.to_le_bytes()).ok();
 
-                        let buttons = button_a as u8;
-                        let buttons = buttons | (button_b as u8) << 1;
-                        data.push(buttons).ok();
-
                         let accel = self.accel.request(AccelRead).unwrap().await.unwrap();
                         data.extend_from_slice(&accel.x.to_le_bytes()).ok();
                         data.extend_from_slice(&accel.y.to_le_bytes()).ok();
                         data.extend_from_slice(&accel.z.to_le_bytes()).ok();
 
-                        let leds = self.leds.red.is_on() as u8;
-                        let leds = leds | (self.leds.green.is_on() as u8) << 1;
-                        let leds = leds | (self.leds.blue.is_on() as u8) << 2;
-                        let leds = leds | (self.leds.yellow.is_on() as u8) << 3;
+                        let buttons_leds = button_a as u8;
+                        let buttons_leds = buttons_leds | (button_b as u8) << 1;
+                        let buttons_leds = buttons_leds | (self.leds.red.is_on() as u8) << 2;
+                        let buttons_leds = buttons_leds | (self.leds.green.is_on() as u8) << 3;
+                        let buttons_leds = buttons_leds | (self.leds.blue.is_on() as u8) << 4;
+                        let buttons_leds = buttons_leds | (self.leds.yellow.is_on() as u8) << 5;
 
-                        data.push(leds).ok();
+                        data.push(buttons_leds).ok();
 
                         self.service.sensors_set(data.clone()).ok();
 
