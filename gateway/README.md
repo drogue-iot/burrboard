@@ -1,5 +1,9 @@
 # Drogue BLE Mesh Gateway
 
+## To run with burrboard
+
+Follow [these](burrboard.md) instructions.
+
 ## Getting started
 
 * Create Drogue cloud application, gateway and device
