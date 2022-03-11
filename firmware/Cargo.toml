@@ -20,6 +20,10 @@ nrf-softdevice-defmt-rtt = { git = "https://github.com/embassy-rs/nrf-softdevice
 #embassy = { path = "../../../embassy/embassy" }
 #embassy-nrf = { path = "../../../embassy/embassy-nrf" }
 #embassy-boot-nrf = { path = "../../../embassy/embassy-boot/nrf" }
+#nrf-softdevice = { path = "../../../nrf-softdevice/nrf-softdevice" }
+#nrf-softdevice-s140 = { path = "../../../nrf-softdevice/nrf-softdevice-s140" }
+#nrf-softdevice-defmt-rtt = { path = "../../../nrf-softdevice/nrf-softdevice-defmt-rtt" }
+
 
 [profile.dev]
 debug = 2
