@@ -11,13 +11,13 @@ embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "6a3b3ca755
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "6a3b3ca755073f73b24fad89a109fba7132d1312"}
 embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "6a3b3ca755073f73b24fad89a109fba7132d1312"}
 embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "6a3b3ca755073f73b24fad89a109fba7132d1312"}
-#drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "d9ad12333b6bef40bb1148ddcab9123c2e17a5df"}
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "77fe0b88b312a9342317d83ee66c5a53540013f3"}
 
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
 nrf-softdevice-defmt-rtt = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
 adxl343 = { git = "https://github.com/lulf/ADXL343.rs.git", rev = "efc5564e42eb133f5fd927106feb0b73bc2a5018" }
-drogue-device = { path = "../../../drogue-iot/drogue-device/device" }
+#drogue-device = { path = "../../../drogue-iot/drogue-device/device" }
 #adxl343 = { path = "../../../ADXL343.rs" }
 #embassy = { path = "../../../embassy/embassy" }
 #embassy-nrf = { path = "../../../embassy/embassy-nrf" }
