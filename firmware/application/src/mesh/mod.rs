@@ -7,10 +7,12 @@ use drogue_device::drivers::ble::mesh::config::ConfigurationModel;
 use drogue_device::drivers::ble::mesh::driver::elements::{AppElementContext, AppElementsContext};
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
 use drogue_device::drivers::ble::mesh::model::generic::battery::{
-    GenericBatteryServer, GENERIC_BATTERY_SERVER,
+    GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
+    GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
+    Status as GenericBatteryStatus, GENERIC_BATTERY_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::generic::onoff::{
-    GenericOnOffServer, GENERIC_ONOFF_SERVER,
+    GenericOnOffMessage, GenericOnOffServer, GENERIC_ONOFF_CLIENT, GENERIC_ONOFF_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::sensor::{
     PropertyId, RawValue, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
@@ -102,12 +104,13 @@ impl ElementsHandler for BurrBoardElementsHandler {
         &self.composition
     }
 
-    fn connect(&self, ctx: AppElementsContext) {
-        let sensor_ctx = ctx.for_element_model::<SensorServer>(0);
-        let _ = self.publisher.notify(PublisherMessage::Connect(sensor_ctx));
+    fn connect(&mut self, ctx: AppElementsContext) {
+        let _ = self
+            .publisher
+            .notify(PublisherMessage::Connect(ctx.clone()));
     }
 
-    fn configure(&self, config: &ConfigurationModel) {
+    fn configure(&mut self, config: &ConfigurationModel) {
         if let Some(period) = config.publish_period_duration() {
             let _ = self.publisher.notify(PublisherMessage::SetPeriod(period));
         }
@@ -119,51 +122,51 @@ impl ElementsHandler for BurrBoardElementsHandler {
     = impl Future<Output = Result<(), DeviceError>> + 'm;
 
     fn dispatch<'m>(
-        &'m self,
+        &'m mut self,
         element: u8,
         _: &'m ModelIdentifier,
         message: &'m AccessMessage,
     ) -> Self::DispatchFuture<'_> {
         async move {
             if element == 0x0001 {
-                info!("Element 1");
-                if let Ok(Some(m)) =
+                if let Ok(Some(GenericOnOffMessage::Set(set))) =
                     GenericOnOffServer::parse(message.opcode(), message.parameters())
                 {
-                    info!("LED 1 message: {:?}", m);
+                    if set.on_off == 0 {
+                        let _ = self.leds.red.off();
+                    } else {
+                        let _ = self.leds.red.on();
+                    }
                 }
             } else if element == 0x0002 {
-                info!("Element 2");
-                if let Ok(Some(m)) =
+                if let Ok(Some(GenericOnOffMessage::Set(set))) =
                     GenericOnOffServer::parse(message.opcode(), message.parameters())
                 {
-                    info!("LED 2 message: {:?}", m);
+                    if set.on_off == 0 {
+                        let _ = self.leds.green.off();
+                    } else {
+                        let _ = self.leds.green.on();
+                    }
                 }
             } else if element == 0x0003 {
-                info!("Element 3");
-                if let Ok(Some(m)) =
+                if let Ok(Some(GenericOnOffMessage::Set(set))) =
                     GenericOnOffServer::parse(message.opcode(), message.parameters())
                 {
-                    info!("LED 3 message: {:?}", m);
+                    if set.on_off == 0 {
+                        let _ = self.leds.blue.off();
+                    } else {
+                        let _ = self.leds.blue.on();
+                    }
                 }
             } else if element == 0x0004 {
-                info!("Element 4");
-                if let Ok(Some(m)) =
+                if let Ok(Some(GenericOnOffMessage::Set(set))) =
                     GenericOnOffServer::parse(message.opcode(), message.parameters())
                 {
-                    info!("LED 4 message: {:?}", m);
-                }
-            } else if element == 0x0005 {
-                info!("Element 5");
-                if let Ok(Some(m)) =
-                    GenericBatteryServer::parse(message.opcode(), message.parameters())
-                {
-                    info!("Battery message: {:?}", m);
-                }
-            } else if element == 0x0006 {
-                info!("Element 6");
-                if let Ok(Some(m)) = SensorServer::parse(message.opcode(), message.parameters()) {
-                    info!("Sensor message: {:?}", m);
+                    if set.on_off == 0 {
+                        let _ = self.leds.yellow.off();
+                    } else {
+                        let _ = self.leds.yellow.on();
+                    }
                 }
             }
             Ok(())
@@ -235,7 +238,7 @@ impl MeshApp {
 pub struct BoardSensorPublisher {
     ticker: Ticker,
     board: BoardPeripherals,
-    context: Option<AppElementContext<SensorServer>>,
+    context: Option<AppElementsContext>,
 }
 
 impl BoardSensorPublisher {
@@ -249,17 +252,16 @@ impl BoardSensorPublisher {
 }
 
 pub enum PublisherMessage {
-    Connect(AppElementContext<SensorServer>),
+    Connect(AppElementsContext),
     SetPeriod(Duration),
 }
 
 impl Actor for BoardSensorPublisher {
     type Message<'m> = PublisherMessage;
-    type OnMountFuture<'m, M>
+    type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm,
-    = impl Future<Output = ()> + 'm;
+        M: 'm + Inbox<Self>;
 
     fn on_mount<'m, M>(
         &'m mut self,
@@ -334,10 +336,33 @@ impl Actor for BoardSensorPublisher {
                         };
 
                         if let Some(ctx) = &self.context {
-                            let message = SensorMessage::Status(SensorStatus::new(data));
-                            match ctx.publish(message).await {
+                            // Report battery status through model
+                            let c = ctx.for_element_model::<GenericBatteryServer>(0);
+                            let message = GenericBatteryMessage::Status(GenericBatteryStatus::new(
+                                (data.battery as u32 * 127 / 100) as u8,
+                                0,
+                                0,
+                                GenericBatteryFlags {
+                                    presence: GenericBatteryFlagsPresence::PresentRemovable,
+                                    indicator: GenericBatteryFlagsIndicator::Unknown,
+                                    charging: GenericBatteryFlagsCharging::NotChargeable,
+                                },
+                            ));
+                            match c.publish(message).await {
                                 Ok(_) => {
-                                    info!("Published sensor data");
+                                    debug!("Published battery level");
+                                }
+                                Err(e) => {
+                                    warn!("Error reporting battery level: {:?}", e);
+                                }
+                            }
+
+                            // Report sensor data
+                            let c = ctx.for_element_model::<SensorServer>(0);
+                            let message = SensorMessage::Status(SensorStatus::new(data));
+                            match c.publish(message).await {
+                                Ok(_) => {
+                                    debug!("Published sensor data");
                                 }
                                 Err(e) => {
                                     warn!("Error reporting sensor data: {:?}", e);

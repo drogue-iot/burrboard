@@ -61,11 +61,10 @@ pub struct AccelValues {
 impl Actor for Accelerometer {
     type Message<'m> = Read;
     type Response = Option<AccelValues>;
-    type OnMountFuture<'m, M>
+    type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm,
-    = impl Future<Output = ()> + 'm;
+        M: 'm + Inbox<Self>;
     fn on_mount<'m, M>(
         &'m mut self,
         _: Address<Self>,

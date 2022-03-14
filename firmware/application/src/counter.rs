@@ -39,11 +39,10 @@ impl Actor for Counter {
     type Message<'m> = CounterMessage;
     type Response = Option<(bool, u16)>;
 
-    type OnMountFuture<'m, M>
+    type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm,
-    = impl Future<Output = ()> + 'm;
+        M: 'm + Inbox<Self>;
 
     fn on_mount<'m, M>(
         &'m mut self,
