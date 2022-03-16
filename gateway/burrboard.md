@@ -21,6 +21,7 @@ In terminal:
 ./device.py join
 ```
 
+The device terminal should display a UUID that you then paste into the provisioner.
 
 in provisioner (mesh-cfgclient)
 
@@ -28,9 +29,9 @@ in provisioner (mesh-cfgclient)
 # provision <UUID>
 ```
 
-The device terminal should display a token that you must paste into the provisioner.
-
-Once provisioned, the device terminal will give you a token to use for the gateway process.
+Once provisioned, the node's primary address, e.g. `00aa`, will be
+displayed, and the device terminal will display the token you must
+pass to the `gateway.py` script later, so make note of it.
 
 ## Configure gateway
 
@@ -42,7 +43,11 @@ Bind the gateway sensor model
 # composition-get
 # appkey-add 0
 # bind 00aa 0 1100
+# virt-add
+# sub-add 00aa a112 1100
 ```
+
+The `a112` is the virtual address returned by `virt-add`.
 
 ## Provision burrboard
 
@@ -50,6 +55,14 @@ In mesh-cfgclient:
 
 ```
 # provision <UUID of burrboard>
+```
+
+We'll assume the primary address returned is `00ac`.
+
+If you don't know the UUID of the board...
+
+```
+# discover-unprovisioned on
 ```
 
 ## Configure burrboard
@@ -62,8 +75,10 @@ In mesh-cfgclient:
 # composition-get
 # appkey-add 0
 # bind 00ac 0 1100
-# pub-set 00ac 00aa 0 50 5 1100
+# pub-set 00ac a112 0 50 5 1100
 ```
+
+Note the `a112` address from the call to `virt-add` above.
 
 ## Create drogue cloud devices and start gateway
 
