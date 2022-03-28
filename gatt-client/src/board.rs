@@ -5,9 +5,6 @@ use bluer::{
 use core::pin::Pin;
 use futures::{Stream, StreamExt};
 use serde_json::json;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
 use std::str::FromStr;
 
 pub struct BurrBoard {
@@ -17,20 +14,11 @@ pub struct BurrBoard {
 const BOARD_SERVICE_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000186000001000800000805f9b34fb);
 
 const SENSORS_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002a6e00001000800000805f9b34fb);
-
 const INTERVAL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00001b2500001000800000805f9b34fb);
-
 const RED_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae200001000800000805f9b34fb);
 const GREEN_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae300001000800000805f9b34fb);
 const BLUE_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae400001000800000805f9b34fb);
 const YELLOW_LED_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x00002ae500001000800000805f9b34fb);
-
-const FIRMWARE_SERVICE_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000186100001000800000805f9b34fb);
-
-const CONTROL_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123600001000800000805f9b34fb);
-const OFFSET_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123500001000800000805f9b34fb);
-const FIRMWARE_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123400001000800000805f9b34fb);
-const VERSION_CHAR_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000123700001000800000805f9b34fb);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Led {
@@ -76,86 +64,8 @@ impl BurrBoard {
         self.write_char(BOARD_SERVICE_UUID, c, &[val]).await
     }
 
-    async fn read_firmware_offset(&self) -> bluer::Result<u32> {
-        let data = self
-            .read_char(FIRMWARE_SERVICE_UUID, OFFSET_CHAR_UUID)
-            .await?;
-        Ok(u32::from_le_bytes([data[0], data[1], data[2], data[3]]))
-    }
-
-    pub async fn read_firmware_version(&self) -> bluer::Result<String> {
-        let data = self
-            .read_char(FIRMWARE_SERVICE_UUID, VERSION_CHAR_UUID)
-            .await?;
-        Ok(String::from_str(core::str::from_utf8(&data).unwrap()).unwrap())
-    }
-
-    pub async fn mark_booted(&self) -> bluer::Result<()> {
-        // Trigger DFU process
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[4])
-            .await
-    }
-
     pub fn address(&self) -> bluer::Address {
         self.device.address()
-    }
-
-    pub async fn update_firmware(&self, firmware: &[u8]) -> Result<(), anyhow::Error> {
-        let mut buf = [0; 16];
-
-        // Trigger DFU process
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[1])
-            .await?;
-
-        println!("Triggered DFU init sequence");
-        // Wait until firmware offset is reset
-        while self.read_firmware_offset().await? != 0 {
-            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        }
-        println!(
-            "Offset is reset, starting write of {} bytes",
-            firmware.len()
-        );
-        let mut offset: u32 = 0;
-
-        for chunk in firmware.chunks(16) {
-            buf[0..chunk.len()].copy_from_slice(chunk);
-            if chunk.len() < buf.len() {
-                buf[chunk.len()..].fill(0);
-            }
-            self.write_char(FIRMWARE_SERVICE_UUID, FIRMWARE_CHAR_UUID, &buf)
-                .await?;
-            log::info!("Write {} bytes at offset {}", buf.len(), offset);
-            offset += buf.len() as u32;
-            if offset % 4096 == 0 {
-                println!("{} bytes written", offset)
-            }
-
-            // Wait until firmware offset is incremented
-            while self.read_firmware_offset().await? != offset {
-                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-            }
-        }
-        if offset % 4096 == 0 {
-            println!("{} bytes written", offset)
-        }
-
-        // Write signal that DFU process is done and should be applied
-        log::debug!("DFU process done, setting reset");
-        self.write_char(FIRMWARE_SERVICE_UUID, CONTROL_CHAR_UUID, &[2])
-            .await?;
-
-        Ok(())
-    }
-
-    pub async fn update_firmware_from_file(&self, firmware: &Path) -> Result<(), anyhow::Error> {
-        println!("Updating firmware from file {:?}", firmware);
-        let mut f = File::open(firmware)?;
-
-        let mut buffer = Vec::new();
-        // read the whole file
-        f.read_to_end(&mut buffer)?;
-        self.update_firmware(&buffer[..]).await
     }
 
     pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
