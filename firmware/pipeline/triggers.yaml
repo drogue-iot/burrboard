@@ -1,0 +1,66 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: burrboard-triggertemplate
+  namespace: drogue-ajour
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gitrepositoryurl
+      description: The git repository url
+    - name: namespace
+      description: The namespace to create the resources
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: burrboard-rev2-run-
+        namespace: $(tt.params.namespace)
+      spec:
+        serviceAccountName: pipeline
+        pipelineRef:
+          name: oci-firmware
+        resources:
+          - name: source-repo
+            resourceSpec:
+              type: git
+              params:
+              - name: GIT_REVISION
+                value: $(tt.params.gitrevision)
+              - name: GIT_REPO
+                value: $(tt.params.gitrepositoryurl)
+              - name: CARGO_BUILD_ARGS
+                value: "--features rev2,defmt,gatt_first"
+              - name: PROJECT_PATH
+                value: firmware/application
+              - name: IMAGE
+                value: burrboard-rev2
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: burrboard-pipelinebinding
+  namespace: drogue-ajour
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.head_commit.id)
+    - name: namespace
+      value: drogue-ajour
+    - name: gitrepositoryurl
+      value: "https://github.com/$(body.repository.full_name)"
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: burrboard-listener
+  namespace: drogue-ajour
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+      - ref: burrboard-pipelinebinding
+      template:
+        ref: burrboard-triggertemplate
