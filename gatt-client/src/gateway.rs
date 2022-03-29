@@ -9,20 +9,20 @@ impl Gateway {
     pub fn new(http: String, user: String, password: String) -> Self {
         Self {
             client: reqwest::Client::new(),
-            http,
+            http: format!("{}/v1/state", http),
             user,
             password,
         }
     }
 
     // Best effort publish event
-    pub async fn publish(&self, device: &str, data: &[u8]) {
+    pub async fn publish(&self, device: &str, data: &serde_json::Value) {
         match self
             .client
             .post(&self.http)
             .query(&[("as", device)])
             .basic_auth(&self.user, Some(&self.password))
-            .json(&data)
+            .json(data)
             .send()
             .await
         {

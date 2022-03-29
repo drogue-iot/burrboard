@@ -252,19 +252,7 @@ async fn main() -> anyhow::Result<()> {
                                                     }
                                                 };
                                                 log::debug!("Payload: {payload}");
-                                                match serde_json::to_vec(&payload) {
-                                                    Ok(payload) => {
-                                                        gateway
-                                                            .publish(&device_name, &payload[..])
-                                                            .await;
-                                                    }
-                                                    Err(e) => {
-                                                        log::warn!(
-                                                            "Error encoding payload: {:?}",
-                                                            e
-                                                        );
-                                                    }
-                                                }
+                                                gateway.publish(&device_name, &payload).await;
                                             }
                                         }
                                     }
