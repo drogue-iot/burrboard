@@ -37,7 +37,6 @@ mod counter;
 mod gatt;
 mod led;
 mod mesh;
-mod usb;
 mod watchdog;
 
 use app::*;
@@ -59,7 +58,7 @@ fn config() -> Config {
 }
 
 #[embassy::main(config = "config()")]
-async fn main(s: embassy::executor::Spawner, mut p: Peripherals) {
+async fn main(s: embassy::executor::Spawner, p: Peripherals) {
     // First enable application
     static APP: Forever<App> = Forever::new();
     let app = APP.put(App::enable(s, "BurrBoard"));

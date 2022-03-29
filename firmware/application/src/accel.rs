@@ -26,18 +26,18 @@ impl Accelerometer {
         let mut config = twim::Config::default();
         config.frequency = twim::Frequency::K100;
         let irq = interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0);
-        let i2c = twim::Twim::new(twi, irq, sda, scl, config);
+        let _i2c = twim::Twim::new(twi, irq, sda, scl, config);
 
         #[cfg(feature = "adxl")]
         {
             // Data rate 100Hz by default
-            let mut adxl = adxl343::Adxl343::new(i2c).map_err(|_| AccelError::Init)?;
+            let mut adxl = adxl343::Adxl343::new(_i2c).map_err(|_| AccelError::Init)?;
             return Ok(Self { adxl });
         }
 
         #[cfg(feature = "lsm")]
         {
-            let mut lsm = lsm6ds33::Lsm6ds33::new(i2c, 0x6A).map_err(|_| AccelError::Init)?;
+            let mut lsm = lsm6ds33::Lsm6ds33::new(_i2c, 0x6A).map_err(|_| AccelError::Init)?;
             lsm.set_accelerometer_output(lsm6ds33::AccelerometerOutput::Rate13)
                 .map_err(|_| AccelError::Init)?;
             lsm.set_accelerometer_scale(lsm6ds33::AccelerometerScale::G04)
@@ -45,7 +45,7 @@ impl Accelerometer {
             return Ok(Self { lsm });
         }
 
-        Err(AccelError::Init)
+        Ok(Self {})
     }
 }
 

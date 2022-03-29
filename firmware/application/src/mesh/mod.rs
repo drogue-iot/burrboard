@@ -427,7 +427,7 @@ pub struct SensorState {
 }
 
 impl SensorData for SensorState {
-    fn decode(&mut self, property: PropertyId, data: &[u8]) -> Result<(), ParseError> {
+    fn decode(&mut self, _: PropertyId, _: &[u8]) -> Result<(), ParseError> {
         todo!()
     }
 
