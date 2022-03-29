@@ -7,7 +7,7 @@ spec:
   params:
     - name: gitrevision
       description: The git revision
-      default: master
+      default: main
     - name: gitrepositoryurl
       description: The git repository url
     - name: namespace
@@ -112,7 +112,7 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.head_commit.id)
+      value: main
     - name: namespace
       value: drogue-ajour
     - name: gitrepositoryurl
