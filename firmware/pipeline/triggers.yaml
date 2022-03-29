@@ -19,24 +19,90 @@ spec:
         generateName: burrboard-rev2-run-
         namespace: $(tt.params.namespace)
       spec:
-        serviceAccountName: pipeline
+        params:
+          - name: GIT_REPO
+            value: $(tt.params.gitrepositoryurl)
+          - name: GIT_REVISION
+            value: $(tt.params.gitrevision)
+          - name: PROJECT_PATH
+            value: firmware/application
+          - name: IMAGE
+            value: burrboard-rev2
+          - name: CARGO_BUILD_ARGS
+            value: "--features rev2,defmt,gatt_first"
         pipelineRef:
           name: oci-firmware
-        resources:
-          - name: source-repo
-            resourceSpec:
-              type: git
-              params:
-              - name: GIT_REVISION
-                value: $(tt.params.gitrevision)
-              - name: GIT_REPO
-                value: $(tt.params.gitrepositoryurl)
-              - name: CARGO_BUILD_ARGS
-                value: "--features rev2,defmt,gatt_first"
-              - name: PROJECT_PATH
-                value: firmware/application
-              - name: IMAGE
-                value: burrboard-rev2
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: build
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 10Gi
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: burrboard-rev3-run-
+        namespace: $(tt.params.namespace)
+      spec:
+        params:
+          - name: GIT_REPO
+            value: $(tt.params.gitrepositoryurl)
+          - name: GIT_REVISION
+            value: $(tt.params.gitrevision)
+          - name: PROJECT_PATH
+            value: firmware/application
+          - name: IMAGE
+            value: burrboard-rev3
+          - name: CARGO_BUILD_ARGS
+            value: "--features rev3,defmt,gatt_first"
+        pipelineRef:
+          name: oci-firmware
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: build
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 10Gi
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: burrboard-rev3-5-run-
+        namespace: $(tt.params.namespace)
+      spec:
+        params:
+          - name: GIT_REPO
+            value: $(tt.params.gitrepositoryurl)
+          - name: GIT_REVISION
+            value: $(tt.params.gitrevision)
+          - name: PROJECT_PATH
+            value: firmware/application
+          - name: IMAGE
+            value: burrboard-rev3-5
+          - name: CARGO_BUILD_ARGS
+            value: "--features rev3.5,defmt,gatt_first"
+        pipelineRef:
+          name: oci-firmware
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: build
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 10Gi
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
