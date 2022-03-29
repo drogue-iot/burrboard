@@ -296,6 +296,7 @@ impl Actor for BurrBoardFirmware {
         M: Inbox<Self> + 'm,
     {
         async move {
+            let mut booted = false;
             loop {
                 if let Some(mut m) = inbox.next().await {
                     match m.message() {
@@ -307,7 +308,10 @@ impl Actor for BurrBoardFirmware {
                             } else if *value == 2 {
                                 self.dfu.notify(DfuCommand::Finish).unwrap();
                             } else if *value == 3 {
-                                self.dfu.notify(DfuCommand::Booted).unwrap();
+                                if !booted {
+                                    self.dfu.request(DfuCommand::Booted).unwrap().await.unwrap();
+                                    booted = true;
+                                }
                             }
                         }
                         FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
