@@ -235,30 +235,46 @@ async fn main() -> anyhow::Result<()> {
 
                         tokio::task::spawn(async move {
                             log::info!("Running data stream for '{a}'");
-                            let mut s = Box::pin(board.stream_sensors().await.unwrap());
-                            let mut view = json!({});
-                            loop {
-                                if let Some(n) = s.next().await {
-                                    *last_event.lock().await = Instant::now();
 
-                                    let previous = view.clone();
-                                    merge(&mut view, &n);
-                                    if previous != view {
-                                        let payload = json! {
-                                            {
-                                                "features": view,
-                                            }
-                                        };
-                                        log::debug!("Payload: {payload}");
-                                        match serde_json::to_vec(&payload) {
-                                            Ok(payload) => {
-                                                gateway.publish(&device_name, &payload[..]).await;
-                                            }
-                                            Err(e) => {
-                                                log::warn!("Error encoding payload: {:?}", e);
+                            match Box::pin(board.stream_sensors()).await {
+                                Ok(mut s) => {
+                                    let mut view = json!({});
+                                    loop {
+                                        if let Some(n) = s.next().await {
+                                            *last_event.lock().await = Instant::now();
+
+                                            let previous = view.clone();
+                                            merge(&mut view, &n);
+                                            if previous != view {
+                                                let payload = json! {
+                                                    {
+                                                        "features": view,
+                                                    }
+                                                };
+                                                log::debug!("Payload: {payload}");
+                                                match serde_json::to_vec(&payload) {
+                                                    Ok(payload) => {
+                                                        gateway
+                                                            .publish(&device_name, &payload[..])
+                                                            .await;
+                                                    }
+                                                    Err(e) => {
+                                                        log::warn!(
+                                                            "Error encoding payload: {:?}",
+                                                            e
+                                                        );
+                                                    }
+                                                }
                                             }
                                         }
                                     }
+                                }
+                                Err(e) => {
+                                    log::warn!(
+                                        "Error streaming sensor data from {}: {:?}",
+                                        device_name,
+                                        e
+                                    );
                                 }
                             }
                         });
@@ -269,6 +285,7 @@ async fn main() -> anyhow::Result<()> {
                             tokio::task::spawn(async move {
                                 loop {
                                     client.run(&mut gatt).await;
+                                    sleep(Duration::from_secs(10)).await;
                                 }
                             });
                         }

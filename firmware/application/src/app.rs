@@ -30,7 +30,7 @@ impl App {
                 conn_count: 2,
                 event_length: 24,
             }),
-            conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 25 }),
+            conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 256 }),
             gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
                 adv_set_count: 1,
                 periph_role_count: 1,

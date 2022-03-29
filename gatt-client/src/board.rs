@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use bluer::{
     gatt::remote::{Characteristic, Service},
     Device,
@@ -148,11 +149,13 @@ impl BurrBoard {
         &self,
         service: uuid::Uuid,
         c: uuid::Uuid,
-    ) -> bluer::Result<impl Stream<Item = Vec<u8>>> {
-        let service = self.find_service(service).await?.unwrap();
-        let c = self.find_char(&service, c).await?.unwrap();
-
-        c.notify().await
+    ) -> Result<impl Stream<Item = Vec<u8>>, anyhow::Error> {
+        if let Some(service) = self.find_service(service).await? {
+            if let Some(c) = self.find_char(&service, c).await? {
+                return Ok(c.notify().await?);
+            }
+        }
+        Err(anyhow!("Error locating service {} and char {}", service, c))
     }
 
     async fn find_char(
