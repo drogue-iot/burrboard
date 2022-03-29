@@ -1,24 +1,34 @@
-use bluer::Adapter;
 use drgdfu::{FirmwareUpdater, GattBoard};
-use std::sync::Arc;
 use std::time::Duration;
 
 pub struct FirmwareClient {
-    boards: Vec<GattBoard>,
-    updater: FirmwareUpdater,
+    url: String,
+    user: String,
+    password: String,
 }
 
 impl FirmwareClient {
-    pub fn new(url: String, user: String, password: String, adapter: Arc<Adapter>) -> Self {
+    pub fn new(url: String, user: String, password: String) -> Self {
         Self {
-            boards: Vec::new(),
-            updater: FirmwareUpdater::Cloud {
-                client: reqwest::Client::new(),
-                url,
-                user,
-                password,
-                timeout: Duration::from_secs(30),
-            },
+            url,
+            user,
+            password,
+        }
+    }
+
+    pub async fn run(&self, board: &mut GattBoard) {
+        let updater = FirmwareUpdater::Cloud {
+            client: reqwest::Client::new(),
+            url: self.url.clone(),
+            user: self.user.clone(),
+            password: self.password.clone(),
+            timeout: Duration::from_secs(30),
+        };
+
+        let name = board.address().to_string();
+
+        if let Err(e) = updater.run(board, Some(&name)).await {
+            log::warn!("Updating failed for {}: {:?}", board.address(), e);
         }
     }
 }

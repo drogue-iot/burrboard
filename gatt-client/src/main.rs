@@ -1,9 +1,6 @@
-use std::path::PathBuf;
-
-use bluer::{AdapterEvent, Address};
+use bluer::AdapterEvent;
 use clap::{Parser, Subcommand};
-use core::str::FromStr;
-use drgdfu::{FirmwareDevice, FirmwareUpdater, GattBoard};
+use drgdfu::{FirmwareDevice, GattBoard};
 use futures::lock::Mutex;
 use futures::{pin_mut, StreamExt};
 use serde_json::json;
@@ -93,7 +90,6 @@ async fn main() -> anyhow::Result<()> {
     let discover = adapter.discover_devices().await?;
     pin_mut!(discover);
 
-    let addr = Address::from_str(&args.device)?;
     let last_event = Arc::new(Mutex::new(Instant::now()));
 
     if let Some(timeout) = args.timeout {
@@ -121,7 +117,7 @@ async fn main() -> anyhow::Result<()> {
         } => {
             while let Some(evt) = discover.next().await {
                 match evt {
-                    AdapterEvent::DeviceAdded(a) if devices.contains(&a.to_string()) => {
+                    AdapterEvent::DeviceAdded(a) if devices.contains(&a.to_string().as_str()) => {
                         let device = adapter.device(a)?;
 
                         sleep(Duration::from_secs(2)).await;
@@ -177,6 +173,10 @@ async fn main() -> anyhow::Result<()> {
                             return Ok(());
                         }
                     }
+                    AdapterEvent::DeviceRemoved(a) if devices.contains(&a.to_string().as_str()) => {
+                        log::info!("Device removed: {}", a);
+                    }
+                    _ => {}
                 }
             }
         }
@@ -187,17 +187,16 @@ async fn main() -> anyhow::Result<()> {
             password,
             enable_dfu,
         } => {
-            let dfu_client = FirmwareClient::new(
+            let dfu_client = Arc::new(FirmwareClient::new(
                 http.clone(),
                 user.clone(),
                 password.clone(),
-                adapter.clone(),
-            );
-            let gateway = Gateway::new(http.clone(), user.clone(), password.clone());
+            ));
+            let gateway = Arc::new(Gateway::new(http.clone(), user.clone(), password.clone()));
 
             while let Some(evt) = discover.next().await {
                 match evt {
-                    AdapterEvent::DeviceAdded(a) if devices.contains(&a.to_string()) => {
+                    AdapterEvent::DeviceAdded(a) if devices.contains(&a.to_string().as_str()) => {
                         let device = adapter.device(a)?;
 
                         sleep(Duration::from_secs(2)).await;
@@ -219,22 +218,24 @@ async fn main() -> anyhow::Result<()> {
                             println!("Already connected");
                         }
 
-                        GattBoard::new(&device.address().to_string(), adapter.clone());
+                        let mut gatt =
+                            GattBoard::new(&device.address().to_string(), adapter.clone());
                         let version = gatt.version().await?;
-                        println!("Connected to board! Running version {}", version);
-                        if enable_dfu {
-                            client.add_device(gatt);
-                        }
-                        let board = Arc::new(board);
+                        println!(
+                            "Connected to {}! Running version {}",
+                            device.address(),
+                            version
+                        );
+
+                        let board = Arc::new(BurrBoard::new(device));
                         // Stream sensors
-                        let b = board.clone();
                         let device_name = board.address().to_string();
                         let last_event = last_event.clone();
+                        let gateway = gateway.clone();
 
-                        let stream_task = tokio::task::spawn(async move {
+                        tokio::task::spawn(async move {
                             log::info!("Running data stream for '{a}'");
-                            let mut s = Box::pin(b.stream_sensors().await.unwrap());
-                            let client = reqwest::Client::new();
+                            let mut s = Box::pin(board.stream_sensors().await.unwrap());
                             let mut view = json!({});
                             loop {
                                 if let Some(n) = s.next().await {
@@ -249,25 +250,30 @@ async fn main() -> anyhow::Result<()> {
                                             }
                                         };
                                         log::debug!("Payload: {payload}");
-                                        match gateway.publish(device_name, &payload).await {
-                                            Ok(resp) if !resp.status().is_success() => {
-                                                println!(
-                                                    "Error response {}: {}",
-                                                    resp.status(),
-                                                    resp.text().await.unwrap_or_default()
-                                                );
+                                        match serde_json::to_vec(&payload) {
+                                            Ok(payload) => {
+                                                gateway.publish(&device_name, &payload[..]).await;
                                             }
-                                            Ok(_) => {}
                                             Err(e) => {
-                                                println!("Request error: {:?}", e);
+                                                log::warn!("Error encoding payload: {:?}", e);
                                             }
                                         }
                                     }
                                 }
                             }
                         });
+
+                        // Starting updater process
+                        if *enable_dfu {
+                            let client = dfu_client.clone();
+                            tokio::task::spawn(async move {
+                                loop {
+                                    client.run(&mut gatt).await;
+                                }
+                            });
+                        }
                     }
-                    AdapterEvent::DeviceRemoved(a) if a == addr => {
+                    AdapterEvent::DeviceRemoved(a) if devices.contains(&a.to_string().as_str()) => {
                         log::info!("Device removed: {}", a);
                     }
                     _ => {}
