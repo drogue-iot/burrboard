@@ -1,0 +1,30 @@
+﻿apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: burrboard-firmware-rev3-5-build
+  namespace: drogue-ajour
+spec:
+  params:
+    - name: GIT_REPO
+      value: 'https://github.com/drogue-iot/burrboard'
+    - name: GIT_REVISION
+      value: main
+    - name: PROJECT_PATH
+      value: firmware/application
+    - name: IMAGE
+      value: burrboard-rev3-5
+    - name: CARGO_BUILD_ARGS
+      value: "--features rev3.5,defmt,gatt_first"
+  pipelineRef:
+    name: oci-firmware
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: build
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
