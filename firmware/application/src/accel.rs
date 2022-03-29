@@ -45,6 +45,7 @@ impl Accelerometer {
             return Ok(Self { lsm });
         }
 
+        #[cfg(not(any(feature = "lsm", feature = "adxl")))]
         Ok(Self {})
     }
 }
