@@ -45,7 +45,7 @@ burrboard-dfu = { path = "../dfu" }
 [features]
 default = ["panic-reset"]
 rev2 = ["adxl"]
-rev3 = []
+rev3 = ["lsm"]
 "rev3.5" = ["adxl"]
 lsm = []
 adxl = []
