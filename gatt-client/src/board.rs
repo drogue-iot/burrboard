@@ -1,15 +1,19 @@
 use anyhow::anyhow;
 use bluer::{
     gatt::remote::{Characteristic, Service},
-    Device,
+    Adapter, Address, Device,
 };
 use core::pin::Pin;
 use futures::{Stream, StreamExt};
 use serde_json::json;
 use std::str::FromStr;
+use std::sync::Arc;
+use tokio::time::{sleep, Duration};
 
 pub struct BurrBoard {
-    device: Device,
+    adapter: Arc<Adapter>,
+    device: Address,
+    board: Option<Device>,
 }
 
 const BOARD_SERVICE_UUID: uuid::Uuid = uuid::Uuid::from_u128(0x0000186000001000800000805f9b34fb);
@@ -45,16 +49,58 @@ impl FromStr for Led {
 unsafe impl Send for BurrBoard {}
 
 impl BurrBoard {
-    pub fn new(device: Device) -> Self {
-        Self { device }
+    pub fn new(device: &str, adapter: Arc<Adapter>) -> Self {
+        Self {
+            device: Address::from_str(device).unwrap(),
+            adapter,
+            board: None,
+        }
     }
 
-    pub async fn set_interval(&self, i: u16) -> bluer::Result<()> {
+    async fn connect(&mut self) -> bluer::Result<&mut Device> {
+        if self.board.is_none() {
+            loop {
+                if let Ok(device) = self.adapter.device(self.device) {
+                    // Make sure we get a fresh start
+                    let _ = device.disconnect().await;
+                    sleep(Duration::from_secs(2)).await;
+                    match device.is_connected().await {
+                        Ok(false) => {
+                            log::debug!("Connecting...");
+                            loop {
+                                match device.connect().await {
+                                    Ok(()) => break,
+                                    Err(err) => {
+                                        log::error!("Connect error: {}", &err);
+                                    }
+                                }
+                            }
+                            log::debug!("Connected1");
+                            self.board.replace(device);
+                            break;
+                        }
+                        Ok(true) => {
+                            log::debug!("Connected2");
+                            self.board.replace(device);
+                            break;
+                        }
+                        Err(e) => {
+                            log::info!("Error checking connection, retrying: {:?}", e);
+                        }
+                    }
+                }
+                sleep(Duration::from_secs(2)).await;
+            }
+        }
+        Ok(self.board.as_mut().unwrap())
+    }
+
+    pub async fn set_interval(&mut self, i: u16) -> bluer::Result<()> {
         self.write_char(BOARD_SERVICE_UUID, INTERVAL_CHAR_UUID, &i.to_le_bytes())
             .await
     }
 
-    pub async fn set_led(&self, led: Led, value: bool) -> bluer::Result<()> {
+    pub async fn set_led(&mut self, led: Led, value: bool) -> bluer::Result<()> {
         let c = match led {
             Led::Red => RED_LED_CHAR_UUID,
             Led::Green => GREEN_LED_CHAR_UUID,
@@ -65,11 +111,11 @@ impl BurrBoard {
         self.write_char(BOARD_SERVICE_UUID, c, &[val]).await
     }
 
-    pub fn address(&self) -> bluer::Address {
-        self.device.address()
+    pub fn address(&self) -> Address {
+        self.device
     }
 
-    pub async fn read_sensors(&self) -> bluer::Result<serde_json::Value> {
+    pub async fn read_sensors(&mut self) -> bluer::Result<serde_json::Value> {
         let data = self
             .read_char(BOARD_SERVICE_UUID, SENSORS_CHAR_UUID)
             .await?;
@@ -115,7 +161,7 @@ impl BurrBoard {
     }
 
     pub async fn stream_sensors(
-        &self,
+        &mut self,
     ) -> Result<Pin<Box<impl Stream<Item = serde_json::Value>>>, anyhow::Error> {
         let sensors = self
             .stream_char(BOARD_SERVICE_UUID, SENSORS_CHAR_UUID)
@@ -125,7 +171,7 @@ impl BurrBoard {
         Ok(Box::pin(sensors))
     }
 
-    async fn read_char(&self, service: uuid::Uuid, c: uuid::Uuid) -> bluer::Result<Vec<u8>> {
+    async fn read_char(&mut self, service: uuid::Uuid, c: uuid::Uuid) -> bluer::Result<Vec<u8>> {
         let service = self.find_service(service).await?.unwrap();
         let c = self.find_char(&service, c).await?.unwrap();
 
@@ -134,7 +180,7 @@ impl BurrBoard {
     }
 
     async fn write_char(
-        &self,
+        &mut self,
         service: uuid::Uuid,
         c: uuid::Uuid,
         value: &[u8],
@@ -146,7 +192,7 @@ impl BurrBoard {
     }
 
     async fn stream_char(
-        &self,
+        &mut self,
         service: uuid::Uuid,
         c: uuid::Uuid,
     ) -> Result<impl Stream<Item = Vec<u8>>, anyhow::Error> {
@@ -159,7 +205,7 @@ impl BurrBoard {
     }
 
     async fn find_char(
-        &self,
+        &mut self,
         service: &Service,
         characteristic: uuid::Uuid,
     ) -> bluer::Result<Option<Characteristic>> {
@@ -172,8 +218,9 @@ impl BurrBoard {
         Ok(None)
     }
 
-    async fn find_service(&self, service: uuid::Uuid) -> bluer::Result<Option<Service>> {
-        for s in self.device.services().await? {
+    async fn find_service(&mut self, service: uuid::Uuid) -> bluer::Result<Option<Service>> {
+        let device = self.connect().await?;
+        for s in device.services().await? {
             let uuid = s.uuid().await?;
             if uuid == service {
                 return Ok(Some(s));
