@@ -50,6 +50,7 @@ rev3 = []
 lsm = []
 adxl = []
 gatt_first = []
+gatt_only = []
 defmt = [
       "dep:defmt",
       "nrf-softdevice-defmt-rtt",

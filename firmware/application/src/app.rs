@@ -5,6 +5,7 @@ use nrf_softdevice::{raw, Flash, Softdevice};
 
 use crate::board::*;
 use crate::gatt::*;
+#[cfg(not(feature = "gatt_only"))]
 use crate::mesh::*;
 
 pub struct App {
@@ -14,6 +15,7 @@ pub struct App {
 
 pub enum Mode {
     Gatt(GattApp),
+    #[cfg(not(feature = "gatt_only"))]
     Mesh(MeshApp),
 }
 
@@ -60,9 +62,19 @@ impl App {
             let app = GattApp::enable(sd);
             Mode::Gatt(app)
         } else {
-            info!("Running in MESH mode");
-            let app = MeshApp::enable();
-            Mode::Mesh(app)
+            #[cfg(not(feature = "gatt_only"))]
+            {
+                info!("Running in MESH mode");
+                let app = MeshApp::enable();
+                Mode::Mesh(app)
+            }
+
+            #[cfg(feature = "gatt_only")]
+            {
+                info!("Running in GATT mode");
+                let app = GattApp::enable(sd);
+                Mode::Gatt(app)
+            }
         };
 
         Self { sd, mode }
@@ -75,6 +87,7 @@ impl App {
     pub fn mount(&'static self, s: Spawner, p: &BoardPeripherals) {
         match &self.mode {
             Mode::Gatt(app) => app.mount(s, self.sd, p),
+            #[cfg(not(feature = "gatt_only"))]
             Mode::Mesh(app) => app.mount(s, self.sd, p),
         }
     }
@@ -83,6 +96,7 @@ impl App {
         unsafe {
             match self.mode {
                 Mode::Gatt(_) => raw::sd_power_gpregret_clr(0, 0x1),
+                #[cfg(not(feature = "gatt_only"))]
                 Mode::Mesh(_) => raw::sd_power_gpregret_set(0, 0x1),
             };
         }
@@ -105,6 +119,7 @@ impl App {
                 leds.blue.off().ok();
                 leds.yellow.off().ok();
             }
+            #[cfg(not(feature = "gatt_only"))]
             Mode::Mesh(_) => {
                 leds.yellow.on().ok();
                 Timer::after(Duration::from_secs(1)).await;

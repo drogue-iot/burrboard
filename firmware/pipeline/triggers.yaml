@@ -29,7 +29,7 @@ spec:
           - name: IMAGE
             value: burrboard-rev2
           - name: CARGO_BUILD_ARGS
-            value: "--features rev2,defmt,gatt_first"
+            value: "--features rev2,defmt,gatt_only"
         pipelineRef:
           name: oci-firmware
         serviceAccountName: pipeline
@@ -59,7 +59,7 @@ spec:
           - name: IMAGE
             value: burrboard-rev3
           - name: CARGO_BUILD_ARGS
-            value: "--features rev3,defmt,gatt_first"
+            value: "--features rev3,defmt,gatt_only"
         pipelineRef:
           name: oci-firmware
         serviceAccountName: pipeline
