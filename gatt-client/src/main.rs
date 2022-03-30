@@ -44,6 +44,9 @@ pub enum Mode {
         devices: String,
 
         #[clap(long)]
+        disable_sensors: bool,
+
+        #[clap(long)]
         enable_dfu: bool,
     },
     Client {
@@ -165,6 +168,7 @@ async fn main() -> anyhow::Result<()> {
             http,
             user,
             password,
+            disable_sensors,
             enable_dfu,
             devices,
         } => {
@@ -182,51 +186,53 @@ async fn main() -> anyhow::Result<()> {
                 let version = gatt.version().await?;
                 println!("Connected to {}! Running version {}", device, version);
 
-                let mut board = BurrBoard::new(&device, adapter.clone());
-                // Stream sensors
-                let device_name = board.address().to_string();
-                let last_event = last_event.clone();
-                let gateway = gateway.clone();
+                if !disable_sensors {
+                    let mut board = BurrBoard::new(&device, adapter.clone());
+                    // Stream sensors
+                    let device_name = board.address().to_string();
+                    let last_event = last_event.clone();
+                    let gateway = gateway.clone();
 
-                tasks.push(tokio::task::spawn(async move {
-                    log::info!("Running data stream for '{device}'");
-                    loop {
-                        match Box::pin(board.stream_sensors()).await {
-                            Ok(mut s) => {
-                                let mut view = json!({});
-                                loop {
-                                    if let Some(n) = s.next().await {
-                                        *last_event.lock().await = Instant::now();
+                    tasks.push(tokio::task::spawn(async move {
+                        log::info!("Running data stream for '{device}'");
+                        loop {
+                            match Box::pin(board.stream_sensors()).await {
+                                Ok(mut s) => {
+                                    let mut view = json!({});
+                                    loop {
+                                        if let Some(n) = s.next().await {
+                                            *last_event.lock().await = Instant::now();
 
-                                        let previous = view.clone();
-                                        merge(&mut view, &n);
-                                        if previous != view {
-                                            let payload = json! {
-                                                {
-                                                    "features": view,
-                                                }
-                                            };
-                                            log::info!("Payload: {payload}");
-                                            gateway.publish(&device_name, &payload).await;
+                                            let previous = view.clone();
+                                            merge(&mut view, &n);
+                                            if previous != view {
+                                                let payload = json! {
+                                                    {
+                                                        "features": view,
+                                                    }
+                                                };
+                                                log::info!("Payload: {payload}");
+                                                gateway.publish(&device_name, &payload).await;
+                                            }
+                                        } else {
+                                            log::info!("Stream closed");
+                                            sleep(Duration::from_secs(2)).await;
+                                            break;
                                         }
-                                    } else {
-                                        log::info!("Stream closed");
-                                        sleep(Duration::from_secs(2)).await;
-                                        break;
                                     }
                                 }
-                            }
-                            Err(e) => {
-                                log::warn!(
-                                    "Error streaming sensor data from {}: {:?}",
-                                    device_name,
-                                    e
-                                );
-                                sleep(Duration::from_secs(2)).await;
+                                Err(e) => {
+                                    log::warn!(
+                                        "Error streaming sensor data from {}: {:?}",
+                                        device_name,
+                                        e
+                                    );
+                                    sleep(Duration::from_secs(2)).await;
+                                }
                             }
                         }
-                    }
-                }));
+                    }));
+                }
 
                 // Starting updater process
                 if *enable_dfu {
