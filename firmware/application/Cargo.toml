@@ -40,8 +40,6 @@ adxl343 = "0.8.0"
 heapless = "0.7"
 cfg-if = "1.0.0"
 
-burrboard-dfu = { path = "../dfu" }
-
 [features]
 default = ["panic-reset"]
 rev2 = ["adxl"]
@@ -58,7 +56,6 @@ defmt = [
       "drogue-device/defmt",
       "panic-probe",
       "embassy-boot-nrf/defmt",
-      "burrboard-dfu/defmt",
       "nrf-softdevice/defmt",
 ]
 log = [

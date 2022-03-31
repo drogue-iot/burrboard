@@ -8,6 +8,7 @@ use core::future::Future;
 use drogue_device::{
     actors::dfu::{DfuCommand, FirmwareManager},
     actors::flash::SharedFlashHandle,
+    drivers::ble::gatt::dfu::{FirmwareGattService, FirmwareService, FirmwareServiceEvent},
     traits::led::Led,
     Actor, ActorContext, Address, Inbox,
 };
@@ -28,7 +29,7 @@ use heapless::Vec;
 pub struct BurrBoardServer {
     pub board: BurrBoardService,
     pub device_info: DeviceInformationService,
-    pub firmware: FirmwareUpdateService,
+    pub firmware: FirmwareService,
 }
 
 /// Gatt services for our module
@@ -60,21 +61,6 @@ pub struct DeviceInformationService {
     pub hardware_revision: Vec<u8, 4>,
     #[characteristic(uuid = "2a29", read)]
     pub manufacturer_name: Vec<u8, 32>,
-}
-
-#[nrf_softdevice::gatt_service(uuid = "1861")]
-pub struct FirmwareUpdateService {
-    #[characteristic(uuid = "1234", write)]
-    firmware: Vec<u8, 64>,
-
-    #[characteristic(uuid = "1235", read)]
-    offset: u32,
-
-    #[characteristic(uuid = "1236", write)]
-    control: u8,
-
-    #[characteristic(uuid = "1237", read)]
-    pub version: Vec<u8, 16>,
 }
 
 pub struct BurrBoardMonitor {
@@ -162,7 +148,6 @@ impl BurrBoardMonitor {
                     self.leds.yellow.on().ok();
                 }
             }
-            _ => {}
         }
     }
 }
@@ -266,76 +251,12 @@ impl Actor for BurrBoardMonitor {
     }
 }
 
-pub struct BurrBoardFirmware {
-    service: &'static FirmwareUpdateService,
-    dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
-}
-
-impl BurrBoardFirmware {
-    pub fn new(
-        service: &'static FirmwareUpdateService,
-        dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
-    ) -> Self {
-        Self { service, dfu }
-    }
-}
-
-impl Actor for BurrBoardFirmware {
-    type Message<'m> = FirmwareUpdateServiceEvent;
-
-    type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
-    where
-        Self: 'm,
-        M: 'm + Inbox<Self>;
-    fn on_mount<'m, M>(
-        &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
-    ) -> Self::OnMountFuture<'m, M>
-    where
-        M: Inbox<Self> + 'm,
-    {
-        async move {
-            let mut booted = false;
-            loop {
-                if let Some(mut m) = inbox.next().await {
-                    match m.message() {
-                        FirmwareUpdateServiceEvent::ControlWrite(value) => {
-                            info!("Write firmware control: {}", value);
-                            if *value == 1 {
-                                self.service.offset_set(0).ok();
-                                self.dfu.request(DfuCommand::Start).unwrap().await.unwrap();
-                            } else if *value == 2 {
-                                self.dfu.notify(DfuCommand::Finish).unwrap();
-                            } else if *value == 3 {
-                                if !booted {
-                                    self.dfu.request(DfuCommand::Booted).unwrap().await.unwrap();
-                                    booted = true;
-                                }
-                            }
-                        }
-                        FirmwareUpdateServiceEvent::FirmwareWrite(value) => {
-                            let offset = self.service.offset_get().unwrap();
-                            self.dfu
-                                .request(DfuCommand::WriteBlock(value))
-                                .unwrap()
-                                .await
-                                .unwrap();
-                            self.service.offset_set(offset + value.len() as u32).ok();
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 #[embassy::task]
 pub async fn bluetooth_task(
     sd: &'static Softdevice,
     server: &'static BurrBoardServer,
     monitor: Address<BurrBoardMonitor>,
-    firmware: Address<BurrBoardFirmware>,
+    firmware: Address<FirmwareGattService<'static, SharedFlashHandle<Flash>>>,
 ) {
     #[rustfmt::skip]
     let adv_data = &[
@@ -381,7 +302,7 @@ pub struct GattApp {
     server: BurrBoardServer,
 
     monitor: ActorContext<BurrBoardMonitor>,
-    firmware: ActorContext<BurrBoardFirmware>,
+    firmware: ActorContext<FirmwareGattService<'static, SharedFlashHandle<Flash>>>,
 }
 
 impl GattApp {
@@ -395,17 +316,6 @@ impl GattApp {
     }
 
     pub fn mount(&'static self, s: Spawner, sd: &'static Softdevice, p: &BoardPeripherals) {
-        self.server
-            .firmware
-            .version_set(
-                heapless::Vec::from_slice(
-                    crate::FIRMWARE_REVISION
-                        .unwrap_or(crate::FIRMWARE_VERSION)
-                        .as_bytes(),
-                )
-                .unwrap(),
-            )
-            .unwrap();
         let monitor = self.monitor.mount(
             s,
             BurrBoardMonitor::new(
@@ -418,9 +328,18 @@ impl GattApp {
             ),
         );
 
-        let firmware = self
-            .firmware
-            .mount(s, BurrBoardFirmware::new(&self.server.firmware, p.dfu));
+        let firmware = self.firmware.mount(
+            s,
+            FirmwareGattService::new(
+                &self.server.firmware,
+                p.dfu,
+                crate::FIRMWARE_REVISION
+                    .unwrap_or(crate::FIRMWARE_VERSION)
+                    .as_bytes(),
+                64,
+            )
+            .unwrap(),
+        );
         s.spawn(bluetooth_task(sd, &self.server, monitor, firmware))
             .unwrap();
     }
