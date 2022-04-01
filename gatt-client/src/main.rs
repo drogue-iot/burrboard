@@ -240,7 +240,7 @@ async fn main() -> anyhow::Result<()> {
                     tasks.push(tokio::task::spawn(async move {
                         loop {
                             client.run(&mut gatt).await;
-                            sleep(Duration::from_secs(10)).await;
+                            sleep(Duration::from_secs(60)).await;
                         }
                     }));
                 }
