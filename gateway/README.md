@@ -69,4 +69,48 @@ To run the gateway on a NUC installed with F35, [this](nuc.md) should
 get you pretty close. It's handy to have `test-mesh` around -- from
 the bluez source tree -- on which all the python scripts are based...
 
+## Run using containers
 
+You can containerize the gateway by running
+
+```
+docker build -t drogue-gateway .
+```
+
+or if you're building for a different platform
+
+```
+ docker buildx build --platform linux/arm -t drogue-gateway .
+ ```
+
+ You can then tag/push containers in a regular fashion, e.g.
+
+ ```
+ docker tag drogue-gateway quay.io/dejanb/drogue-gateway
+ docker push quay.io/dejanb/drogue-gateway
+ ```
+
+ Now you can run gateway
+
+ ```
+ sudo docker run -it \
+--net=host --privileged --name drogue-gateway \
+-v $PWD/deploy/bluez/config_db.json:/root/.config/meshcfg/config_db.json \
+-v $PWD/deploy/bluez/mesh/:/var/lib/bluetooth/mesh/ \
+--env TOKEN=a4d2100e2fc8f6e5 \
+quay.io/dejanb/drogue-gateway:latest app/gateway.py
+```
+
+or device simulator
+
+```
+sudo docker run -it \
+--net=host --privileged \
+--name drogue-gateway \
+-v $PWD/deploy/bluez/config_db.json:/root/.config/meshcfg/config_db.json \
+-v $PWD/deploy/bluez/mesh/:/var/lib/bluetooth/mesh/ \
+--env TOKEN=bf2aadd0a6b0da55 \
+quay.io/dejanb/drogue-gateway app/device.py
+```
+
+Note that we provided example mesh state with some pre-joined devices. You can provide your own mesh state similarly.
