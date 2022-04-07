@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drogue-device
+  labels:
+    app: drogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drogue
+  template:
+    metadata:
+      labels:
+        app: drogue
+    spec:
+      hostNetwork: true
+      containers:
+      - name: drogue-device
+        image: quay.io/dejanb/drogue-gateway:latest
+        command: ["./entrypoint.sh"]
+        args: ["app/device.py"]
+        env:
+        - name: TOKEN
+          value: bf2aadd0a6b0da55
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: "/var/lib/bluetooth/mesh/"
+            name: mesh-volume
+          - mountPath: /root/.config/meshcfg/config_db.json
+            name: mesh-config
+      volumes:
+      - name: mesh-volume
+        hostPath:
+          path: /home/dejanb/burrboard/gateway/deploy/bluez/mesh/
+      - name: mesh-config
+        hostPath:
+          path: /home/dejanb/burrboard/gateway/deploy/bluez/config_db.json

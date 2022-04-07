@@ -114,3 +114,24 @@ quay.io/dejanb/drogue-gateway app/device.py
 ```
 
 Note that we provided example mesh state with some pre-joined devices. You can provide your own mesh state similarly.
+
+## Run using Kubernetes
+
+You can run the gateway and the simulator in Kubernetes as well. We tested it on Microshift for now. Take a look at how set
+Microshift on NUC, [here](nuc.md#Microshift).
+
+Once, you have your K8s ready run
+
+```
+oc  new-project drogue
+oc apply -f deploy/k8s/gateway.yaml
+```
+
+or
+
+```
+oc  new-project drogue
+oc apply -f deploy/k8s/device.yaml
+```
+
+Make sure you adjust local paths in yaml files. This will be improved soon.
