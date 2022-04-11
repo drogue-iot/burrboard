@@ -7,11 +7,8 @@ on:
       - gateway/
   workflow_dispatch:
 
-
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -44,4 +41,4 @@ jobs:
         context: gateway/
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: burrboard/drogue-gateway:latest
+        tags: ghcr.io/${{github.repository}}/drogue-gateway:latest
