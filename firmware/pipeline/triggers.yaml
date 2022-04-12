@@ -103,6 +103,36 @@ spec:
                 resources:
                   requests:
                     storage: 10Gi
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: burrboard-rev3-5-mesh-run-
+        namespace: $(tt.params.namespace)
+      spec:
+        params:
+          - name: GIT_REPO
+            value: $(tt.params.gitrepositoryurl)
+          - name: GIT_REVISION
+            value: $(tt.params.gitrevision)
+          - name: PROJECT_PATH
+            value: firmware/application
+          - name: IMAGE
+            value: burrboard-rev3-5-mesh
+          - name: CARGO_BUILD_ARGS
+            value: "--features rev3.5,defmt"
+        pipelineRef:
+          name: oci-firmware
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: build
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 10Gi
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
