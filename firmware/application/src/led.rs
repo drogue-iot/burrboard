@@ -1,28 +1,23 @@
-use drogue_device::{actors::led::LedMessage, Actor, ActorError, Address};
+use drogue_device::{actors::led::LedMessage, Address};
 
-pub struct StatefulLed<L>
-where
-    L: Actor<Message<'static> = LedMessage> + 'static,
-{
-    led: Address<L>,
+pub struct StatefulLed {
+    led: Address<LedMessage>,
     state: bool,
 }
 
-impl<L> StatefulLed<L>
-where
-    L: Actor<Message<'static> = LedMessage> + 'static,
-{
-    pub fn new(led: Address<L>, state: bool) -> Self {
+impl StatefulLed {
+    pub fn new(led: Address<LedMessage>, state: bool) -> Self {
         Self { led, state }
     }
-    pub fn on(&mut self) -> Result<(), ActorError> {
-        self.led.notify(LedMessage::On)?;
+
+    pub fn on(&mut self) -> Result<(), ()> {
+        let _ = self.led.try_notify(LedMessage::On);
         self.state = true;
         Ok(())
     }
 
-    pub fn off(&mut self) -> Result<(), ActorError> {
-        self.led.notify(LedMessage::Off)?;
+    pub fn off(&mut self) -> Result<(), ()> {
+        let _ = self.led.try_notify(LedMessage::Off);
         self.state = false;
         Ok(())
     }
@@ -32,12 +27,7 @@ where
     }
 }
 
-impl<L> Copy for StatefulLed<L> where L: Actor<Message<'static> = LedMessage> + 'static {}
-
-impl<L> Clone for StatefulLed<L>
-where
-    L: Actor<Message<'static> = LedMessage> + 'static,
-{
+impl Clone for StatefulLed {
     fn clone(&self) -> Self {
         Self {
             led: self.led.clone(),

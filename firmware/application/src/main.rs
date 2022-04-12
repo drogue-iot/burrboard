@@ -32,14 +32,10 @@ mod accel;
 mod analog;
 mod app;
 mod board;
-mod control;
 mod counter;
-mod gatt;
 mod led;
-mod watchdog;
-
-#[cfg(not(feature = "gatt_only"))]
 mod mesh;
+mod watchdog;
 
 use app::*;
 use board::*;

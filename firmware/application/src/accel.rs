@@ -1,13 +1,16 @@
 use cfg_if::cfg_if;
 use core::future::Future;
-use drogue_device::{Actor, Address, Inbox};
+use drogue_device::{Actor, Address, Inbox, Request};
 use embassy_nrf::{
     interrupt,
     peripherals::{P0_11, P0_12, TWISPI0},
     twim,
 };
 
+#[cfg(feature = "adxl")]
 use adxl343::Adxl343;
+
+#[cfg(feature = "lsm")]
 use lsm6ds33::Lsm6ds33;
 
 pub struct Accelerometer {
@@ -50,7 +53,7 @@ impl Accelerometer {
     }
 }
 
-pub struct Read;
+pub struct AccelRead;
 
 #[derive(Clone, Copy)]
 pub struct AccelValues {
@@ -59,38 +62,38 @@ pub struct AccelValues {
     pub z: f32,
 }
 
+pub type AccelRequest = Request<AccelRead, AccelValues>;
+
 impl Actor for Accelerometer {
-    type Message<'m> = Read;
-    type Response = Option<AccelValues>;
+    type Message<'m> = Request<AccelRead, AccelValues>;
     type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm + Inbox<Self>;
+        M: 'm + Inbox<Self::Message<'m>>;
     fn on_mount<'m, M>(
         &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
+        _: Address<Self::Message<'m>>,
+        mut inbox: M,
     ) -> Self::OnMountFuture<'m, M>
     where
-        M: Inbox<Self> + 'm,
+        M: Inbox<Self::Message<'m>> + 'm,
         Self: 'm,
     {
         async move {
             loop {
-                if let Some(mut m) = inbox.next().await {
+                let m = inbox.next().await;
+                let values = {
                     cfg_if! {
                         if #[cfg(feature = "lsm")] {
-                            let response = if let Ok((x, y, z)) = self.lsm.read_accelerometer() {
+                            if let Ok((x, y, z)) = self.lsm.read_accelerometer() {
                                 trace!("Accel: x: {}, y: {}, z: {}", x, y, z);
                                 Some(AccelValues { x, y, z })
                             } else {
                                 None
-                            };
-                            m.set_response(response);
+                            }
                         } else if #[cfg(feature = "adxl")] {
-                            use adxl343::accelerometer::RawAccelerometer;
                             use adxl343::accelerometer::Accelerometer;
-                            let response = if let Ok(val) = self.adxl.accel_norm() {
+                            if let Ok(val) = self.adxl.accel_norm() {
                                 let x = val.x;
                                 let y = val.y;
                                 let z = val.z;
@@ -98,12 +101,14 @@ impl Actor for Accelerometer {
                                 Some(AccelValues { x, y, z })
                             } else {
                                 None
-                            };
-                            m.set_response(response);
+                            }
                         } else {
-                            m.set_response(Some(AccelValues {x: 0.0, y: 0.0, z: 0.0}))
+                            Some(AccelValues {x: 0.0, y: 0.0, z: 0.0})
                         }
                     }
+                };
+                if let Some(values) = values {
+                    m.reply(values).await;
                 }
             }
         }

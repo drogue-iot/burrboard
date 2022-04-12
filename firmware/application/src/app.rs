@@ -4,19 +4,13 @@ use embassy::time::{Duration, Timer};
 use nrf_softdevice::{raw, Flash, Softdevice};
 
 use crate::board::*;
-use crate::gatt::*;
+//use crate::gatt::*;
 #[cfg(not(feature = "gatt_only"))]
 use crate::mesh::*;
 
 pub struct App {
     sd: &'static Softdevice,
-    mode: Mode,
-}
-
-pub enum Mode {
-    Gatt(GattApp),
-    #[cfg(not(feature = "gatt_only"))]
-    Mesh(MeshApp),
+    app: MeshApp,
 }
 
 impl App {
@@ -55,29 +49,8 @@ impl App {
         let sd = Softdevice::enable(&config);
         s.spawn(softdevice_task(sd)).unwrap();
 
-        let p = unsafe { embassy_nrf::pac::Peripherals::steal() };
-        let val = p.POWER.gpregret.read().bits();
-        let mode = if val & 0x1 == if cfg!(feature = "gatt_first") { 0 } else { 1 } {
-            info!("Running in GATT mode");
-            let app = GattApp::enable(sd);
-            Mode::Gatt(app)
-        } else {
-            #[cfg(not(feature = "gatt_only"))]
-            {
-                info!("Running in MESH mode");
-                let app = MeshApp::enable();
-                Mode::Mesh(app)
-            }
-
-            #[cfg(feature = "gatt_only")]
-            {
-                info!("Running in GATT mode");
-                let app = GattApp::enable(sd);
-                Mode::Gatt(app)
-            }
-        };
-
-        Self { sd, mode }
+        let app = MeshApp::enable();
+        Self { sd, app }
     }
 
     pub fn flash(&self) -> Flash {
@@ -85,56 +58,22 @@ impl App {
     }
 
     pub fn mount(&'static self, s: Spawner, p: &BoardPeripherals) {
-        match &self.mode {
-            Mode::Gatt(app) => app.mount(s, self.sd, p),
-            #[cfg(not(feature = "gatt_only"))]
-            Mode::Mesh(app) => app.mount(s, self.sd, p),
-        }
-    }
-
-    pub fn switch(&'static self) -> ! {
-        unsafe {
-            match self.mode {
-                Mode::Gatt(_) => raw::sd_power_gpregret_clr(0, 0x1),
-                #[cfg(not(feature = "gatt_only"))]
-                Mode::Mesh(_) => raw::sd_power_gpregret_set(0, 0x1),
-            };
-        }
-        cortex_m::peripheral::SCB::sys_reset();
+        self.app.mount(s, self.sd, p);
     }
 
     pub async fn post(&self, leds: &mut Leds) {
-        match &self.mode {
-            Mode::Gatt(_) => {
-                leds.red.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.green.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.blue.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.yellow.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.red.off().ok();
-                leds.green.off().ok();
-                leds.blue.off().ok();
-                leds.yellow.off().ok();
-            }
-            #[cfg(not(feature = "gatt_only"))]
-            Mode::Mesh(_) => {
-                leds.yellow.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.blue.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.green.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.red.on().ok();
-                Timer::after(Duration::from_secs(1)).await;
-                leds.red.off().ok();
-                leds.green.off().ok();
-                leds.blue.off().ok();
-                leds.yellow.off().ok();
-            }
-        }
+        leds.red.on().ok();
+        Timer::after(Duration::from_secs(1)).await;
+        leds.green.on().ok();
+        Timer::after(Duration::from_secs(1)).await;
+        leds.blue.on().ok();
+        Timer::after(Duration::from_secs(1)).await;
+        leds.yellow.on().ok();
+        Timer::after(Duration::from_secs(1)).await;
+        leds.red.off().ok();
+        leds.green.off().ok();
+        leds.blue.off().ok();
+        leds.yellow.off().ok();
     }
 }
 
