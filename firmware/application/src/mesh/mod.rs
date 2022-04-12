@@ -91,6 +91,9 @@ impl BurrBoardElementsHandler {
         composition
             .add_element(ElementDescriptor::new(Location(0x0006)).add_model(SENSOR_SERVER))
             .ok();
+        composition
+            .add_element(ElementDescriptor::new(Location(0x0007)).add_model(GENERIC_ONOFF_SERVER))
+            .ok();
         Self {
             leds,
             composition,
@@ -166,6 +169,17 @@ impl ElementsHandler for BurrBoardElementsHandler {
                         let _ = self.leds.yellow.off();
                     } else {
                         let _ = self.leds.yellow.on();
+                    }
+                }
+            } else if element == 0x0007 {
+                if let Ok(Some(GenericOnOffMessage::Set(set))) =
+                    GenericOnOffServer::parse(message.opcode(), message.parameters())
+                {
+                    if set.on_off == 0 {
+                        unsafe {
+                            nrf_softdevice::raw::sd_power_gpregret_set(0, 0x1);
+                            cortex_m::peripheral::SCB::sys_reset();
+                        }
                     }
                 }
             }
