@@ -220,13 +220,13 @@ impl MeshApp {
         let rng = SoftdeviceRng::new(sd);
 
         let capabilities = Capabilities {
-            number_of_elements: 6,
+            number_of_elements: 7,
             algorithms: Algorithms::default(),
             public_key_type: PublicKeyType::default(),
             static_oob_type: StaticOOBType::default(),
-            output_oob_size: OOBSize::MaximumSize(6),
+            output_oob_size: OOBSize::MaximumSize(7),
             output_oob_action: OutputOOBActions::default(),
-            input_oob_size: OOBSize::MaximumSize(6),
+            input_oob_size: OOBSize::MaximumSize(7),
             input_oob_action: InputOOBActions::default(),
         };
 
