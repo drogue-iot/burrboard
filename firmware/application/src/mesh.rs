@@ -42,8 +42,8 @@ use heapless::Vec;
 use nrf_softdevice::{Flash, Softdevice};
 
 use crate::{
-    accel::{AccelRead, AccelValues},
-    analog::AnalogRead,
+    accel::*,
+    analog::*,
     board::*,
     counter::*,
 };
@@ -252,16 +252,26 @@ impl MeshApp {
 
 pub struct BoardSensorPublisher {
     ticker: Ticker,
-    board: BoardPeripherals,
+    leds: Leds,
+
+    counter_a: Address<CounterRequest>,
+    counter_b: Address<CounterRequest>,
+
+    analog: Address<AnalogRequest>,
+    accel: Address<AccelRequest>,
     context: Option<AppElementsContext<'static>>,
 }
 
 impl BoardSensorPublisher {
-    pub fn new(interval: Duration, board: BoardPeripherals) -> Self {
+    pub fn new(interval: Duration, board: &BoardPeripherals) -> Self {
         Self {
             ticker: Ticker::every(interval),
-            board,
             context: None,
+            leds: board.leds.clone(),
+            counter_a: board.counter_a.clone(),
+            counter_b: board.counter_b.clone(),
+            analog: board.analog.clone(),
+            accel: board.accel.clone(),
         }
     }
 }
@@ -306,15 +316,15 @@ impl Actor for BoardSensorPublisher {
                         }
                     },
                     Either::Right((_, _)) => {
-                        let accel = self.board.accel.request(AccelRead).await;
-                        let analog = self.board.analog.request(AnalogRead).await;
-                        let (button_a, counter_a) = self.board.counter_a.request(CounterRead).await;
-                        let (button_b, counter_b) = self.board.counter_b.request(CounterRead).await;
+                        let accel = self.accel.request(AccelRead).await;
+                        let analog = self.analog.request(AnalogRead).await;
+                        let (button_a, counter_a) = self.counter_a.request(CounterRead).await;
+                        let (button_b, counter_b) = self.counter_b.request(CounterRead).await;
 
-                        let red_led = self.board.leds.red.is_on();
-                        let green_led = self.board.leds.green.is_on();
-                        let blue_led = self.board.leds.blue.is_on();
-                        let yellow_led = self.board.leds.yellow.is_on();
+                        let red_led = self.leds.red.is_on();
+                        let green_led = self.leds.green.is_on();
+                        let blue_led = self.leds.blue.is_on();
+                        let yellow_led = self.leds.yellow.is_on();
 
                         let data = SensorState {
                             temperature: analog.temperature,
