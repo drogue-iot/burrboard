@@ -1,4 +1,3 @@
-use drogue_device::traits::led::Led as _;
 use embassy::executor::Spawner;
 use embassy::time::{Duration, Timer};
 use nrf_softdevice::{raw, Flash, Softdevice};

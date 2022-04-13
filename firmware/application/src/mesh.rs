@@ -1,10 +1,11 @@
 use core::future::Future;
+use drogue_device::actors::ble::mesh::{MeshNode, MeshNodeMessage};
 use drogue_device::drivers::ble::mesh::composition::{
     CompanyIdentifier, Composition, ElementDescriptor, ElementsHandler, Features, Location,
     ProductIdentifier, VersionIdentifier,
 };
 use drogue_device::drivers::ble::mesh::config::ConfigurationModel;
-use drogue_device::drivers::ble::mesh::driver::elements::{AppElementContext, AppElementsContext};
+use drogue_device::drivers::ble::mesh::driver::elements::AppElementsContext;
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
 use drogue_device::drivers::ble::mesh::model::generic::battery::{
     GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
@@ -12,10 +13,10 @@ use drogue_device::drivers::ble::mesh::model::generic::battery::{
     Status as GenericBatteryStatus, GENERIC_BATTERY_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::generic::onoff::{
-    GenericOnOffMessage, GenericOnOffServer, GENERIC_ONOFF_CLIENT, GENERIC_ONOFF_SERVER,
+    GenericOnOffMessage, GenericOnOffServer, GENERIC_ONOFF_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::sensor::{
-    PropertyId, RawValue, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
+    PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
     SensorServer as SensorServerModel, SensorStatus, SENSOR_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::{Model, ModelIdentifier};
@@ -26,25 +27,21 @@ use drogue_device::drivers::ble::mesh::provisioning::{
 };
 use drogue_device::drivers::ble::mesh::storage::FlashStorage;
 use drogue_device::ActorContext;
-use drogue_device::{actors::ble::mesh::MeshNode, drivers::ble::mesh::model::Message};
-use drogue_device::{actors::flash::SharedFlashHandle, drivers::ble::mesh::InsufficientBuffer};
 use drogue_device::{
     drivers::ble::mesh::bearer::nrf52::{SoftdeviceAdvertisingBearer, SoftdeviceRng},
     Actor, Address, Inbox,
 };
-use embassy::executor::Spawner;
+use drogue_device::{drivers::ble::mesh::InsufficientBuffer, flash::*};
+use embassy::channel::{Channel, DynamicReceiver};
 use embassy::time::{Duration, Ticker};
+use embassy::util::Forever;
+use embassy::{blocking_mutex::raw::NoopRawMutex, executor::Spawner};
 use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
 use heapless::Vec;
 use nrf_softdevice::{Flash, Softdevice};
 
-use crate::{
-    accel::{AccelValues, Read as AccelRead},
-    analog::Read as AnalogRead,
-    board::*,
-    counter::*,
-};
+use crate::{accel::*, analog::*, board::*, counter::*};
 
 const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
 const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
@@ -62,11 +59,11 @@ type SensorServer = SensorServerModel<BurrBoardSensors, 10, 1>;
 pub struct BurrBoardElementsHandler {
     composition: Composition,
     leds: Leds,
-    publisher: Address<BoardSensorPublisher>,
+    publisher: Address<PublisherMessage>,
 }
 
 impl BurrBoardElementsHandler {
-    pub fn new(leds: Leds, publisher: Address<BoardSensorPublisher>) -> Self {
+    pub fn new(leds: Leds, publisher: Address<PublisherMessage>) -> Self {
         let mut composition = Composition::new(
             COMPANY_IDENTIFIER,
             PRODUCT_IDENTIFIER,
@@ -91,11 +88,9 @@ impl BurrBoardElementsHandler {
         composition
             .add_element(ElementDescriptor::new(Location(0x0006)).add_model(SENSOR_SERVER))
             .ok();
-        /*
         composition
             .add_element(ElementDescriptor::new(Location(0x0007)).add_model(GENERIC_ONOFF_SERVER))
             .ok();
-        */
         Self {
             leds,
             composition,
@@ -104,15 +99,15 @@ impl BurrBoardElementsHandler {
     }
 }
 
-impl ElementsHandler for BurrBoardElementsHandler {
+impl ElementsHandler<'static> for BurrBoardElementsHandler {
     fn composition(&self) -> &Composition {
         &self.composition
     }
 
-    fn connect(&mut self, ctx: AppElementsContext) {
+    fn connect(&mut self, ctx: AppElementsContext<'static>) {
         let _ = self
             .publisher
-            .notify(PublisherMessage::Connect(ctx.clone()));
+            .try_notify(PublisherMessage::Connect(ctx.clone()));
     }
 
     fn configure(&mut self, config: &ConfigurationModel) {
@@ -121,10 +116,9 @@ impl ElementsHandler for BurrBoardElementsHandler {
         }
     }
 
-    type DispatchFuture<'m>
+    type DispatchFuture<'m> = impl Future<Output = Result<(), DeviceError>> + 'm
     where
-        Self: 'm,
-    = impl Future<Output = Result<(), DeviceError>> + 'm;
+        Self: 'm;
 
     fn dispatch<'m>(
         &'m mut self,
@@ -191,21 +185,24 @@ impl ElementsHandler for BurrBoardElementsHandler {
 }
 
 pub struct MeshApp {
-    node: ActorContext<
+    node: Forever<
         MeshNode<
+            'static,
             BurrBoardElementsHandler,
             SoftdeviceAdvertisingBearer,
-            FlashStorage<SharedFlashHandle<Flash>>,
+            FlashStorage<SharedFlash<'static, Flash>>,
             SoftdeviceRng,
         >,
     >,
+    control: Channel<NoopRawMutex, MeshNodeMessage, 1>,
     publisher: ActorContext<BoardSensorPublisher>,
 }
 
 impl MeshApp {
     pub fn enable() -> Self {
         Self {
-            node: ActorContext::new(),
+            node: Forever::new(),
+            control: Channel::new(),
             publisher: ActorContext::new(),
         }
     }
@@ -215,14 +212,14 @@ impl MeshApp {
             static __storage: u8;
         }
 
-        let storage: FlashStorage<SharedFlashHandle<Flash>> =
-            FlashStorage::new(unsafe { &__storage as *const u8 as usize }, p.flash.into());
+        let storage: FlashStorage<SharedFlash<'static, Flash>> =
+            FlashStorage::new(unsafe { &__storage as *const u8 as usize }, p.flash.clone());
 
         let bearer = SoftdeviceAdvertisingBearer::new(sd);
         let rng = SoftdeviceRng::new(sd);
 
         let capabilities = Capabilities {
-            number_of_elements: 6,
+            number_of_elements: 7,
             algorithms: Algorithms::default(),
             public_key_type: PublicKeyType::default(),
             static_oob_type: StaticOOBType::default(),
@@ -239,10 +236,12 @@ impl MeshApp {
 
         let elements = BurrBoardElementsHandler::new(p.leds.clone(), publisher);
 
-        self.node.mount(
-            s,
-            MeshNode::new(elements, capabilities, bearer, storage, rng),
-        );
+        let node = self
+            .node
+            .put(MeshNode::new(elements, capabilities, bearer, storage, rng));
+
+        s.spawn(mesh_task(node, self.control.receiver().into()))
+            .unwrap();
 
         /*
         let mesh_node =
@@ -251,24 +250,48 @@ impl MeshApp {
     }
 }
 
+#[embassy::task]
+pub async fn mesh_task(
+    node: &'static mut MeshNode<
+        'static,
+        BurrBoardElementsHandler,
+        SoftdeviceAdvertisingBearer,
+        FlashStorage<SharedFlash<'static, Flash>>,
+        SoftdeviceRng,
+    >,
+    control: DynamicReceiver<'static, MeshNodeMessage>,
+) {
+    node.run(control).await;
+}
+
 pub struct BoardSensorPublisher {
     ticker: Ticker,
-    board: BoardPeripherals,
-    context: Option<AppElementsContext>,
+    leds: Leds,
+
+    counter_a: Address<CounterRequest>,
+    counter_b: Address<CounterRequest>,
+
+    analog: Address<AnalogRequest>,
+    accel: Address<AccelRequest>,
+    context: Option<AppElementsContext<'static>>,
 }
 
 impl BoardSensorPublisher {
-    pub fn new(interval: Duration, board: BoardPeripherals) -> Self {
+    pub fn new(interval: Duration, board: &BoardPeripherals) -> Self {
         Self {
             ticker: Ticker::every(interval),
-            board,
             context: None,
+            leds: board.leds.clone(),
+            counter_a: board.counter_a.clone(),
+            counter_b: board.counter_b.clone(),
+            analog: board.analog.clone(),
+            accel: board.accel.clone(),
         }
     }
 }
 
 pub enum PublisherMessage {
-    Connect(AppElementsContext),
+    Connect(AppElementsContext<'static>),
     SetPeriod(Duration),
 }
 
@@ -277,15 +300,15 @@ impl Actor for BoardSensorPublisher {
     type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm + Inbox<Self>;
+        M: 'm + Inbox<Self::Message<'m>>;
 
     fn on_mount<'m, M>(
         &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
+        _: Address<Self::Message<'m>>,
+        mut inbox: M,
     ) -> Self::OnMountFuture<'m, M>
     where
-        M: Inbox<Self> + 'm,
+        M: Inbox<Self::Message<'m>> + 'm,
     {
         async move {
             loop {
@@ -296,45 +319,26 @@ impl Actor for BoardSensorPublisher {
                 pin_mut!(tick);
 
                 match select(next, tick).await {
-                    Either::Left((m, _)) => {
-                        if let Some(mut m) = m {
-                            match m.message() {
-                                PublisherMessage::Connect(ctx) => {
-                                    info!("Connected to mesh {}", ctx.address());
-                                    self.context.replace(ctx.clone());
-                                }
-                                PublisherMessage::SetPeriod(period) => {
-                                    info!(
-                                        "Adjusting publish period to {} millis",
-                                        period.as_millis()
-                                    );
-                                    self.ticker = Ticker::every(*period);
-                                }
-                            }
+                    Either::Left((m, _)) => match m {
+                        PublisherMessage::Connect(ctx) => {
+                            info!("Connected to mesh {}", ctx.address());
+                            self.context.replace(ctx.clone());
                         }
-                    }
+                        PublisherMessage::SetPeriod(period) => {
+                            info!("Adjusting publish period to {} millis", period.as_millis());
+                            self.ticker = Ticker::every(period);
+                        }
+                    },
                     Either::Right((_, _)) => {
-                        let accel = self.board.accel.request(AccelRead).unwrap().await.unwrap();
-                        let analog = self.board.analog.request(AnalogRead).unwrap().await;
-                        let (button_a, counter_a) = self
-                            .board
-                            .counter_a
-                            .request(CounterMessage::Read)
-                            .unwrap()
-                            .await
-                            .unwrap();
-                        let (button_b, counter_b) = self
-                            .board
-                            .counter_b
-                            .request(CounterMessage::Read)
-                            .unwrap()
-                            .await
-                            .unwrap();
+                        let accel = self.accel.request(AccelRead).await;
+                        let analog = self.analog.request(AnalogRead).await;
+                        let (button_a, counter_a) = self.counter_a.request(CounterRead).await;
+                        let (button_b, counter_b) = self.counter_b.request(CounterRead).await;
 
-                        let red_led = self.board.leds.red.is_on();
-                        let green_led = self.board.leds.green.is_on();
-                        let blue_led = self.board.leds.blue.is_on();
-                        let yellow_led = self.board.leds.yellow.is_on();
+                        let red_led = self.leds.red.is_on();
+                        let green_led = self.leds.green.is_on();
+                        let blue_led = self.leds.blue.is_on();
+                        let yellow_led = self.leds.yellow.is_on();
 
                         let data = SensorState {
                             temperature: analog.temperature,

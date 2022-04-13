@@ -5,13 +5,7 @@ use crate::control::*;
 use crate::counter::*;
 use crate::led::*;
 use cfg_if::cfg_if;
-use drogue_device::{
-    actors::button::{Button, ButtonEventDispatcher},
-    actors::dfu::*,
-    actors::flash::*,
-    actors::led::Led,
-    ActorContext, Address,
-};
+use drogue_device::{actors::led::Led, firmware::*, flash::*, shared::*, ActorContext, Address};
 use embassy::executor::Spawner;
 use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
@@ -23,9 +17,6 @@ pub type GreenLed = Led<Output<'static, AnyPin>>;
 pub type BlueLed = Led<Output<'static, AnyPin>>;
 pub type YellowLed = Led<Output<'static, AnyPin>>;
 
-pub type ButtonA = Input<'static, AnyPin>;
-pub type ButtonB = Input<'static, AnyPin>;
-
 pub struct BurrBoard {
     accel: ActorContext<Accelerometer>,
     analog: ActorContext<AnalogSensors>,
@@ -36,38 +27,33 @@ pub struct BurrBoard {
     yellow: ActorContext<YellowLed>,
 
     counter_a: ActorContext<Counter>,
-    button_a: ActorContext<Button<ButtonA, ButtonEventDispatcher<Counter>>>,
-
     counter_b: ActorContext<Counter>,
-    button_b: ActorContext<Button<ButtonB, ButtonEventDispatcher<Counter>>>,
 
-    flash: ActorContext<SharedFlash<Flash>>,
-    dfu: ActorContext<FirmwareManager<SharedFlashHandle<Flash>>>,
+    flash: FlashState<Flash>,
+    dfu: Shared<FirmwareManager<SharedFlash<'static, Flash>>>,
     control: ActorContext<ControlButton>,
 }
 
-#[derive(Clone)]
 pub struct BoardPeripherals {
     pub leds: Leds,
 
-    pub counter_a: Address<Counter>,
-    pub counter_b: Address<Counter>,
+    pub counter_a: Address<CounterRequest>,
+    pub counter_b: Address<CounterRequest>,
 
-    pub analog: Address<AnalogSensors>,
+    pub analog: Address<AnalogRequest>,
+    pub accel: Address<AccelRequest>,
 
-    pub accel: Address<Accelerometer>,
+    pub flash: SharedFlash<'static, Flash>,
 
-    pub flash: Address<SharedFlash<Flash>>,
-
-    pub dfu: Address<FirmwareManager<SharedFlashHandle<Flash>>>,
+    pub dfu: SharedFirmwareManager<'static, SharedFlash<'static, Flash>>,
 }
 
 #[derive(Clone)]
 pub struct Leds {
-    pub red: StatefulLed<RedLed>,
-    pub green: StatefulLed<GreenLed>,
-    pub blue: StatefulLed<BlueLed>,
-    pub yellow: StatefulLed<YellowLed>,
+    pub red: StatefulLed,
+    pub green: StatefulLed,
+    pub blue: StatefulLed,
+    pub yellow: StatefulLed,
 }
 
 impl BurrBoard {
@@ -82,13 +68,10 @@ impl BurrBoard {
             yellow: ActorContext::new(),
 
             counter_a: ActorContext::new(),
-            button_a: ActorContext::new(),
-
             counter_b: ActorContext::new(),
-            button_b: ActorContext::new(),
 
-            flash: ActorContext::new(),
-            dfu: ActorContext::new(),
+            flash: FlashState::new(),
+            dfu: Shared::new(),
             control: ActorContext::new(),
         }
     }
@@ -198,27 +181,23 @@ impl BurrBoard {
         );
 
         // Actor for button A and press counter
-        let counter_a = self.counter_a.mount(s, Counter::new());
-        self.button_a.mount(
-            s,
-            Button::new(Input::new(button_a_pin, Pull::None), counter_a.into()),
-        );
+        let counter_a = self
+            .counter_a
+            .mount(s, Counter::new(Input::new(button_a_pin, Pull::None)));
 
         // Actor for button B and press counter
-        let counter_b = self.counter_b.mount(s, Counter::new());
-        self.button_b.mount(
-            s,
-            Button::new(Input::new(button_b_pin, Pull::None), counter_b.into()),
-        );
+        let counter_b = self
+            .counter_b
+            .mount(s, Counter::new(Input::new(button_b_pin, Pull::None)));
 
         // Actor for shared access to flash
-        let flash = self.flash.mount(s, SharedFlash::new(app.flash()));
+        let flash = self.flash.initialize(app.flash());
 
         // Actor for DFU
-        let dfu = self.dfu.mount(
-            s,
-            FirmwareManager::new(flash.into(), embassy_boot_nrf::updater::new()),
-        );
+        let dfu = self.dfu.initialize(FirmwareManager::new(
+            flash.clone(),
+            embassy_boot_nrf::updater::new(),
+        ));
 
         self.control.mount(
             s,

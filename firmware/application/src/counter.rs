@@ -1,17 +1,19 @@
 use core::future::Future;
-use drogue_device::{
-    actors::button::{ButtonEvent, FromButtonEvent},
-    Actor, Address, Inbox,
-};
+use drogue_device::{Actor, Address, Inbox, Request};
+use embassy_nrf::gpio::{AnyPin, Input};
+use futures::future::{select, Either};
+use futures::pin_mut;
 
 pub struct Counter {
+    button: Input<'static, AnyPin>,
     presses: u16,
     pressed: bool,
 }
 
 impl Counter {
-    pub fn new() -> Self {
+    pub fn new(button: Input<'static, AnyPin>) -> Self {
         Self {
+            button,
             presses: 0,
             pressed: false,
         }
@@ -19,56 +21,52 @@ impl Counter {
 }
 
 #[derive(Clone, Copy)]
-pub enum CounterMessage {
-    ButtonPressed,
-    ButtonReleased,
-    Read,
-}
-
-impl FromButtonEvent<CounterMessage> for Counter {
-    fn from(event: ButtonEvent) -> Option<CounterMessage> {
-        // Buttons are active low, invert logic
-        Some(match event {
-            ButtonEvent::Pressed => CounterMessage::ButtonReleased,
-            ButtonEvent::Released => CounterMessage::ButtonPressed,
-        })
-    }
-}
+pub struct CounterRead;
+pub type CounterResponse = (bool, u16);
+pub type CounterRequest = Request<CounterRead, CounterResponse>;
 
 impl Actor for Counter {
-    type Message<'m> = CounterMessage;
-    type Response = Option<(bool, u16)>;
+    type Message<'m> = CounterRequest;
 
-    type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
+    type OnMountFuture<'m, M>
+    = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm + Inbox<Self>;
+        M: 'm + Inbox<Self::Message<'m>>;
 
     fn on_mount<'m, M>(
         &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
+        _: Address<Self::Message<'m>>,
+        mut inbox: M,
     ) -> Self::OnMountFuture<'m, M>
     where
-        M: Inbox<Self> + 'm,
+        M: Inbox<Self::Message<'m>> + 'm,
     {
         async move {
             loop {
-                if let Some(mut m) = inbox.next().await {
-                    let response = match *m.message() {
-                        CounterMessage::ButtonPressed => {
-                            self.pressed = true;
-                            self.presses += 1;
-                            info!("Presses: {}", self.presses);
-                            None
+                let mut check_presses = false;
+                {
+                    let next = inbox.next();
+                    let button = self.button.wait_for_any_edge();
+                    pin_mut!(next);
+                    pin_mut!(button);
+                    match select(next, &mut button).await {
+                        Either::Left((r, _)) => {
+                            r.reply((self.pressed, self.presses)).await;
                         }
-                        CounterMessage::ButtonReleased => {
-                            self.pressed = false;
-                            None
+                        Either::Right((_, _)) => {
+                            check_presses = true;
                         }
-                        CounterMessage::Read => Some((self.pressed, self.presses)),
                     };
-                    m.set_response(response);
+                }
+
+                if check_presses {
+                    if self.button.is_low() {
+                        self.pressed = true;
+                        self.presses += 1;
+                    } else {
+                        self.pressed = false;
+                    }
                 }
             }
         }

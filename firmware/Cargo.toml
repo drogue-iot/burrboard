@@ -6,11 +6,11 @@ members = [
 resolver = "2"
 
 [patch.crates-io]
-embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "5c68f0bae7c4091ad34fb2a671e08a614d9beb9a" }
-embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "5c68f0bae7c4091ad34fb2a671e08a614d9beb9a"}
-embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "5c68f0bae7c4091ad34fb2a671e08a614d9beb9a"}
-embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "5c68f0bae7c4091ad34fb2a671e08a614d9beb9a"}
-drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "017ac4f2dac3239cfed88885d6ea0702ecbbf760"}
+embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec" }
+embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
+embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
+embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "8b680f684609bfc4eabf599af84724f6c3c23742"}
 
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }

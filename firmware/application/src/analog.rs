@@ -1,5 +1,5 @@
 use core::future::Future;
-use drogue_device::{Actor, Address, Inbox};
+use drogue_device::{Actor, Address, Inbox, Request};
 use embassy_nrf::{interrupt, peripherals::SAADC, saadc};
 
 pub struct AnalogSensors {
@@ -30,7 +30,7 @@ impl AnalogSensors {
     }
 }
 
-pub struct Read;
+pub struct AnalogRead;
 
 #[derive(Clone, Copy, Default)]
 pub struct SensorValues {
@@ -39,49 +39,50 @@ pub struct SensorValues {
     pub battery: u8,
 }
 
+pub type AnalogRequest = Request<AnalogRead, SensorValues>;
+
 impl Actor for AnalogSensors {
-    type Message<'m> = Read;
-    type Response = SensorValues;
+    type Message<'m> = Request<AnalogRead, SensorValues>;
 
     type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm + Inbox<Self>;
+        M: 'm + Inbox<Self::Message<'m>>;
     fn on_mount<'m, M>(
         &'m mut self,
-        _: Address<Self>,
-        inbox: &'m mut M,
+        _: Address<Self::Message<'m>>,
+        mut inbox: M,
     ) -> Self::OnMountFuture<'m, M>
     where
-        M: Inbox<Self> + 'm,
+        M: Inbox<Self::Message<'m>> + 'm,
         Self: 'm,
     {
         async move {
             loop {
-                if let Some(mut m) = inbox.next().await {
-                    let mut buf = [0; 3];
-                    self.saadc.sample(&mut buf).await;
+                let r = inbox.next().await;
+                let mut buf = [0; 3];
+                self.saadc.sample(&mut buf).await;
 
-                    let voltage = buf[0] as f32 * 3.3;
-                    let voltage = voltage / 4095 as f32;
-                    let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
-                    let brightness = buf[1] as u16;
+                let voltage = buf[0] as f32 * 3.3;
+                let voltage = voltage / 4095 as f32;
+                let temperature = (100.0 * (voltage - 0.5) * 100.0) as i16;
+                let brightness = buf[1] as u16;
 
-                    let battery = buf[2] as u32;
-                    let battery = (100 * battery / 4056) as u8;
+                let battery = buf[2] as u32;
+                let battery = (100 * battery / 4056) as u8;
 
-                    trace!(
-                        "Temperature: {:?}, brightness: {:?}, battery: {:?}",
-                        temperature,
-                        brightness,
-                        battery
-                    );
-                    m.set_response(SensorValues {
-                        temperature,
-                        brightness,
-                        battery: battery as u8,
-                    });
-                }
+                trace!(
+                    "Temperature: {:?}, brightness: {:?}, battery: {:?}",
+                    temperature,
+                    brightness,
+                    battery
+                );
+                r.reply(SensorValues {
+                    temperature,
+                    brightness,
+                    battery: battery as u8,
+                })
+                .await;
             }
         }
     }
