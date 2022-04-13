@@ -10,6 +10,9 @@ use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::Peripherals;
 use nrf_softdevice::Flash;
+use embassy::{blocking_mutex::raw::ThreadModeRawMutex, mutex::Mutex};
+
+type DriverMutex = ThreadModeRawMutex;
 
 pub type RedLed = Led<Output<'static, AnyPin>>;
 pub type GreenLed = Led<Output<'static, AnyPin>>;
@@ -32,6 +35,7 @@ pub struct BurrBoard {
     counter_b: ActorContext<Counter>,
 
     flash: FlashState<Flash>,
+    firmware: 
 }
 
 pub struct BoardPeripherals {
