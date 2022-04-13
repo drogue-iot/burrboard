@@ -1,26 +1,21 @@
 use crate::accel::*;
 use crate::analog::*;
 use crate::app::*;
+use crate::control::*;
 use crate::counter::*;
 use crate::led::*;
 use cfg_if::cfg_if;
-use drogue_device::{actors::led::Led, firmware::*, flash::*, ActorContext, Address};
+use drogue_device::{actors::led::Led, firmware::*, flash::*, shared::*, ActorContext, Address};
 use embassy::executor::Spawner;
 use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
 use embassy_nrf::Peripherals;
 use nrf_softdevice::Flash;
-use embassy::{blocking_mutex::raw::ThreadModeRawMutex, mutex::Mutex};
-
-type DriverMutex = ThreadModeRawMutex;
 
 pub type RedLed = Led<Output<'static, AnyPin>>;
 pub type GreenLed = Led<Output<'static, AnyPin>>;
 pub type BlueLed = Led<Output<'static, AnyPin>>;
 pub type YellowLed = Led<Output<'static, AnyPin>>;
-
-pub type ButtonA = Input<'static, AnyPin>;
-pub type ButtonB = Input<'static, AnyPin>;
 
 pub struct BurrBoard {
     accel: ActorContext<Accelerometer>,
@@ -35,7 +30,8 @@ pub struct BurrBoard {
     counter_b: ActorContext<Counter>,
 
     flash: FlashState<Flash>,
-    firmware: 
+    dfu: Shared<FirmwareManager<SharedFlash<'static, Flash>>>,
+    control: ActorContext<ControlButton>,
 }
 
 pub struct BoardPeripherals {
@@ -49,7 +45,7 @@ pub struct BoardPeripherals {
 
     pub flash: SharedFlash<'static, Flash>,
 
-    pub dfu: FirmwareManager<SharedFlash<'static, Flash>>,
+    pub dfu: SharedFirmwareManager<'static, SharedFlash<'static, Flash>>,
 }
 
 #[derive(Clone)]
@@ -75,6 +71,8 @@ impl BurrBoard {
             counter_b: ActorContext::new(),
 
             flash: FlashState::new(),
+            dfu: Shared::new(),
+            control: ActorContext::new(),
         }
     }
 
@@ -196,7 +194,15 @@ impl BurrBoard {
         let flash = self.flash.initialize(app.flash());
 
         // Actor for DFU
-        let dfu = FirmwareManager::new(flash.clone(), embassy_boot_nrf::updater::new());
+        let dfu = self.dfu.initialize(FirmwareManager::new(
+            flash.clone(),
+            embassy_boot_nrf::updater::new(),
+        ));
+
+        self.control.mount(
+            s,
+            ControlButton::new(app, Input::new(p.P1_02.degrade(), Pull::Up)),
+        );
 
         BoardPeripherals {
             leds: Leds {

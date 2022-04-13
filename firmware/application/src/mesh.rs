@@ -1,11 +1,11 @@
 use core::future::Future;
-use drogue_device::actors::ble::mesh::{MeshNode, MeshNodeMessage, NodeMutex};
+use drogue_device::actors::ble::mesh::{MeshNode, MeshNodeMessage};
 use drogue_device::drivers::ble::mesh::composition::{
     CompanyIdentifier, Composition, ElementDescriptor, ElementsHandler, Features, Location,
     ProductIdentifier, VersionIdentifier,
 };
 use drogue_device::drivers::ble::mesh::config::ConfigurationModel;
-use drogue_device::drivers::ble::mesh::driver::elements::{AppElementContext, AppElementsContext};
+use drogue_device::drivers::ble::mesh::driver::elements::AppElementsContext;
 use drogue_device::drivers::ble::mesh::driver::DeviceError;
 use drogue_device::drivers::ble::mesh::model::generic::battery::{
     GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
@@ -13,13 +13,12 @@ use drogue_device::drivers::ble::mesh::model::generic::battery::{
     Status as GenericBatteryStatus, GENERIC_BATTERY_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::generic::onoff::{
-    GenericOnOffMessage, GenericOnOffServer, GENERIC_ONOFF_CLIENT, GENERIC_ONOFF_SERVER,
+    GenericOnOffMessage, GenericOnOffServer, GENERIC_ONOFF_SERVER,
 };
 use drogue_device::drivers::ble::mesh::model::sensor::{
-    PropertyId, RawValue, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
+    PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorMessage,
     SensorServer as SensorServerModel, SensorStatus, SENSOR_SERVER,
 };
-use drogue_device::drivers::ble::mesh::model::Message;
 use drogue_device::drivers::ble::mesh::model::{Model, ModelIdentifier};
 use drogue_device::drivers::ble::mesh::pdu::{access::AccessMessage, ParseError};
 use drogue_device::drivers::ble::mesh::provisioning::{
@@ -33,20 +32,16 @@ use drogue_device::{
     Actor, Address, Inbox,
 };
 use drogue_device::{drivers::ble::mesh::InsufficientBuffer, flash::*};
-use embassy::executor::Spawner;
-use embassy::util::Forever;
+use embassy::channel::{Channel, DynamicReceiver};
 use embassy::time::{Duration, Ticker};
+use embassy::util::Forever;
+use embassy::{blocking_mutex::raw::NoopRawMutex, executor::Spawner};
 use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
 use heapless::Vec;
 use nrf_softdevice::{Flash, Softdevice};
 
-use crate::{
-    accel::*,
-    analog::*,
-    board::*,
-    counter::*,
-};
+use crate::{accel::*, analog::*, board::*, counter::*};
 
 const COMPANY_IDENTIFIER: CompanyIdentifier = CompanyIdentifier(0x0003);
 const PRODUCT_IDENTIFIER: ProductIdentifier = ProductIdentifier(0x0001);
@@ -93,11 +88,9 @@ impl BurrBoardElementsHandler {
         composition
             .add_element(ElementDescriptor::new(Location(0x0006)).add_model(SENSOR_SERVER))
             .ok();
-        /*
         composition
             .add_element(ElementDescriptor::new(Location(0x0007)).add_model(GENERIC_ONOFF_SERVER))
             .ok();
-        */
         Self {
             leds,
             composition,
@@ -192,13 +185,16 @@ impl ElementsHandler<'static> for BurrBoardElementsHandler {
 }
 
 pub struct MeshApp {
-    node: Forever<MeshNode<
-        'static,
-        BurrBoardElementsHandler,
-        SoftdeviceAdvertisingBearer,
-        FlashStorage<SharedFlash<'static, Flash>>,
-        SoftdeviceRng,
-    >>,
+    node: Forever<
+        MeshNode<
+            'static,
+            BurrBoardElementsHandler,
+            SoftdeviceAdvertisingBearer,
+            FlashStorage<SharedFlash<'static, Flash>>,
+            SoftdeviceRng,
+        >,
+    >,
+    control: Channel<NoopRawMutex, MeshNodeMessage, 1>,
     publisher: ActorContext<BoardSensorPublisher>,
 }
 
@@ -206,6 +202,7 @@ impl MeshApp {
     pub fn enable() -> Self {
         Self {
             node: Forever::new(),
+            control: Channel::new(),
             publisher: ActorContext::new(),
         }
     }
@@ -222,7 +219,7 @@ impl MeshApp {
         let rng = SoftdeviceRng::new(sd);
 
         let capabilities = Capabilities {
-            number_of_elements: 6,
+            number_of_elements: 7,
             algorithms: Algorithms::default(),
             public_key_type: PublicKeyType::default(),
             static_oob_type: StaticOOBType::default(),
@@ -239,15 +236,32 @@ impl MeshApp {
 
         let elements = BurrBoardElementsHandler::new(p.leds.clone(), publisher);
 
-        let node = self.node.put(
-            MeshNode::new(elements, capabilities, bearer, storage, rng),
-        );
+        let node = self
+            .node
+            .put(MeshNode::new(elements, capabilities, bearer, storage, rng));
+
+        s.spawn(mesh_task(node, self.control.receiver().into()))
+            .unwrap();
 
         /*
         let mesh_node =
         //let mesh_node = MeshNode::new(capabilities, bearer, storage, rng).force_reset();
         */
     }
+}
+
+#[embassy::task]
+pub async fn mesh_task(
+    node: &'static mut MeshNode<
+        'static,
+        BurrBoardElementsHandler,
+        SoftdeviceAdvertisingBearer,
+        FlashStorage<SharedFlash<'static, Flash>>,
+        SoftdeviceRng,
+    >,
+    control: DynamicReceiver<'static, MeshNodeMessage>,
+) {
+    node.run(control).await;
 }
 
 pub struct BoardSensorPublisher {

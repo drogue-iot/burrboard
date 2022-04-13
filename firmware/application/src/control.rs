@@ -19,10 +19,14 @@ impl Actor for ControlButton {
     type OnMountFuture<'m, M> = impl Future<Output = ()> + 'm
     where
         Self: 'm,
-        M: 'm + Inbox<Self>;
-    fn on_mount<'m, M>(&'m mut self, _: Address<Self>, _: &'m mut M) -> Self::OnMountFuture<'m, M>
+        M: 'm + Inbox<Self::Message<'m>>;
+    fn on_mount<'m, M>(
+        &'m mut self,
+        _: Address<Self::Message<'m>>,
+        _: M,
+    ) -> Self::OnMountFuture<'m, M>
     where
-        M: Inbox<Self> + 'm,
+        M: Inbox<Self::Message<'m>> + 'm,
         Self: 'm,
     {
         async move {

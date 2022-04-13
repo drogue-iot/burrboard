@@ -2,7 +2,7 @@ use core::future::Future;
 use drogue_device::{Actor, Address, Inbox, Request};
 use embassy_nrf::gpio::{AnyPin, Input};
 use futures::future::{select, Either};
-use futures::{pin_mut, StreamExt};
+use futures::pin_mut;
 
 pub struct Counter {
     button: Input<'static, AnyPin>,
@@ -46,18 +46,18 @@ impl Actor for Counter {
             loop {
                 let mut check_presses = false;
                 {
-                let next = inbox.next();
-                let button = self.button.wait_for_any_edge();
-                pin_mut!(next);
-                pin_mut!(button);
-                match select(next, &mut button).await {
-                    Either::Left((r, _)) => {
-                        r.reply((self.pressed, self.presses)).await;
-                    }
-                    Either::Right((_, r)) => {
-                        check_presses = true;
-                    }
-                };
+                    let next = inbox.next();
+                    let button = self.button.wait_for_any_edge();
+                    pin_mut!(next);
+                    pin_mut!(button);
+                    match select(next, &mut button).await {
+                        Either::Left((r, _)) => {
+                            r.reply((self.pressed, self.presses)).await;
+                        }
+                        Either::Right((_, _)) => {
+                            check_presses = true;
+                        }
+                    };
                 }
 
                 if check_presses {

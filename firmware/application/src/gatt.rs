@@ -1,15 +1,10 @@
-use crate::counter::{Counter, CounterMessage};
 use crate::Leds;
-use crate::{
-    accel::{AccelValues, Accelerometer, Read as AccelRead},
-    analog::{AnalogSensors, Read as AnalogRead},
-};
+use crate::{accel::*, analog::*, counter::*};
 use core::future::Future;
 use drogue_device::{
-    flash::*,
+    drivers::ble::gatt::dfu::{FirmwareGattService, FirmwareService, FirmwareServiceEvent},
     firmware::*,
-    drivers::ble::gatt::dfu::{FirmwareGattService, FirmwareGattService, FirmwareServiceEvent},
-    traits::led::Led,
+    flash::*,
     Actor, ActorContext, Address, Inbox,
 };
 use embassy::executor::Spawner;
@@ -29,7 +24,7 @@ use heapless::Vec;
 pub struct BurrBoardServer {
     pub board: BurrBoardService,
     pub device_info: DeviceInformationService,
-    pub firmware: FirmwareGattService<'static, SharedFlash<'static, Flash>>,
+    pub firmware: FirmwareService,
 }
 
 /// Gatt services for our module
@@ -182,19 +177,17 @@ impl Actor for BurrBoardMonitor {
                 pin_mut!(ticker_fut);
 
                 match select(inbox_fut, ticker_fut).await {
-                    Either::Left((m, _)) => {
-                        match m {
-                            MonitorEvent::Connected(conn) => {
-                                self.add_connection(conn);
-                            }
-                            MonitorEvent::Disconnected(conn) => {
-                                self.remove_connection(conn);
-                            }
-                            MonitorEvent::Event(event) => {
-                                self.handle_event(event);
-                            }
+                    Either::Left((m, _)) => match m {
+                        MonitorEvent::Connected(conn) => {
+                            self.add_connection(&conn);
                         }
-                    }
+                        MonitorEvent::Disconnected(conn) => {
+                            self.remove_connection(&conn);
+                        }
+                        MonitorEvent::Event(event) => {
+                            self.handle_event(&event);
+                        }
+                    },
                     Either::Right((_, _)) => {
                         let mut data: Vec<u8, 22> = Vec::new();
                         let analog = self.analog.request(AnalogRead).await;
@@ -205,14 +198,8 @@ impl Actor for BurrBoardMonitor {
                             .ok();
                         data.push(analog.battery).ok();
 
-                        let (button_a, counter_a) = self
-                            .button_a
-                            .request(CounterRead)
-                            .await;
-                        let (button_b, counter_b) = self
-                            .button_b
-                            .request(CounterRead)
-                            .await;
+                        let (button_a, counter_a) = self.button_a.request(CounterRead).await;
+                        let (button_b, counter_b) = self.button_b.request(CounterRead).await;
 
                         data.extend_from_slice(&counter_a.to_le_bytes()).ok();
                         data.extend_from_slice(&counter_b.to_le_bytes()).ok();
@@ -249,8 +236,8 @@ impl Actor for BurrBoardMonitor {
 pub async fn bluetooth_task(
     sd: &'static Softdevice,
     server: &'static BurrBoardServer,
-    monitor: Address<BurrBoardMonitor>,
-    firmware: Address<FirmwareGattService<'static, SharedFlashHandle<Flash>>>,
+    monitor: Address<MonitorEvent>,
+    firmware: Address<FirmwareServiceEvent>,
 ) {
     #[rustfmt::skip]
     let adv_data = &[
@@ -273,18 +260,18 @@ pub async fn bluetooth_task(
 
         info!("advertising done!");
 
-        monitor.notify(MonitorEvent::Connected(conn.clone())).ok();
+        monitor.notify(MonitorEvent::Connected(conn.clone())).await;
         let res = gatt_server::run(&conn, server, |e| match e {
             BurrBoardServerEvent::Board(e) => {
-                let _ = monitor.notify(MonitorEvent::Event(e));
+                let _ = monitor.try_notify(MonitorEvent::Event(e));
             }
             BurrBoardServerEvent::DeviceInfo(_) => {}
             BurrBoardServerEvent::Firmware(e) => {
-                let _ = firmware.notify(e);
+                let _ = firmware.try_notify(e);
             }
         })
         .await;
-        let _ = monitor.notify(MonitorEvent::Disconnected(conn));
+        monitor.notify(MonitorEvent::Disconnected(conn)).await;
 
         if let Err(e) = res {
             info!("gatt_server run exited with error: {:?}", e);
@@ -296,7 +283,9 @@ pub struct GattApp {
     server: BurrBoardServer,
 
     monitor: ActorContext<BurrBoardMonitor>,
-    firmware: FirmwareGattService<'static, SharedFlash<'static, Flash>>,
+    firmware: ActorContext<
+        FirmwareGattService<'static, SharedFirmwareManager<'static, SharedFlash<'static, Flash>>>,
+    >,
 }
 
 impl GattApp {
@@ -314,10 +303,10 @@ impl GattApp {
             s,
             BurrBoardMonitor::new(
                 &self.server.board,
-                p.analog,
-                p.accel,
-                p.counter_a,
-                p.counter_b,
+                p.analog.clone(),
+                p.accel.clone(),
+                p.counter_a.clone(),
+                p.counter_b.clone(),
                 p.leds.clone(),
             ),
         );
@@ -326,7 +315,7 @@ impl GattApp {
             s,
             FirmwareGattService::new(
                 &self.server.firmware,
-                p.dfu,
+                p.dfu.clone(),
                 crate::FIRMWARE_REVISION
                     .unwrap_or(crate::FIRMWARE_VERSION)
                     .as_bytes(),
