@@ -10,7 +10,7 @@ embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40e
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
 embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
 embassy-boot-nrf  = { git = "https://github.com/embassy-rs/embassy.git", rev = "ac3986e40ef297b90de19812aebccfe2e7f9ceec"}
-drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "8b680f684609bfc4eabf599af84724f6c3c23742"}
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "e21ef190e7c11151dd45316b9146de29ef733849"}
 
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "c584deaf9d9e941f18457934a4a463e078f380ec" }
