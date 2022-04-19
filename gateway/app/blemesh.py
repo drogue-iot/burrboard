@@ -538,7 +538,7 @@ class Model():
 
 			if isinstance(sub, list):
 				label = uuid.UUID(bytes=b''.join(sub))
-				ret += label + ', '
+				ret += str(label) + ', '
 		return ret
 
 class ServerModel(Model):

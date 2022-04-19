@@ -88,5 +88,5 @@ drg create device --app ble-demo gateway
 drg set password --app ble-demo gateway hey-rodney
 drg create device --app ble-demo 00ac
 drg set gateway --app ble-demo 00ac gateway
-TOKEN=<token from device terminal> DROGUE_APPLICATION=ble-demo DROGUE_DEVICE=gateway DROGUE_PASSWORD=hey-rodney ./gateway.py
+TOKEN=<token from device terminal> DROGUE_APPLICATION=ble-demo DROGUE_DEVICE=gateway DROGUE_PASSWORD=hey-rodney app/gateway.py
 ```

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drogue-device
+  labels:
+    app: drogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drogue
+  template:
+    metadata:
+      labels:
+        app: drogue
+    spec:
+      hostNetwork: true
+      containers:
+      - name: drogue-gateway
+        image: quay.io/dejanb/drogue-gateway:latest
+        command: ["app/device.py"]
+        env:
+        - name: TOKEN
+          value: 26ea5cc2f46fd59d
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /var/run/dbus/system_bus_socket
+            name: dbus-socket
+      volumes:
+      - name: dbus-socket
+        hostPath:
+          path: /var/run/dbus/system_bus_socket

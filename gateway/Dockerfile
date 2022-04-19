@@ -12,7 +12,7 @@ RUN rm -rf /var/lib/bluetooth/mesh
 
 COPY deploy/bluetooth-mesh-init.sh /etc/init.d/bluetooth-mesh
 COPY deploy/entrypoint.sh .
-COPY *.py /app/
+COPY app/*.py /app/
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
