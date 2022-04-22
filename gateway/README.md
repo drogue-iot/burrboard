@@ -131,7 +131,7 @@ or
 
 ```
 oc  new-project drogue
-oc apply -f deploy/k8s/device.yaml
+oc apply -f deploy/k8s/device-dbus.yaml
 ```
 
 Make sure you adjust local paths in yaml files. This will be improved soon.

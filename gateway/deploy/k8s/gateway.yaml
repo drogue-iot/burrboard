@@ -22,18 +22,23 @@ spec:
         args: ["app/gateway.py"]
         env:
         - name: TOKEN
-          value: a4d2100e2fc8f6e5
+          value: e5571d4f4377707a
         securityContext:
           privileged: true
         volumeMounts:
           - mountPath: "/var/lib/bluetooth/mesh/"
             name: mesh-volume
-          - mountPath: /root/.config/meshcfg/config_db.json
+          - mountPath: /root/.config/meshcfg/
             name: mesh-config
+          - mountPath: /var/run/dbus/system_bus_socket
+            name: dbus-socket
       volumes:
       - name: mesh-volume
         hostPath:
-          path: /home/dejanb/burrboard/gateway/deploy/bluez/mesh/
+          path: /home/dejanb/burrboard/gateway/deploy/bluez/example/mesh/
       - name: mesh-config
         hostPath:
-          path: /home/dejanb/burrboard/gateway/deploy/bluez/config_db.json
+          path: /home/dejanb/burrboard/gateway/deploy/bluez/example/meshcfg
+      - name: dbus-socket
+        hostPath:
+          path: /var/run/dbus/system_bus_socket
