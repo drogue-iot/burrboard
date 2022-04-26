@@ -80,25 +80,26 @@ docker build -t drogue-gateway .
 or if you're building for a different platform
 
 ```
- docker buildx build --platform linux/arm -t drogue-gateway .
- ```
+docker buildx build --platform linux/arm -t drogue-gateway .
+```
 
- You can then tag/push containers in a regular fashion, e.g.
+You can then tag/push containers in a regular fashion, e.g.
 
- ```
- docker tag drogue-gateway quay.io/dejanb/drogue-gateway
- docker push quay.io/dejanb/drogue-gateway
- ```
+```
+docker tag drogue-gateway quay.io/dejanb/drogue-gateway
+docker push quay.io/dejanb/drogue-gateway
+```
 
- Now you can run gateway
+Now you can run gateway
 
- ```
- sudo docker run -it \
+```
+sudo docker run -it \
 --net=host --privileged --name drogue-gateway \
--v $PWD/deploy/bluez/config_db.json:/root/.config/meshcfg/config_db.json \
--v $PWD/deploy/bluez/mesh/:/var/lib/bluetooth/mesh/ \
+-v $PWD/deploy/bluez/example/meshcfg/config_db.json:/root/.config/meshcfg/config_db.json \
+-v $PWD/deploy/bluez/example/mesh/:/var/lib/bluetooth/mesh/ \
+-v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
 --env TOKEN=a4d2100e2fc8f6e5 \
-quay.io/dejanb/drogue-gateway:latest app/gateway.py
+drogue-gateway:latest app/gateway.py
 ```
 
 or device simulator
@@ -106,9 +107,10 @@ or device simulator
 ```
 sudo docker run -it \
 --net=host --privileged \
---name drogue-gateway \
+--name drogue-device \
 -v $PWD/deploy/bluez/config_db.json:/root/.config/meshcfg/config_db.json \
 -v $PWD/deploy/bluez/mesh/:/var/lib/bluetooth/mesh/ \
+-v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
 --env TOKEN=bf2aadd0a6b0da55 \
 quay.io/dejanb/drogue-gateway app/device.py
 ```

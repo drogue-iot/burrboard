@@ -22,7 +22,7 @@ Attached with path /org/bluez/mesh/nodea186fe8c7e3b461daa29664eba26ed2d
 
 **device (third terminal):**
 <pre><code>
-$ <b>./device.py join</b>
+$ <b>./app/device.py join</b>
 
 <b>join</b>
 Joining with UUID 3df8492249f1476491a1e4e1d051a5f7
