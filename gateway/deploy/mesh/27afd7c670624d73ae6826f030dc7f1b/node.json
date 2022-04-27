@@ -46,6 +46,25 @@
               "interval":50
             }
           }
+        },
+        {
+          "modelId":"1100",
+          "subEnabled":true,
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ],
+          "publish":{
+            "address":"c002",
+            "index":0,
+            "ttl":255,
+            "period":80,
+            "credentials":0,
+            "retransmit":{
+              "count":5,
+              "interval":50
+            }
+          }
         }
       ]
     },
@@ -60,22 +79,30 @@
           "bind":[
             "0000"
           ]
+        },
+        {
+          "modelId":"1102",
+          "subEnabled":true,
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ]
         }
       ]
     }
   ],
   "pages":[
-    "00f10501000100640005000000020100000010f1050100000001000110"
+    "00f105010001006400050000000301000000100011f10501000000020001100211"
   ],
   "IVindex":0,
   "IVupdate":0,
   "unicastAddress":"00aa",
-  "token":"af690035ca32ac65",
-  "deviceKey":"36d51008ffc42775547364480059f005",
+  "token":"dcb67c7829fa7fa7",
+  "deviceKey":"ede1eb46ee14621acbb43d673e10bf27",
   "netKeys":[
     {
       "index":0,
-      "key":"c5024c47b8dfe23d954df457d7fda468",
+      "key":"91e52671b3edff151f735ba6a6d3d1d7",
       "keyRefresh":0
     }
   ],
@@ -83,8 +110,8 @@
     {
       "index":0,
       "boundNetKey":0,
-      "key":"dd415a640a391f7736a3f30d69b1bd6a"
+      "key":"97e24377101682b900c362829a1b1387"
     }
   ],
-  "sequenceNumber":17
+  "sequenceNumber":6927
 }

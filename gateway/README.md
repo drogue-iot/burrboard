@@ -90,32 +90,40 @@ docker tag drogue-gateway quay.io/dejanb/drogue-gateway
 docker push quay.io/dejanb/drogue-gateway
 ```
 
-Now you can run gateway
+Now you can run the gateway mounting a provisioned mesh configuration
+for the `meshd` process within. We're using the host's dbus socket, so
+we want to make sure the host's `meshd` process isn't running. If you
+wanted to use the host's `meshd`, you could set `MESH=false` and omit
+the `/var/lib/bluetooth/mesh` mount, as we do for the device simulator
+below.
 
 ```
-sudo docker run -it \
+sudo docker run -it --rm \
 --net=host --privileged --name drogue-gateway \
--v $PWD/deploy/bluez/example/meshcfg/config_db.json:/root/.config/meshcfg/config_db.json \
--v $PWD/deploy/bluez/example/mesh/:/var/lib/bluetooth/mesh/ \
+-v $PWD/deploy/mesh/:/var/lib/bluetooth/mesh/ \
 -v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
---env TOKEN=a4d2100e2fc8f6e5 \
-drogue-gateway:latest app/gateway.py
+--env TOKEN=22daac25e4e87e69 \
+docker.io/jcrossley3/drogue-gateway app/gateway.py
 ```
 
-or device simulator
+You can run a device simulator to send events every few seconds to the
+gateway. Because we mount the shared dbus socket, we set `MESH=false`
+to ensure we're talking to the correct `meshd` -- the one running in
+the gateway container.
 
 ```
-sudo docker run -it \
---net=host --privileged \
---name drogue-device \
--v $PWD/deploy/bluez/config_db.json:/root/.config/meshcfg/config_db.json \
--v $PWD/deploy/bluez/mesh/:/var/lib/bluetooth/mesh/ \
+sudo docker run -it --rm \
+--net=host --privileged --name drogue-device \
 -v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
---env TOKEN=bf2aadd0a6b0da55 \
-quay.io/dejanb/drogue-gateway app/device.py
+--env MESH=false \
+--env TOKEN=dcb67c7829fa7fa7 \
+docker.io/jcrossley3/drogue-gateway app/device.py
 ```
 
-Note that we provided example mesh state with some pre-joined devices. You can provide your own mesh state similarly.
+Note that we provided an example mesh state with some pre-joined
+devices and known tokens. You can provide your own mesh state
+similarly. And you can pass env vars for DROGUE_APPLICATION,
+DROGUE_DEVICE, and DROGUE_PASSWORD as appropriate.
 
 ## Run using Kubernetes
 

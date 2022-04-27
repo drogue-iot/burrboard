@@ -37,14 +37,14 @@
   "IVindex":0,
   "IVupdate":0,
   "unicastAddress":"0001",
-  "token":"ed4f127a77344742",
-  "deviceKey":"753ac7971742cc3961a9f72f8a143543",
+  "token":"1c1bdcbe71285bff",
+  "deviceKey":"8f3e6f6c0f5a0222cf09d88543eac722",
   "netKeys":[
     {
       "index":0,
-      "key":"c5024c47b8dfe23d954df457d7fda468",
+      "key":"91e52671b3edff151f735ba6a6d3d1d7",
       "keyRefresh":0
     }
   ],
-  "sequenceNumber":32
+  "sequenceNumber":36
 }

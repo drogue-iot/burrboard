@@ -38,6 +38,17 @@
           "subscribe":[
             "c002"
           ]
+        },
+        {
+          "modelId":"1100",
+          "subEnabled":true,
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ],
+          "subscribe":[
+            "c002"
+          ]
         }
       ]
     },
@@ -52,22 +63,30 @@
           "bind":[
             "0000"
           ]
+        },
+        {
+          "modelId":"1102",
+          "subEnabled":true,
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ]
         }
       ]
     }
   ],
   "pages":[
-    "00f10501000100640005000000020100000010f1050100000001000110"
+    "00f105010001006400050000000301000000100011f10501000000020001100211"
   ],
   "IVindex":0,
   "IVupdate":0,
   "unicastAddress":"00ac",
-  "token":"8f19c8e936b609ff",
-  "deviceKey":"fa976f271a094c0019cafee58d7db219",
+  "token":"22daac25e4e87e69",
+  "deviceKey":"498a080dcc35e8f4cf64f1229d4487ae",
   "netKeys":[
     {
       "index":0,
-      "key":"c5024c47b8dfe23d954df457d7fda468",
+      "key":"91e52671b3edff151f735ba6a6d3d1d7",
       "keyRefresh":0
     }
   ],
@@ -75,8 +94,8 @@
     {
       "index":0,
       "boundNetKey":0,
-      "key":"dd415a640a391f7736a3f30d69b1bd6a"
+      "key":"97e24377101682b900c362829a1b1387"
     }
   ],
-  "sequenceNumber":17
+  "sequenceNumber":15
 }
