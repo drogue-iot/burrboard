@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drogue-gateway
+  labels:
+    app: drogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drogue
+  template:
+    metadata:
+      labels:
+        app: drogue
+    spec:
+      hostNetwork: true
+      containers:
+      - name: drogue-device
+        image: docker.io/jcrossley3/drogue-gateway:latest
+        command: ["./entrypoint.sh"]
+        args: ["app/gateway.py"]
+        env:
+        - name: TOKEN
+          value: 22daac25e4e87e69
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: "/var/lib/bluetooth/mesh/"
+            name: mesh-volume
+          - mountPath: /var/run/dbus/system_bus_socket
+            name: dbus-socket
+      volumes:
+      - name: mesh-volume
+        hostPath:
+          path: /home/jcrossley/gateway/deploy/mesh/
+      - name: dbus-socket
+        hostPath:
+          path: /var/run/dbus/system_bus_socket
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drogue-device
+  labels:
+    app: drogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drogue
+  template:
+    metadata:
+      labels:
+        app: drogue
+    spec:
+      hostNetwork: true
+      containers:
+      - name: drogue-device
+        image: docker.io/jcrossley3/drogue-gateway:latest
+        command: ["./entrypoint.sh"]
+        args: ["app/device.py"]
+        env:
+        - name: TOKEN
+          value: dcb67c7829fa7fa7
+        - name: MESH
+          value: "false"
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /var/run/dbus/system_bus_socket
+            name: dbus-socket
+      volumes:
+      - name: dbus-socket
+        hostPath:
+          path: /var/run/dbus/system_bus_socket
