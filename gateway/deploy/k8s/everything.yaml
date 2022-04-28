@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: drogue
+        role: gateway
     spec:
       hostNetwork: true
       containers:
@@ -54,6 +55,7 @@ spec:
     metadata:
       labels:
         app: drogue
+        role: device
     spec:
       hostNetwork: true
       containers:
