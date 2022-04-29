@@ -70,6 +70,13 @@ class GatewayOnOffServer(blemesh.ServerModel):
 		self.send_publication(data)
 
 ########################
+# GatewayFirmwareClient
+########################
+class GatewayFirmwareClient(blemesh.FirmwareUpdateClient):
+	def __init__(self, name):
+		self.name = name
+
+########################
 # Sensor Server Model
 ########################
 class GatewaySensorServer(blemesh.BurrBoardSensorServer):
@@ -209,6 +216,7 @@ def main():
 
 	first_ele = blemesh.Element(blemesh.bus, 0x00)
 	second_ele = blemesh.Element(blemesh.bus, 0x01)
+	third_ele = blemesh.Element(blemesh.bus, 0x02)
 
 	blemesh.log.info('Register OnOff Server model on element 0')
 	first_ele.add_model(GatewayOnOffServer(application, 0x1000))
@@ -221,8 +229,12 @@ def main():
 	second_ele.add_model(blemesh.OnOffClient(0x1001))
 	second_ele.add_model(blemesh.SensorClient(0x1102))
 
+	blemesh.log.info('Register Firmware Update Client model on element 2')
+	third_ele.add_model(blemesh.GatewayFirmwareClient(application))
+
 	blemesh.app.add_element(first_ele)
 	blemesh.app.add_element(second_ele)
+	blemesh.app.add_element(third_ele)
 	blemesh.mainloop = GLib.MainLoop()
 
 	blemesh.attach(blemesh.token)
