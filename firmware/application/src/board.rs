@@ -5,7 +5,8 @@ use crate::control::*;
 use crate::counter::*;
 use crate::led::*;
 use cfg_if::cfg_if;
-use drogue_device::{actors::led::Led, firmware::*, flash::*, shared::*, ActorContext, Address};
+use drogue_device::firmware::{FirmwareConfig, FirmwareManager, SharedFirmwareManager};
+use drogue_device::{actors::led::Led, flash::*, shared::*, ActorContext, Address};
 use embassy::executor::Spawner;
 use embassy::util::Forever;
 use embassy_nrf::gpio::{AnyPin, Input, Level, Output, OutputDrive, Pin, Pull};
@@ -30,7 +31,7 @@ pub struct BurrBoard {
     counter_b: ActorContext<Counter>,
 
     flash: FlashState<Flash>,
-    dfu: Shared<FirmwareManager<SharedFlash<'static, Flash>>>,
+    dfu: Shared<FirmwareManager<FwConfig>>,
     control: ActorContext<ControlButton>,
 }
 
@@ -45,7 +46,7 @@ pub struct BoardPeripherals {
 
     pub flash: SharedFlash<'static, Flash>,
 
-    pub dfu: SharedFirmwareManager<'static, SharedFlash<'static, Flash>>,
+    pub dfu: SharedFirmwareManager<'static, FwConfig>,
 }
 
 #[derive(Clone)]
@@ -195,7 +196,9 @@ impl BurrBoard {
 
         // Actor for DFU
         let dfu = self.dfu.initialize(FirmwareManager::new(
-            flash.clone(),
+            FwConfig {
+                flash: flash.clone(),
+            },
             embassy_boot_nrf::updater::new(),
         ));
 
@@ -219,5 +222,23 @@ impl BurrBoard {
             flash,
             dfu,
         }
+    }
+}
+
+pub struct FwConfig {
+    flash: SharedFlash<'static, Flash>,
+}
+
+impl FirmwareConfig for FwConfig {
+    type STATE = SharedFlash<'static, Flash>;
+    type DFU = SharedFlash<'static, Flash>;
+    const BLOCK_SIZE: usize = 4096;
+
+    fn state(&mut self) -> &mut Self::STATE {
+        &mut self.flash
+    }
+
+    fn dfu(&mut self) -> &mut Self::DFU {
+        &mut self.flash
     }
 }

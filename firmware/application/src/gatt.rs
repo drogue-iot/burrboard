@@ -4,14 +4,13 @@ use core::future::Future;
 use drogue_device::{
     drivers::ble::gatt::dfu::{FirmwareGattService, FirmwareService, FirmwareServiceEvent},
     firmware::*,
-    flash::*,
     Actor, ActorContext, Address, Inbox,
 };
 use embassy::executor::Spawner;
 use nrf_softdevice::ble::Connection;
 use nrf_softdevice::ble::{gatt_server, peripheral};
 use nrf_softdevice::raw;
-use nrf_softdevice::{Flash, Softdevice};
+use nrf_softdevice::Softdevice;
 
 use embassy::time::Duration;
 
@@ -283,9 +282,7 @@ pub struct GattApp {
     server: BurrBoardServer,
 
     monitor: ActorContext<BurrBoardMonitor>,
-    firmware: ActorContext<
-        FirmwareGattService<'static, SharedFirmwareManager<'static, SharedFlash<'static, Flash>>>,
-    >,
+    firmware: ActorContext<FirmwareGattService<'static, SharedFirmwareManager<'static, FwConfig>>>,
 }
 
 impl GattApp {
