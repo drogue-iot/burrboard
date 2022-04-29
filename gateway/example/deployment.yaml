@@ -1,3 +1,9 @@
+#
+# Expected to be run through kustomize (images) and envsubst ($PWD) in
+# the parent directory:
+#
+#   oc kustomize example/ | envsubst | oc apply -f -
+#
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,7 +25,7 @@ spec:
       hostNetwork: true
       containers:
       - name: drogue-device
-        image: docker.io/jcrossley3/drogue-gateway:latest
+        image: drogue-gateway
         command: ["./entrypoint.sh"]
         args: ["app/gateway.py"]
         env:
@@ -35,7 +41,7 @@ spec:
       volumes:
       - name: mesh-volume
         hostPath:
-          path: /home/jcrossley/gateway/deploy/mesh/
+          path: $PWD/example/mesh/
       - name: dbus-socket
         hostPath:
           path: /var/run/dbus/system_bus_socket
@@ -60,7 +66,7 @@ spec:
       hostNetwork: true
       containers:
       - name: drogue-device
-        image: docker.io/jcrossley3/drogue-gateway:latest
+        image: drogue-gateway
         command: ["./entrypoint.sh"]
         args: ["app/device.py"]
         env:

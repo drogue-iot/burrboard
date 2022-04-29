@@ -1,0 +1,5 @@
+resources:
+- deployment.yaml
+images:
+- name: drogue-gateway
+  newName: docker.io/jcrossley3/drogue-gateway

@@ -100,11 +100,16 @@ below.
 ```
 sudo docker run -it --rm \
 --net=host --privileged --name drogue-gateway \
--v $PWD/deploy/mesh/:/var/lib/bluetooth/mesh/ \
+-v $PWD/example/mesh/:/var/lib/bluetooth/mesh/ \
 -v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
 --env TOKEN=22daac25e4e87e69 \
 docker.io/jcrossley3/drogue-gateway app/gateway.py
 ```
+
+Note that we provided an example mesh state with some pre-joined
+devices and known tokens we pass as environment variables. You can
+provide your own mesh state similarly. And you can pass env vars for
+DROGUE_APPLICATION, DROGUE_DEVICE, and DROGUE_PASSWORD as appropriate.
 
 You can run a device simulator to send events every few seconds to the
 gateway. Because we mount the shared dbus socket, we set `MESH=false`
@@ -120,31 +125,43 @@ sudo docker run -it --rm \
 docker.io/jcrossley3/drogue-gateway app/device.py
 ```
 
-Note that we provided an example mesh state with some pre-joined
-devices and known tokens. You can provide your own mesh state
-similarly. And you can pass env vars for DROGUE_APPLICATION,
-DROGUE_DEVICE, and DROGUE_PASSWORD as appropriate.
-
 ## Run using Kubernetes
 
-You can run the gateway and the simulator in Kubernetes as well. We tested it on Microshift for now. Take a look at how set
-Microshift on NUC, [here](docs/nuc.md#Microshift).
+You can run the gateway and the simulator in Kubernetes as well. We
+tested it on [microshift](https://microshift.io/). Take a look at how
+to install it on a NUC [here](docs/nuc.md#Microshift).
 
-Once, you have your K8s ready run
-
-```
-oc  new-project drogue
-oc apply -f deploy/k8s/gateway.yaml
-```
-
-or
+Once Kubernetes is installed and available, run the example to deploy
+both a gateway and a simulated device that will report its status
+every few seconds:
 
 ```
 oc  new-project drogue
-oc apply -f deploy/k8s/device-dbus.yaml
+oc kustomize example/ | envsubst | oc apply -f -
 ```
 
-Make sure you adjust local paths in yaml files. This will be improved soon.
+We use [kustomize](https://kustomize.io/) to populate the image and
+[envsubst](https://command-not-found.com/envsubst) to resolve the
+`meshd` config path in the [deployment specs](example/deployment.yaml/).
+
+Once the pods are `Running`, verify the gateway is sending the device
+status to the cloud like so:
+
+```
+oc logs -f -l role=gateway
+```
+
+Similarly...
+
+```
+oc logs -f -l role=device
+```
+
+Shut down the example like so:
+
+```
+oc delete -k example/
+```
 
 ## Run using Kubernetes and host bluetooth mesh
 
