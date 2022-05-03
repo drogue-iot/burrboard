@@ -129,7 +129,7 @@ docker.io/jcrossley3/drogue-gateway app/device.py
 
 ### Architecture
 
-![containerized ble-mesh](https://user-images.githubusercontent.com/141611/166448688-8d7c59d7-3d63-484e-8cca-69409606de0c.svg)
+![containerized ble-mesh](docs/containerized-ble-mesh.svg)
 
 ### Deploy
 
