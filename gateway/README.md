@@ -127,6 +127,12 @@ docker.io/jcrossley3/drogue-gateway app/device.py
 
 ## Run using Kubernetes
 
+### Architecture
+
+![containerized ble-mesh](https://user-images.githubusercontent.com/141611/166448688-8d7c59d7-3d63-484e-8cca-69409606de0c.svg)
+
+### Deploy
+
 You can run the gateway and the simulator in Kubernetes as well. We
 tested it on [microshift](https://microshift.io/). Take a look at how
 to install it on a NUC [here](docs/nuc.md#Microshift).
