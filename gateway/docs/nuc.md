@@ -47,10 +47,6 @@ curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/st
 sudo tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
 
 mkdir ~/.kube
-sudo podman cp microshift:/var/lib/microshift/resources/kubeadmin/kubeconfig ~/.kube/config
-sudo chown `whoami`: ~/.kube/config
-
-mkdir ~/.kube
 sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
 
 oc get pods -A
