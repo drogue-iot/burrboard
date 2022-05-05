@@ -2,7 +2,7 @@
 ```
   $ sudo dnf upgrade --refresh -y
   $ sudo dnf install bluez-mesh
-  $ sudo dnf install curl dnf-plugins-core openssl-devel npm gcc gcc-c++ clang make cyrus-sasl-devel cmake podman podman-docker systemd-devel
+  $ sudo dnf install curl dnf-plugins-core openssl-devel npm gcc gcc-c++ clang make cyrus-sasl-devel cmake podman podman-docker systemd-devel dbus-devel
   $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   $ cargo install drg
   $ cargo install --features=ssl websocat
