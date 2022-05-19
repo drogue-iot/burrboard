@@ -181,24 +181,24 @@ def main():
 
 	broker = os.environ.get('DROGUE_MQTT_HOST', 'mqtt.sandbox.drogue.cloud')
 	port = os.environ.get('DROGUE_MQTT_PORT', 8883)
-
+#
 	application = os.environ.get('DROGUE_APPLICATION', 'ble-demo')
 	device = os.environ.get('DROGUE_DEVICE', 'gateway')
 	password = os.environ.get('DROGUE_PASSWORD', 'hey-rodney')
-
-	blemesh.log.info('Drogue endpoint: ' + broker + ':' + str(port))
-	blemesh.log.info('Drogue application: ' + application)
-	blemesh.log.info('Drogue device: ' + device)
-
-	username = device + "@" + application
-
-	client = mqtt.Client("drogue_gateway")
-	client.on_connect = on_connect
-	client.on_publish = on_publish
-	client.username_pw_set(username, password)
-	client.tls_set(cert_reqs=ssl.CERT_NONE)
-	client.connect(broker, port)
-	client.loop_start()
+#
+#	blemesh.log.info('Drogue endpoint: ' + broker + ':' + str(port))
+#	blemesh.log.info('Drogue application: ' + application)
+#	blemesh.log.info('Drogue device: ' + device)
+#
+#	username = device + "@" + application
+#
+#	client = mqtt.Client("drogue_gateway")
+#	client.on_connect = on_connect
+#	client.on_publish = on_publish
+#	client.username_pw_set(username, password)
+#	client.tls_set(cert_reqs=ssl.CERT_NONE)
+#	client.connect(broker, port)
+#	client.loop_start()
 
 
 	DBusGMainLoop(set_as_default=True)
@@ -216,11 +216,10 @@ def main():
 
 	first_ele = blemesh.Element(blemesh.bus, 0x00)
 	second_ele = blemesh.Element(blemesh.bus, 0x01)
-	third_ele = blemesh.Element(blemesh.bus, 0x02)
 
 	blemesh.log.info('Register OnOff Server model on element 0')
 	first_ele.add_model(GatewayOnOffServer(application, 0x1000))
-	first_ele.add_model(GatewaySensorServer(application, 0x1100))
+	first_ele.add_model(blemesh.SensorServer(0x1100))
 
 	blemesh.log.info('Register Vendor model on element 0')
 	first_ele.add_model(blemesh.SampleVendor(0x0001))
@@ -228,13 +227,12 @@ def main():
 	blemesh.log.info('Register OnOff Client model on element 1')
 	second_ele.add_model(blemesh.OnOffClient(0x1001))
 	second_ele.add_model(blemesh.SensorClient(0x1102))
+	blemesh.log.info('Register Firmware Update Client model on element 1')
+	second_ele.add_model(blemesh.FirmwareUpdateClient())
 
-	blemesh.log.info('Register Firmware Update Client model on element 2')
-	third_ele.add_model(blemesh.GatewayFirmwareClient(application))
 
 	blemesh.app.add_element(first_ele)
 	blemesh.app.add_element(second_ele)
-	blemesh.app.add_element(third_ele)
 	blemesh.mainloop = GLib.MainLoop()
 
 	blemesh.attach(blemesh.token)
