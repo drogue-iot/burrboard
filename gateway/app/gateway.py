@@ -73,24 +73,35 @@ class GatewayOnOffServer(blemesh.ServerModel):
 # GatewayFirmwareClient
 ########################
 class GatewayFirmwareClient(blemesh.FirmwareUpdateClient):
-	def __init__(self, name):
+	def __init__(self, name, addr):
+		blemesh.FirmwareUpdateClient.__init__(self)
 		self.name = name
+		self.addr = addr
+		self.pub_timer = blemesh.ModTimer()
+		self.pub_timer.start(10, self.publish)
+
+	def process_message(self, source, dest, key, data):
+		sensor_data = self.parse_sensor_data(data)
+		blemesh.log.info('sensor data parsed=' + str(sensor_data))
+
+	def publish(self):
+	        self.get_status(0x00ac, 0)
 
 ########################
 # Sensor Server Model
 ########################
-class GatewaySensorServer(blemesh.BurrBoardSensorServer):
+class GatewaySensorServer(blemesh.SensorServer):
 	def __init__(self, name, model_id):
 		blemesh.Model.__init__(self, model_id)
 		self.name = name
 	def process_message(self, source, dest, key, data):
 		blemesh.log.info('gateway sensor model process message')
 		sensor_data = self.parse_sensor_data(data)
-		blemesh.log.info('sensor data parsed')
-		if sensor_data != None and len(sensor_data) != 0:
+		blemesh.log.info('sensor data parsed=' + str(sensor_data))
+		if sensor_data != None:
 			device = '%04x' % source
 			topic = self.name + "/" + device
-			payload = json.dumps(featurize(sensor_data))
+			payload = json.dumps({'temp': sensor_data})
 			blemesh.log.info("Sending state '" + payload + "' from device '" + device + "' to MQTT topic '" + topic + "'")
 			#TODO Handle failures
 			client.publish(topic, payload)
@@ -185,20 +196,20 @@ def main():
 	application = os.environ.get('DROGUE_APPLICATION', 'ble-demo')
 	device = os.environ.get('DROGUE_DEVICE', 'gateway')
 	password = os.environ.get('DROGUE_PASSWORD', 'hey-rodney')
-#
-#	blemesh.log.info('Drogue endpoint: ' + broker + ':' + str(port))
-#	blemesh.log.info('Drogue application: ' + application)
-#	blemesh.log.info('Drogue device: ' + device)
-#
-#	username = device + "@" + application
-#
-#	client = mqtt.Client("drogue_gateway")
-#	client.on_connect = on_connect
-#	client.on_publish = on_publish
-#	client.username_pw_set(username, password)
-#	client.tls_set(cert_reqs=ssl.CERT_NONE)
-#	client.connect(broker, port)
-#	client.loop_start()
+
+	blemesh.log.info('Drogue endpoint: ' + broker + ':' + str(port))
+	blemesh.log.info('Drogue application: ' + application)
+	blemesh.log.info('Drogue device: ' + device)
+
+	username = device + "@" + application
+
+	client = mqtt.Client("drogue_gateway")
+	client.on_connect = on_connect
+	client.on_publish = on_publish
+	client.username_pw_set(username, password)
+	client.tls_set(cert_reqs=ssl.CERT_NONE)
+	client.connect(broker, port)
+	client.loop_start()
 
 
 	DBusGMainLoop(set_as_default=True)
@@ -219,16 +230,13 @@ def main():
 
 	blemesh.log.info('Register OnOff Server model on element 0')
 	first_ele.add_model(GatewayOnOffServer(application, 0x1000))
-	first_ele.add_model(blemesh.SensorServer(0x1100))
-
-	blemesh.log.info('Register Vendor model on element 0')
-	first_ele.add_model(blemesh.SampleVendor(0x0001))
+	first_ele.add_model(GatewaySensorServer(application, 0x1100))
+	blemesh.log.info('Register Firmware Update Client model on element 1')
+	first_ele.add_model(GatewayFirmwareClient(application, device))
 
 	blemesh.log.info('Register OnOff Client model on element 1')
 	second_ele.add_model(blemesh.OnOffClient(0x1001))
 	second_ele.add_model(blemesh.SensorClient(0x1102))
-	blemesh.log.info('Register Firmware Update Client model on element 1')
-	second_ele.add_model(blemesh.FirmwareUpdateClient())
 
 
 	blemesh.app.add_element(first_ele)

@@ -515,6 +515,7 @@ class Model():
 
 	def send_message(self, dest, key, data):
 		global send_opts
+		log.info("Sending message to " + str(dest))
 
 		node.Send(self.path, dest, key, send_opts, data,
 						reply_handler=generic_reply_cb,
@@ -854,34 +855,34 @@ class FirmwareUpdateClient(Model):
 	def __init__(self):
 		Model.__init__(self, 0x11ed)
 		self.vendor = 0x0003 # IBM Company ID
-		#self.tid = 0
-		#self.data = None
-		#self.cmd_ops = { 0x8231,  # get
-		#		 0x51,  # status
-		#		 0x52,  # control
-		#		 0x53} # write
-		#log.info('Firmware Update Client')
+		self.tid = 0
+		self.data = None
+		self.cmd_ops = { 0x8231,  # get
+				 0x51,  # status
+				 0x52,  # control
+				 0x53} # write
+		log.info('Firmware Update Client')
 
-#	def _send_message(self, dest, key, data):
-#		log.info('Firmware Update client command')
-#		self.send_message(dest, key, data)
-#
-#	def get_status(self, dest, key):
-#		opcode = 0x8231
-#		self.data = struct.pack('>H', opcode)
-#		self._send_message(dest, key, self.data)
-#
-#	def process_message(self, source, dest, key, data):
-#		datalen = len(data)
-#		log.info('FirmwareUpdate client process message len = ' + datalen)
-#
-#		if datalen != 3:
-#			# The opcode is not recognized by this model
-#			return
-#
-#		opcode = struct.unpack('>H',bytes(data))
-#
-#		log.info('Got message with code', opcode)
+	def _send_message(self, dest, key, data):
+		log.info('Firmware Update client command')
+		self.send_message(dest, key, data)
+
+	def get_status(self, dest, key):
+		opcode = 0x8231
+		self.data = struct.pack('>H', opcode)
+		self._send_message(dest, key, self.data)
+
+	def process_message(self, source, dest, key, data):
+		datalen = len(data)
+		log.info('FirmwareUpdate client process message len = ' + datalen)
+
+		if datalen != 3:
+			# The opcode is not recognized by this model
+			return
+
+		opcode = struct.unpack('>H',bytes(data))
+
+		log.info('Got message with code', opcode)
 
 ########################
 # Sample Vendor Model
