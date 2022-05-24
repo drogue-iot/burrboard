@@ -85,15 +85,16 @@ class GatewayFirmwareClient(blemesh.FirmwareUpdateClient):
 		blemesh.log.info('sensor data parsed=' + str(sensor_data))
 
 	def publish(self):
-	        self.get_status(0x00ac, 0)
+	        self.get_status(0x00aa, 0)
 
 ########################
 # Sensor Server Model
 ########################
-class GatewaySensorServer(blemesh.SensorServer):
+class GatewaySensor(blemesh.SensorClient):
 	def __init__(self, name, model_id):
 		blemesh.Model.__init__(self, model_id)
 		self.name = name
+
 	def process_message(self, source, dest, key, data):
 		blemesh.log.info('gateway sensor model process message')
 		sensor_data = self.parse_sensor_data(data)
@@ -226,21 +227,16 @@ def main():
 	blemesh.app.set_agent(blemesh.Agent(blemesh.bus))
 
 	first_ele = blemesh.Element(blemesh.bus, 0x00)
-	second_ele = blemesh.Element(blemesh.bus, 0x01)
 
-	blemesh.log.info('Register OnOff Server model on element 0')
-	first_ele.add_model(GatewayOnOffServer(application, 0x1000))
-	first_ele.add_model(GatewaySensorServer(application, 0x1100))
-	blemesh.log.info('Register Firmware Update Client model on element 1')
+	blemesh.log.info('Register Sensor model on element 0')
+	first_ele.add_model(GatewaySensor(application, 0x1102))
+	blemesh.log.info('Register Firmware Update Client model on element 0')
 	first_ele.add_model(GatewayFirmwareClient(application, device))
-
-	blemesh.log.info('Register OnOff Client model on element 1')
-	second_ele.add_model(blemesh.OnOffClient(0x1001))
-	second_ele.add_model(blemesh.SensorClient(0x1102))
+	blemesh.log.info('Register OnOff Client model on element 0')
+	first_ele.add_model(blemesh.OnOffClient(0x1001))
 
 
 	blemesh.app.add_element(first_ele)
-	blemesh.app.add_element(second_ele)
 	blemesh.mainloop = GLib.MainLoop()
 
 	blemesh.attach(blemesh.token)

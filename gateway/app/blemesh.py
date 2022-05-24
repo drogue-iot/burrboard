@@ -739,6 +739,15 @@ class SensorClient(Sensor):
 		if sensor_value != None:
 			log.info('Sensor value=' + str(sensor_value))
 
+	def _send_message(self, dest, key, data):
+		log.info('Sensor client command')
+		self.send_message(dest, key, data)
+
+	def get_status(self, dest, key):
+		log.info('Sensor client get status')
+		self.data = bytes([0x82, 0x31, 0x00, 0x01])
+		self._send_message(dest, key, self.data)
+
 ########################
 # Sensor Server Model
 ########################
@@ -857,10 +866,11 @@ class FirmwareUpdateClient(Model):
 		self.vendor = 0x0003 # IBM Company ID
 		self.tid = 0
 		self.data = None
-		self.cmd_ops = { 0x8231,  # get
-				 0x51,  # status
-				 0x52,  # control
-				 0x53} # write
+		self.cmd_ops = { 0x3C0300, # Get
+				 0x3D0300, # Status
+				 0x3E0300, # Control
+				 0x3F0300} # Write
+
 		log.info('Firmware Update Client')
 
 	def _send_message(self, dest, key, data):
@@ -868,8 +878,7 @@ class FirmwareUpdateClient(Model):
 		self.send_message(dest, key, data)
 
 	def get_status(self, dest, key):
-		opcode = 0x8231
-		self.data = struct.pack('>H', opcode)
+		self.data = bytes([0x3C, 0x03, 0x00])
 		self._send_message(dest, key, self.data)
 
 	def process_message(self, source, dest, key, data):
