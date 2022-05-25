@@ -29,15 +29,16 @@ def main():
 	blemesh.app.set_agent(blemesh.Agent(blemesh.bus))
 
 	first_ele = blemesh.Element(blemesh.bus, 0x00)
+	second_ele = blemesh.Element(blemesh.bus, 0x01)
 
 	blemesh.log.info('Register Sensor client model on element 0')
 	first_ele.add_model(blemesh.SensorClient(0x1102))
-	blemesh.log.info('Register Vendor model on element 0')
-	first_ele.add_model(blemesh.FirmwareUpdateClient())
-	blemesh.log.info('Register OnOff Client model on element 0')
-	first_ele.add_model(blemesh.OnOffClient(0x1001))
+
+	blemesh.log.info('Register Vendor model on element 1')
+	second_ele.add_model(blemesh.FirmwareUpdateClient())
 
 	blemesh.app.add_element(first_ele)
+	blemesh.app.add_element(second_ele)
 
 	blemesh.mainloop = GLib.MainLoop()
 

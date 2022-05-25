@@ -459,6 +459,7 @@ class Element(dbus.service.Object):
 		log.info(('Message Received on Element %02x') % self.index + ', dst=' + dst_str)
 
 		for model in self.models:
+			log.info('Processing message for model' + str(model.__class__))
 			model.process_message(source, dest, key, data)
 
 	@dbus.service.method(MESH_ELEMENT_IFACE,
@@ -598,7 +599,7 @@ class OnOffServer(ServerModel):
 			log.info('Get state')
 		elif datalen == 4:
 			opcode,self.state, tid = struct.unpack('>HBB',
-							       bytes(data))
+								   bytes(data))
 
 			if opcode != 0x8202 and opcode != 0x8203:
 				# The opcode is not recognized by this model
@@ -878,20 +879,41 @@ class FirmwareUpdateClient(Model):
 		self.send_message(dest, key, data)
 
 	def get_status(self, dest, key):
-		self.data = bytes([0x3C, 0x03, 0x00])
+		self.data = bytes([0xF0, 0x03, 0x00])
+		self._send_message(dest, key, self.data)
+
+	def send_control(self, value, next_version = None):
+		if next_version != None:
+			data = [0xF2, 0x03, 0x00, value]
+			append(data, next_version)
+			self.data = bytes(data)
+		else:
+			self.data = bytes([0xF2, 0x03, 0x00, value])
 		self._send_message(dest, key, self.data)
 
 	def process_message(self, source, dest, key, data):
+		data = bytes(data)
 		datalen = len(data)
-		log.info('FirmwareUpdate client process message len = ' + datalen)
-
-		if datalen != 3:
+		if datalen < 3:
 			# The opcode is not recognized by this model
 			return
 
-		opcode = struct.unpack('>H',bytes(data))
+		opcode = int.from_bytes(data[0:3], 'big')
+		if opcode == 0xf10300:
+			mtu = data[3]
+			offset = int.from_bytes(data[4:8], 'little')
+			version_len = data[8]
+			version = data[9:(9 + version_len)]
+			return {
+				'type': 'status',
+				'mtu': mtu,
+				'offset': offset,
+				'version': version,
+			}
 
-		log.info('Got message with code', opcode)
+		#opcode = struct.unpack('>H',bytes(data))
+		log.info('Got message with code' + hex(opcode))
+		return None
 
 ########################
 # Sample Vendor Model

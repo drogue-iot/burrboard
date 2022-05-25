@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import blemesh
+from threading import Timer
 import json
 try:
   from gi.repository import GLib
@@ -73,19 +74,21 @@ class GatewayOnOffServer(blemesh.ServerModel):
 # GatewayFirmwareClient
 ########################
 class GatewayFirmwareClient(blemesh.FirmwareUpdateClient):
-	def __init__(self, name, addr):
+	def __init__(self, app, device, addr):
 		blemesh.FirmwareUpdateClient.__init__(self)
-		self.name = name
+		self.app = app
+		self.device = device
 		self.addr = addr
-		self.pub_timer = blemesh.ModTimer()
-		self.pub_timer.start(10, self.publish)
+		self.timer = Timer(5.0, self.publish)
+		self.timer.start()
 
 	def process_message(self, source, dest, key, data):
-		sensor_data = self.parse_sensor_data(data)
-		blemesh.log.info('sensor data parsed=' + str(sensor_data))
+		message = blemesh.FirmwareUpdateClient.process_message(self, source, dest, key, data)
+		if message != None:
+			blemesh.log.info('got message: ' + str(message))
 
 	def publish(self):
-	        self.get_status(0x00aa, 0)
+	        self.get_status(self.addr, 0)
 
 ########################
 # Sensor Server Model
@@ -227,16 +230,16 @@ def main():
 	blemesh.app.set_agent(blemesh.Agent(blemesh.bus))
 
 	first_ele = blemesh.Element(blemesh.bus, 0x00)
+	second_ele = blemesh.Element(blemesh.bus, 0x01)
 
 	blemesh.log.info('Register Sensor model on element 0')
 	first_ele.add_model(GatewaySensor(application, 0x1102))
-	blemesh.log.info('Register Firmware Update Client model on element 0')
-	first_ele.add_model(GatewayFirmwareClient(application, device))
-	blemesh.log.info('Register OnOff Client model on element 0')
-	first_ele.add_model(blemesh.OnOffClient(0x1001))
 
+	blemesh.log.info('Register Firmware Update Client model on element 1')
+	second_ele.add_model(GatewayFirmwareClient(application, '00ad', 0x00ad))
 
 	blemesh.app.add_element(first_ele)
+	blemesh.app.add_element(second_ele)
 	blemesh.mainloop = GLib.MainLoop()
 
 	blemesh.attach(blemesh.token)
